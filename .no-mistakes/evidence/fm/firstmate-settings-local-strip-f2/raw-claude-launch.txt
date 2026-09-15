@@ -1,0 +1,11 @@
+=== $ fm-spawn.sh raw-worker <project> 'claude --debug'  (operator raw launch command) ===
+warning: /tmp/fm-live-spawn/lab-raw/home/data/raw-worker/launch-brief.md records no delivery contract line (scaffolded before ship briefs recorded one); launching on the explicit --mode no-mistakes - confirm its definition of done matches
+warning: a raw claude launch cannot carry firstmate's per-task hook settings, so raw-worker runs without semantic busy state or turn-end notifications
+spawned raw-worker harness=claude kind=ship mode=no-mistakes yolo=off window=firstmate:fm-raw-worker worktree=/tmp/fm-live-spawn/lab-raw/wt
+=== launch command (operator's raw command is left as typed) ===
+CLAUDE_CONFIG_DIR='/tmp/fm-live-spawn/claude-cfg' env -u CURSOR_AGENT -u CURSOR_INVOKED_AS -u GEMINI_CLI claude --debug
+=== worktree after a raw launch ===
+(empty = clean)
+committed .claude/settings.local.json: byte-identical
+state: home-summary.json
+state: raw-worker.meta

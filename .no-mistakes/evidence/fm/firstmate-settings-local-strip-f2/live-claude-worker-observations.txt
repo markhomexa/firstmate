@@ -1,0 +1,68 @@
+=== the project's committed .claude/settings.local.json after a real Claude worker session ===
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm test:*)",
+      "Bash(git push:*)",
+      "Bash(echo:*)"
+    ]
+  },
+  "env": {
+    "FM_PROBE_PROJECT": "project-local-loaded"
+  }
+}
+=== cmp against the committed copy ===
+identical
+=== git status in the task worktree ===
+(empty = clean)
+=== firstmate busy-state record (hooks from state/<id>.claude-settings.json) ===
+v1 gen=g1789498803.1313763.1325 seq=4 state=idle source=claude-hook event=stop ts=1789498978
+=== turn-end notification file ===
+-rw-rw-r-- 1 homexa homexa 0 Sep 15 12:02 /tmp/fm-live-spawn/lab/home/state/live-settings.turn-ended
+=== busy classification ===
+idle claude-hook=== exiting the live worker with /exit ===
+=== busy-state record after shutdown ===
+v1 gen=g1789498803.1313763.1325 seq=5 state=idle source=claude-hook event=session-end ts=1789498988
+=== committed settings file after shutdown ===
+still identical
+(empty = clean)
+=== what Claude Code recorded in the LAUNCHING USER's own store instead ===
+{
+ "/tmp/fm-live-spawn/lab/wt": {
+  "hasTrustDialogAccepted": true
+ },
+ "/tmp/fm-live-spawn/lab/project": {
+  "hasTrustDialogAccepted": true,
+  "localSettingsSeenGitTracked": true,
+  "lastGracefulShutdown": true,
+  "lastVersionBase": "2.1.272",
+  "hasUnseenTeamArtifacts": false,
+  "lastCost": 0.051498800000000004,
+  "lastAPIDuration": 5407,
+  "lastAPIDurationWithoutRetries": 5380,
+  "lastToolDuration": 45,
+  "lastDuration": 14746,
+  "lastStartTime": 1789498973256,
+  "lastLinesAdded": 0,
+  "lastLinesRemoved": 0,
+  "lastTotalInputTokens": 1491,
+  "lastTotalOutputTokens": 353,
+  "lastTotalCacheCreationInputTokens": 22989,
+  "lastTotalCacheReadInputTokens": 22648,
+  "lastTotalWebSearchRequests": 0,
+  "lastFpsAverage": 6.17,
+  "lastFpsLow1Pct": 29.23,
+  "lastModelUsage": {
+   "claude-haiku-4-5-20251001": {
+    "inputTokens": 1491,
+    "outputTokens": 353,
+    "thinkingTokens": 239,
+    "cacheReadInputTokens": 22648,
+    "cacheCreationInputTokens": 22989,
+    "webSearchRequests": 0,
+    "costUSD": 0.051498800000000004
+   }
+  },
+  "lastSessionId": "19e593b8-7b21-4a3d-b618-138af1b78de0"
+ }
+}

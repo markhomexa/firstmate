@@ -1,0 +1,21 @@
+warning: /tmp/fm-live-spawn/lab/home/data/live-settings-2/launch-brief.md records no delivery contract line (scaffolded before ship briefs recorded one); launching on the explicit --mode no-mistakes - confirm its definition of done matches
+spawned live-settings-2 harness=claude kind=ship mode=no-mistakes yolo=off window=firstmate:fm-live-settings-2 worktree=/tmp/fm-live-spawn/lab/wt
+second worker turn-ended after 4s
+=== second worker's pane (no keypresses sent beyond the launch) ===
+  passing the pointer.
+  Captain intent authorized for --intent
+  Run this exact bash command and then reply with its output verbatim and nothing else:
+  echo "SECOND-WORKER=$FM_PROBE_PROJECT"
+  Ran 1 shell command
+● SECOND-WORKER=project-local-loaded
+✻ Cooked for 3s · done 12:08 PM
+                                                                                                     tmux detected · scroll with PgUp/PgDn · or add 'set -g mouse on' to ~/.tmux.conf for wheel scroll
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+❯ 
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  ⏵⏵ bypass permissions on (shift+tab to cycle) · ← for agents
+=== committed settings file after the second worker ===
+identical
+(empty = clean)
+=== busy record for the second worker ===
+v1 gen=g1789499276.1552290.12080 seq=3 state=idle source=claude-hook event=stop ts=1789499283

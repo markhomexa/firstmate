@@ -1,0 +1,4 @@
+ok - teardown keeps a project's committed .claude/settings.local.json and retires the per-task claude settings
+ok - teardown still removes an untracked legacy claude hook file
+ok - teardown refusal names a changed tracked .claude/settings.local.json, staged or not, with its HEAD restore command, and only then
+filtered claude-settings teardown tests passed

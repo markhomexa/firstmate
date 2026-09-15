@@ -1,0 +1,8 @@
+=== PRE-FIX (base commit db645b8d) spawn: the project's committed .claude/settings.local.json ===
+{"hooks":{"UserPromptSubmit":[{"hooks":[{"type":"command","command":"'/tmp/fm-live-spawn/oldroot/bin/fm-busy-event.sh' apply '/tmp/fm-live-spawn/lab-prefix/home/state' 'prefix-settings' busy --gen 'g1789499001.1365749.22351' --source claude-hook --event user-prompt-submit 2>/dev/null || true"}]}],"Stop":[{"hooks":[{"type":"command","command":"touch '/tmp/fm-live-spawn/lab-prefix/home/state/prefix-settings.turn-ended'; '/tmp/fm-live-spawn/oldroot/bin/fm-busy-event.sh' apply '/tmp/fm-live-spawn/lab-prefix/home/state' 'prefix-settings' idle --gen 'g1789499001.1365749.22351' --source claude-hook --event stop 2>/dev/null || true"}]}],"StopFailure":[{"hooks":[{"type":"command","command":"'/tmp/fm-live-spawn/oldroot/bin/fm-busy-event.sh' apply '/tmp/fm-live-spawn/lab-prefix/home/state' 'prefix-settings' idle --gen 'g1789499001.1365749.22351' --source claude-hook --event stop-failure 2>/dev/null || true"}]}],"SessionEnd":[{"hooks":[{"type":"command","command":"'/tmp/fm-live-spawn/oldroot/bin/fm-busy-event.sh' apply '/tmp/fm-live-spawn/lab-prefix/home/state' 'prefix-settings' idle --gen 'g1789499001.1365749.22351' --source claude-hook --event session-end 2>/dev/null || true"}]}]}}
+
+=== git status in the task worktree ===
+ M .claude/settings.local.json
+=== git diff --stat ===
+ .claude/settings.local.json | 13 +------------
+ 1 file changed, 1 insertion(+), 12 deletions(-)

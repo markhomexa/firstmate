@@ -1,0 +1,65 @@
+=============== VARIANT: unstaged ===============
+--- git status in the task worktree before teardown ---
+ M .claude/settings.local.json
+--- $ fm-teardown.sh task-x1 ---
+REFUSED: worktree /tmp/fm-live-teardown/unstaged/wt has uncommitted changes.
+uncommitted changes present
+the project's git-tracked .claude/settings.local.json changed after the Claude launch; restore it in /tmp/fm-live-teardown/unstaged/wt with: git checkout HEAD -- .claude/settings.local.json
+Commit them (or get the captain's explicit OK to discard, then --force).
+--- exit status: 1 ---
+--- the settings file after the refusal ---
+{}
+--- git status after teardown ---
+ M .claude/settings.local.json
+=============== VARIANT: staged ===============
+--- git status in the task worktree before teardown ---
+M  .claude/settings.local.json
+--- $ fm-teardown.sh task-x1 ---
+REFUSED: worktree /tmp/fm-live-teardown/staged/wt has uncommitted changes.
+uncommitted changes present
+the project's git-tracked .claude/settings.local.json changed after the Claude launch; restore it in /tmp/fm-live-teardown/staged/wt with: git checkout HEAD -- .claude/settings.local.json
+Commit them (or get the captain's explicit OK to discard, then --force).
+--- exit status: 1 ---
+--- the settings file after the refusal ---
+{}
+--- git status after teardown ---
+M  .claude/settings.local.json
+=============== VARIANT: unrelated ===============
+--- git status in the task worktree before teardown ---
+ M feature.txt
+--- $ fm-teardown.sh task-x1 ---
+REFUSED: worktree /tmp/fm-live-teardown/unrelated/wt has uncommitted changes.
+uncommitted changes present
+Commit them (or get the captain's explicit OK to discard, then --force).
+--- exit status: 1 ---
+--- the settings file after the refusal ---
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm test:*)",
+      "Bash(git push:*)"
+    ]
+  }
+}
+--- git status after teardown ---
+ M feature.txt
+--- operator follows the printed advice ---
+$ git checkout HEAD -- .claude/settings.local.json
+--- git status now ---
+(empty = clean)
+--- file contents restored ---
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm test:*)",
+      "Bash(git push:*)"
+    ]
+  }
+}
+--- rerun teardown ---
+teardown: reaping leaked worktree process(es) for task-x1: 1278530 1278532 1278533 1278830 1278832 1278833 1278834
+--- rerun teardown from a neutral cwd after the restore ---
+/tmp/fm-live-teardown/staged/project: already current
+teardown task-x1 complete (window firstmate:fm-task-x1, worktree /tmp/fm-live-teardown/staged/wt)
+Backlog: task-x1 just finished (this home keeps no markdown backlog at /tmp/fm-live-teardown/staged/data/backlog.md). Update /tmp/fm-live-teardown/staged/data/backlog.md - move task-x1 to Done, keep Done to the 10 most recent, then re-scan Queued and dispatch only work whose blockers are gone and date is due.
+--- exit status: 0 ---
