@@ -1,0 +1,7 @@
+BASE=/tmp/fmlive/run.eaYR
+BASELINE watcher: /tmp/fmlive/base/bin/fm-watch.sh (commit 2bcb88c3)
+--- BASE S3: expired until + attributed active run (healthy pipeline)
+    ALARM: stale: test:fm-b3 (idle 1s, possible wedge, escalation 1)
+    ALARM: stale: test:fm-b3 (idle 2s, possible wedge, escalation 2)
+    ALARM: stale: test:fm-b3 (idle 2s, possible wedge, escalation 3, demand-deep-inspection: same pane has wedge-escalated 3 times in a row - do not re-absorb on the run-step/pane state alone)
+    ALARM: stale: test:fm-b3 (idle 1s, possible wedge, escalation 4, demand-deep-inspection: same pane has wedge-escalated 4 times in a row - do not re-absorb on the run-step/pane state alone)

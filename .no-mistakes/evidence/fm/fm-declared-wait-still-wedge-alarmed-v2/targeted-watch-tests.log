@@ -1,0 +1,30 @@
+== test_live_declared_pause_alarm_names_the_declared_wait
+ok - an alarm for a live lane that declared a bounded wait names that wait instead of the bare stale identity
+== test_live_declared_pause_alarm_claims_no_liveness_it_never_read
+ok - an alarm for a parked lane reports only that its agent is not confirmed gone, never a liveness verdict nothing read
+== test_declared_wait_alarm_never_prints_a_negative_age
+ok - a status file stamped ahead of the clock reports a zero wait age, never a negative one
+== test_live_captain_held_alarm_names_the_captain_not_an_external_wait
+ok - an alarm for a live lane held for the captain names the captain, never an external dependency
+== test_live_due_declared_time_alarm_says_the_clearing_time_passed
+ok - an alarm for a declared clearing time that has passed asks the reader to confirm the wait cleared
+== test_undeclared_live_lane_keeps_the_unnamed_stale_alarm
+ok - a quiet lane that declared nothing keeps the unnamed stale alarm
+== test_captain_relevant_append_during_a_declared_wait_still_alarms
+ok - a captain-relevant event appended inside a declared wait's recheck window still alarms at once
+== test_live_declared_wait_churn_honors_the_resurface_throttle
+ok - a parked live worker surfaces once, absorbs pane churn for the whole re-surface window, then re-surfaces when it elapses
+== test_wedge_work_evidence_reads_its_own_tasks_progress
+ok - wedge_work_evidence reads the progress of the task it was asked about, whatever task its caller holds
+== test_wedge_threshold_defers_to_a_declared_wait_under_a_working_verdict
+ok - a declared wait is not wedge-escalated by a working verdict, while an elapsed declaration and an undeclared lane both keep the unchanged ladder
+== test_wedge_escalation_names_an_expired_declared_wait
+ok - an expired declared wait keeps the whole wedge ladder while the alarm names the declaration it used to omit
+== test_a_declared_time_that_names_no_real_instant_takes_the_no_time_path
+ok - a declared time the shared UTC reader refuses takes the ordinary declared-wait path and is never quoted
+== test_expired_declared_wait_with_an_active_run_is_a_slipped_estimate
+ok - an expired declaration on a lane with an attributed active run is rechecked as a slipped estimate, not climbed as a wedge
+== test_slipped_estimate_deferral_resumes_the_ladder_where_it_left_off
+ok - a slipped-estimate deferral leaves the ladder at the rung it had reached, so the next escalation resumes rather than restarts
+== test_wedge_threshold_recheck_names_the_captain_for_a_held_lane
+ok - a captain-held lane is rechecked as a hold on the captain, never as an external wait, and never at all while the captain is away

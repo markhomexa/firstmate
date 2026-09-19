@@ -1,0 +1,66 @@
+BASE=/tmp/fmlive/run.ZvsP
+tmux 3.6
+=== S1 live lane, paused: (no time), first sight (unknown crew state)
+exit=0
+    PANE: grok> waiting at the gate
+    PANE: 
+    CMD: grok
+--- S1 queue
+    ALARM: stale: test:fm-s1 (paused 34s, awaiting external - the agent is not confirmed gone, declared pause, rechecked on a long cadence not a wedge; confirm the wait still holds)
+    escalations=none
+=== S2 paused (no time) + working run: at wedge threshold -> deferred, never possible wedge
+first-sight exit=0
+--- S2 after first sight
+    ALARM: stale: test:fm-s2 (idle 2s, waiting 2006s - declared wait, awaiting external, rechecked on a long cadence not a wedge; confirm the wait still holds)
+    escalations=none
+round 1 absorb-survived=0
+round 2 absorb-survived=0
+round 3 absorb-survived=0
+--- S2 after 3 threshold rounds
+    ALARM: stale: test:fm-s2 (idle 2s, waiting 2006s - declared wait, awaiting external, rechecked on a long cadence not a wedge; confirm the wait still holds)
+    escalations=none
+=== S3 expired until + attributed active run -> slipped estimate recheck
+first exit=0
+--- S3 after first sight
+    ALARM: stale: test:fm-s3 (idle 1s, declared wait until 2026-09-19T12:11Z and that time passed 7260s ago while the lane is still working - a slipped estimate, rechecked on a long cadence not a wedge; ask the lane for a new expected time)
+    escalations=none
+threshold round survived=0
+--- S3 after threshold round
+    ALARM: stale: test:fm-s3 (idle 1s, declared wait until 2026-09-19T12:11Z and that time passed 7260s ago while the lane is still working - a slipped estimate, rechecked on a long cadence not a wedge; ask the lane for a new expected time)
+    escalations=none
+    TRIAGE: [2026-09-19T07:12:06-0700] absorbed non-terminal stale (provably working): test:fm-s3
+    TRIAGE: [2026-09-19T07:12:07-0700] absorbed non-terminal stale (provably working after a declared pause) (the declared time passed while the lane is still working, idle 1s): test:fm-s3
+    TRIAGE: [2026-09-19T07:12:07-0700] absorbed non-terminal stale (provably working): test:fm-s3
+=== S4 expired until, pane-only busy (no independent evidence) -> escalation names declared time
+first exit=0
+--- S4 first
+    ALARM: stale: test:fm-s4 (idle 2s, possible wedge, escalation 1, the lane declared a wait until 2026-09-19T12:11Z and that time passed 7274s ago with the pane still idle)
+    escalations=1
+rung 1 exit=0
+rung 2 exit=0
+rung 3 exit=0
+--- S4 after rungs
+    ALARM: stale: test:fm-s4 (idle 2s, possible wedge, escalation 1, the lane declared a wait until 2026-09-19T12:11Z and that time passed 7274s ago with the pane still idle)
+    ALARM: stale: test:fm-s4 (idle 1s, possible wedge, escalation 2, the lane declared a wait until 2026-09-19T12:11Z and that time passed 7277s ago with the pane still idle)
+    ALARM: stale: test:fm-s4 (idle 2s, possible wedge, escalation 3, the lane declared a wait until 2026-09-19T12:11Z and that time passed 7281s ago with the pane still idle, demand-deep-inspection: same pane has wedge-escalated 3 times in a row - do not re-absorb on the run-step/pane state alone)
+    ALARM: stale: test:fm-s4 (idle 1s, possible wedge, escalation 4, the lane declared a wait until 2026-09-19T12:11Z and that time passed 7285s ago with the pane still idle, demand-deep-inspection: same pane has wedge-escalated 4 times in a row - do not re-absorb on the run-step/pane state alone)
+    escalations=4
+=== S5 undeclared lane (control) -> bare unchanged wording
+--- S5
+    ALARM: stale: test:fm-s5 (idle 1s, possible wedge, escalation 1)
+    ALARM: stale: test:fm-s5 (idle 2s, possible wedge, escalation 2)
+    escalations=2
+=== S6 adversarial: impossible time 2026-13-45T08:00Z
+wait_for_exit: owned pid 2788733 exceeded 150 polls; sending TERM
+2788733 2724282 S    bash /home/homexa/.no-mistakes/worktrees/a20fe525da72/01M2WZ3586W1AHJ8F5DMS6HZVY/bin/fm-watch.sh
+exit=124
+--- S6
+    ALARM: stale: test:fm-s6 (idle 2s, waiting 2006s - declared wait, awaiting external, rechecked on a long cadence not a wedge; confirm the wait still holds)
+    escalations=none
+=== S7 adversarial: tab + prose after the token
+--- S7
+    ALARM: stale: test:fm-s7 (idle 1s, possible wedge, escalation 1, the lane declared a wait until 2026-09-19T12:11Z and that time passed 7324s ago with the pane still idle)
+    ALARM: stale: test:fm-s7 (idle 2s, possible wedge, escalation 2, the lane declared a wait until 2026-09-19T12:11Z and that time passed 7328s ago with the pane still idle)
+    escalations=2
+    field counts per stale row: 5 
+    INJECTED occurrences in queue: 0
