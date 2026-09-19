@@ -1,0 +1,47 @@
+######## case held (fixed efc81cd)
+== before: pane_current_command=python3
+== $ fm-control.sh liveheld relaunch --note 'resume after reboot'
+warning: /tmp/fm-live-Uv2A/home/data/liveheld/brief.md records no delivery contract line (scaffolded before ship briefs recorded one); launching on the explicit --mode no-mistakes - confirm its definition of done matches
+error: this home's backlog item liveheld is not dispatchable in state in_flight yes no; refusing before creating its endpoint or local copy
+error: the replacement agent for liveheld cannot be launched on claude
+error: relaunch of liveheld was refused before its agent was touched; nothing changed
+== exit code: 1
+== after: pane_current_command=python3
+== brief.md unchanged: yes
+== meta unchanged: yes
+== journal phase: phase=failed:noted
+== backlog state: in_flight
+== stand-in agent log:
+stand-in claude pid 1276429 started, argv=[]
+######## case close (fixed efc81cd)
+== before: pane_current_command=python3
+== $ fm-control.sh liveclose relaunch --note 'resume after reboot'
+warning: /tmp/fm-live-J1y8/home/data/liveclose/brief.md records no delivery contract line (scaffolded before ship briefs recorded one); launching on the explicit --mode no-mistakes - confirm its definition of done matches
+error: task liveclose has a pending authoritative backlog close at /tmp/fm-live-J1y8/home/state/liveclose.backlog-close; finish or repair that close before dispatching a new worker
+error: the replacement agent for liveclose cannot be launched on claude
+error: relaunch of liveclose was refused before its agent was touched; nothing changed
+== exit code: 1
+== after: pane_current_command=python3
+== brief.md unchanged: yes
+== meta unchanged: yes
+== journal phase: phase=failed:noted
+== backlog state: in_flight
+== stand-in agent log:
+stand-in claude pid 1280735 started, argv=[]
+######## case ok (fixed efc81cd)
+== before: pane_current_command=python3
+== $ fm-control.sh liveok relaunch --note 'resume after reboot'
+warning: /tmp/fm-live-W6IH/home/data/liveok/brief.md records no delivery contract line (scaffolded before ship briefs recorded one); launching on the explicit --mode no-mistakes - confirm its definition of done matches
+warning: /tmp/fm-live-W6IH/home/data/liveok/launch-brief.md records no delivery contract line (scaffolded before ship briefs recorded one); launching on the explicit --mode no-mistakes - confirm its definition of done matches
+relaunched liveok harness=claude from=claude model=default effort=default backend=tmux endpoint=fmses:fm-liveok worktree=/tmp/fm-live-W6IH/wt
+== exit code: 0
+== after: pane_current_command=python3
+== brief.md unchanged: NO
+== meta unchanged: NO
+== journal phase: phase=complete
+== backlog state: in_flight
+== stand-in agent log:
+stand-in claude pid 1284270 started, argv=[]
+agent received: /exit
+stand-in claude pid 1284270 exited
+stand-in claude pid 1291853 started, argv=['--dangerously-skip-permissions', '--settings']

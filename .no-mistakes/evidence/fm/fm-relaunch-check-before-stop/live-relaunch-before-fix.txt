@@ -1,0 +1,34 @@
+######## case held (pre-fix b6930db)
+== before: pane_current_command=python3
+== $ fm-control.sh liveheld relaunch --note 'resume after reboot'
+warning: /tmp/fm-live-8Gbz/home/data/liveheld/launch-brief.md records no delivery contract line (scaffolded before ship briefs recorded one); launching on the explicit --mode no-mistakes - confirm its definition of done matches
+error: this home's backlog item liveheld is not dispatchable in state in_flight yes no; refusing before creating its endpoint or local copy
+error: the replacement agent for liveheld could not be launched on claude
+error: liveheld's agent was stopped but the replacement did not launch; no agent is running, and its work plus the recorded progress note are preserved at /tmp/fm-live-8Gbz/wt
+== exit code: 1
+== after: pane_current_command=bash
+== brief.md unchanged: NO
+== meta unchanged: yes
+== journal phase: phase=failed:launching
+== backlog state: in_flight
+== stand-in agent log:
+stand-in claude pid 1295060 started, argv=[]
+agent received: /exit
+stand-in claude pid 1295060 exited
+######## case close (pre-fix b6930db)
+== before: pane_current_command=python3
+== $ fm-control.sh liveclose relaunch --note 'resume after reboot'
+warning: /tmp/fm-live-uxmY/home/data/liveclose/launch-brief.md records no delivery contract line (scaffolded before ship briefs recorded one); launching on the explicit --mode no-mistakes - confirm its definition of done matches
+error: task liveclose has a pending authoritative backlog close at /tmp/fm-live-uxmY/home/state/liveclose.backlog-close; finish or repair that close before dispatching a new worker
+error: the replacement agent for liveclose could not be launched on claude
+error: liveclose's agent was stopped but the replacement did not launch; no agent is running, and its work plus the recorded progress note are preserved at /tmp/fm-live-uxmY/wt
+== exit code: 1
+== after: pane_current_command=bash
+== brief.md unchanged: NO
+== meta unchanged: yes
+== journal phase: phase=failed:launching
+== backlog state: in_flight
+== stand-in agent log:
+stand-in claude pid 1300356 started, argv=[]
+agent received: /exit
+stand-in claude pid 1300356 exited

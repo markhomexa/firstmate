@@ -1,0 +1,5 @@
+not ok - a refused relaunch stopped the running agent
+warning: /tmp/fm-control-relaunch.BjMHPf/held-5316/home/data/rl50/launch-brief.md records no delivery contract line (scaffolded before ship briefs recorded one); launching on the explicit --mode no-mistakes - confirm its definition of done matches
+error: this home's backlog item rl50 is not dispatchable in state in_flight yes no; refusing before creating its endpoint or local copy
+error: the replacement agent for rl50 could not be launched on claude
+error: rl50's agent was stopped but the replacement did not launch; no agent is running, and its work plus the recorded progress note are preserved at /tmp/fm-control-relaunch.BjMHPf/held-5316/wt
