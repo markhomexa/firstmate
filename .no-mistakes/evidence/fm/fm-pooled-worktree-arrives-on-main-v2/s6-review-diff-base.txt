@@ -1,0 +1,36 @@
+spawned yapii-t1 harness=codex kind=ship mode=no-mistakes yolo=off window=firstmate:fm-yapii-t1 worktree=/tmp/nm-drive-s6.E6f0r0/pool
+task record:
+worktree=/tmp/nm-drive-s6.E6f0r0/pool
+project=/tmp/nm-drive-s6.E6f0r0/yapii
+base_branch=develop
+base_registered=1
+
+### the worker does its task on fm/yapii-t1, cut from the slot's base
+8f7a1b5 task: the one change this task made
+
+=================== BEFORE the change: bin/fm-review-diff.sh at base commit ===================
+$ bin/fm-review-diff.sh yapii-t1 --stat
+diff base: origin/main
+ develop-work.txt   | 1 +
+ my-task-change.txt | 1 +
+ 2 files changed, 2 insertions(+)
+
+=================== AFTER the change: bin/fm-review-diff.sh at 254f8ce ===================
+$ bin/fm-review-diff.sh yapii-t1 --stat
+diff base: origin/develop
+ my-task-change.txt | 1 +
+ 1 file changed, 1 insertion(+)
+
+=================== Adversarial: the recorded base branch is deleted from origin ===================
+$ bin/fm-review-diff.sh yapii-t1 --stat
+warning: origin no longer carries 'develop', the base branch recorded as base_branch= in /tmp/nm-drive-s6.E6f0r0/home/state/yapii-t1.meta when this task's worktree was placed; falling back to the project's default branch 'main'
+diff base: origin/main
+ develop-work.txt   | 1 +
+ my-task-change.txt | 1 +
+ 2 files changed, 2 insertions(+)
+
+=================== Adversarial: origin unreachable (must NOT be called a deleted branch) ===================
+$ bin/fm-review-diff.sh yapii-t1 --stat
+error: could not fetch 'develop', the base branch recorded as base_branch= in /tmp/nm-drive-s6.E6f0r0/home/state/yapii-t1.meta when this task's worktree was placed, and could not reach origin to tell whether it still carries that branch
+exit=1
+CASE=/tmp/nm-drive-s6.E6f0r0

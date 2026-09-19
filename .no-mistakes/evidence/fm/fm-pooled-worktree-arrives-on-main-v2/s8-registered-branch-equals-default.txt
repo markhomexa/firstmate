@@ -1,0 +1,6 @@
+### a project that registers branch=main, which IS origin default
+spawned yapii-t1 harness=codex kind=ship mode=no-mistakes yolo=off window=firstmate:fm-yapii-t1 worktree=/tmp/nm-drive-s8.gccFAW/pool
+slot == origin/main ? YES
+record: base_branch=main base_registered=1 
+base section rendered: 1
+This worktree is based on `main`, the working branch registered for this project.

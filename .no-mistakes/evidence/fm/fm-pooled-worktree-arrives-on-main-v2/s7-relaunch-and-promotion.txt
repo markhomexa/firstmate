@@ -1,0 +1,40 @@
+========== relaunch of a ship whose slot was placed on the registered branch ==========
+spawned yapii-t1 harness=codex kind=ship mode=no-mistakes yolo=off window=firstmate:fm-yapii-t1 worktree=/tmp/nm-drive-s7.R04TDX/pool
+fresh spawn: base sections in the launch brief = 1
+$ bin/fm-spawn.sh yapii-t1 --relaunch
+error: task yapii-t1's endpoint reads 'missing'; a relaunch requires a positively agent-free endpoint (stop the agent first with bin/fm-control.sh yapii-t1 exit)
+exit=1
+after relaunch: base sections = 1
+relaunched brief still names the branch: This worktree is based on `develop`, the working branch registered for this project.
+task record: base_branch=develop base_registered=1 
+
+========== scout promoted to a ship on the same slot ==========
+spawned yapii-s1 harness=codex kind=scout window=firstmate:fm-yapii-s1 worktree=/tmp/nm-drive-s7.R04TDX/pool2
+scout record: base_branch=develop base_registered=1 
+$ bin/fm-promote.sh yapii-s1 --mode direct-PR --yolo off
+promoted yapii-s1 to ship mode=direct-PR yolo=off (teardown protection restored)
+wrote ship instructions for mode=direct-PR: /tmp/nm-drive-s7.R04TDX/home/data/yapii-s1/ship-instructions.md
+next: FM_HOME=/tmp/nm-drive-s7.R04TDX/home bin/fm-send.sh fm-yapii-s1 "$(cat /tmp/nm-drive-s7.R04TDX/home/data/yapii-s1/ship-instructions.md)"
+exit=0
+  brief.md: base sections=1
+  launch-brief.md: base sections=1
+  ship-instructions.md: base sections=1
+--- promotion instructions: base contract section ---
+# Current worktree base contract
+This worktree is based on `develop`, the working branch registered for this project.
+This section establishes that base after every Setup or promotion instruction above and supersedes any of them that names a different base, including any that calls this worktree's base the default branch.
+Open your PR against `develop` by passing `--base develop` to `gh-axi`, never the repository's default branch: a PR raised against any other branch would show that branch's own commits as this task's change.
+# Current worktree base contract
+This worktree is based on `develop`, the working branch registered for this project.
+This section establishes that base after every Setup or promotion instruction above and supersedes any of them that names a different base, including any that calls this worktree's base the default branch.
+# Current worktree base contract
+This worktree is based on `develop`, the working branch registered for this project.
+This section establishes that base after every Setup or promotion instruction above and supersedes any of them that names a different base, including any that calls this worktree's base the default branch.
+Open your PR against `develop` by passing `--base develop` to `gh-axi`, never the repository's default branch: a PR raised against any other branch would show that branch's own commits as this task's change.
+$ bin/fm-spawn.sh yapii-s1 --relaunch   (a relaunch must not add a second copy)
+error: task yapii-s1's endpoint reads 'missing'; a relaunch requires a positively agent-free endpoint (stop the agent first with bin/fm-control.sh yapii-s1 exit)
+exit=1
+  brief.md: base sections=1
+  launch-brief.md: base sections=1
+  ship-instructions.md: base sections=1
+CASE=/tmp/nm-drive-s7.R04TDX

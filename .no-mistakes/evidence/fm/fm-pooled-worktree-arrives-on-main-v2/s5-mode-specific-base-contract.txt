@@ -1,0 +1,23 @@
+
+========== direct-PR ship on a project registered branch=develop ==========
+spawn: spawned yapii-t1 harness=codex kind=ship mode=direct-PR yolo=off window=firstmate:fm-yapii-t1 worktree=/tmp/nm-drive-s5.V6cc9F/pool (exit=0)
+slot on origin/develop? YES
+--- worktree base contract section of the launch brief the worker reads ---
+# Current worktree base contract
+This worktree is based on `develop`, the working branch registered for this project.
+This section establishes that base after every Setup or promotion instruction above and supersedes any of them that names a different base, including any that calls this worktree's base the default branch.
+Open your PR against `develop` by passing `--base develop` to `gh-axi`, never the repository's default branch: a PR raised against any other branch would show that branch's own commits as this task's change.
+
+========== local-only ship on the same project ==========
+spawn: spawned yapii-t1 harness=codex kind=ship mode=local-only yolo=off window=firstmate:fm-yapii-t1 worktree=/tmp/nm-drive-s5.2WyHyB/pool (exit=0)
+slot on origin/develop? YES
+--- worktree base contract section of the launch brief the worker reads ---
+(section absent)
+
+========== scout on the same project (carries no delivery mode) ==========
+spawn: spawned yapii-t1 harness=codex kind=scout window=firstmate:fm-yapii-t1 worktree=/tmp/nm-drive-s5.DpS5vh/pool (exit=0)
+slot on origin/develop? YES
+--- worktree base contract section of the launch brief the worker reads ---
+# Current worktree base contract
+This worktree is based on `develop`, the working branch registered for this project.
+This section establishes that base after every Setup or promotion instruction above and supersedes any of them that names a different base, including any that calls this worktree's base the default branch.

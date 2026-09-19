@@ -1,0 +1,10 @@
+ok - fm-review-diff without base_branch= resolves the default branch exactly as before
+ok - fm-promote: a promoted worker targets the working branch its own slot was placed on
+ok - fm-project-mode: --branch reads a registered working branch and never invents one
+ok - a registered working branch decides the pooled slot's base over the remote default
+ok - a malformed branch token refuses the spawn while an absent one falls back
+ok - an unrefreshable origin/HEAD refuses the pool unless a working branch is registered
+ok - a registered working branch origin does not carry refuses instead of falling back
+ok - every slot that resolves a working branch records it, and one that resolves none records nothing
+ok - a launch brief names the working branch its slot was placed on, and is otherwise unchanged
+ok - fm-spawn --relaunch: the recorded working branch still reaches the replacement worker

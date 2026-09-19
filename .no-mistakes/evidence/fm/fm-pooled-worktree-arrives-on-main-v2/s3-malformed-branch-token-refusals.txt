@@ -1,0 +1,49 @@
+### Adversarial: half-written and malformed registry branch tokens, and a branch origin does not carry
+
+========== branch= left empty (half-written registration) ==========
+registry: - yapii [no-mistakes branch=] - drive fixture (added 2026-09-18)
+slot before spawn: 2e7943b initial
+$ bin/fm-spawn.sh yapii-t1 <project> --mode no-mistakes --yolo off
+error: project "yapii" registers branch="", which is not a valid branch name
+error: project 'yapii' registers a working branch its own registry entry spells in a way git rejects (named above); refusing to launch pooled worktree '/tmp/nm-drive-s3.qdOiEj/pool' on origin's default branch instead
+exit=1
+slot after spawn : 2e7943b initial
+was the slot silently landed on origin/main? no
+foreign billing.txt pulled into the slot? no
+task record published? no
+
+========== branch=- (a name git reads as an option) ==========
+registry: - yapii [no-mistakes branch=-] - drive fixture (added 2026-09-18)
+slot before spawn: 1737e9b initial
+$ bin/fm-spawn.sh yapii-t1 <project> --mode no-mistakes --yolo off
+error: project "yapii" registers branch="-", which is not a valid branch name
+error: project 'yapii' registers a working branch its own registry entry spells in a way git rejects (named above); refusing to launch pooled worktree '/tmp/nm-drive-s3.RrK7Pr/pool' on origin's default branch instead
+exit=1
+slot after spawn : 1737e9b initial
+was the slot silently landed on origin/main? no
+foreign billing.txt pulled into the slot? no
+task record published? no
+
+========== branch=bad..name (git rejects the syntax) ==========
+registry: - yapii [no-mistakes branch=bad..name] - drive fixture (added 2026-09-18)
+slot before spawn: c13444e initial
+$ bin/fm-spawn.sh yapii-t1 <project> --mode no-mistakes --yolo off
+error: project "yapii" registers branch="bad..name", which is not a valid branch name
+error: project 'yapii' registers a working branch its own registry entry spells in a way git rejects (named above); refusing to launch pooled worktree '/tmp/nm-drive-s3.tDOodn/pool' on origin's default branch instead
+exit=1
+slot after spawn : c13444e initial
+was the slot silently landed on origin/main? no
+foreign billing.txt pulled into the slot? no
+task record published? no
+
+========== branch=nosuchbranch (origin does not carry it) ==========
+registry: - yapii [no-mistakes branch=nosuchbranch] - drive fixture (added 2026-09-18)
+slot before spawn: 899f138 initial
+$ bin/fm-spawn.sh yapii-t1 <project> --mode no-mistakes --yolo off
+fatal: couldn't find remote ref refs/heads/nosuchbranch
+error: could not fetch 'origin/nosuchbranch' for pooled worktree '/tmp/nm-drive-s3.Oq9nAI/pool'; the working branch resolved for project 'yapii' is 'nosuchbranch'; refusing to launch from another branch
+exit=1
+slot after spawn : 899f138 initial
+was the slot silently landed on origin/main? no
+foreign billing.txt pulled into the slot? no
+task record published? no

@@ -1,0 +1,51 @@
+### registry line an operator registered
+- yapii [no-mistakes branch=develop] - drive fixture (added 2026-09-18)
+
+### origin branches
+340ed8e5a78723a8e1aec65538fc29e3f11d2125  refs/heads/develop
+cd346dcbce0c527d5da08cfb8fd09b1e5e1e9e11  refs/heads/main
+
+### pool slot before spawn (pool handed back the fork point on no branch)
+38b4ae6 initial
+
+$ bin/fm-brief.sh yapii-t1 yapii --mode no-mistakes
+scaffolded: /tmp/nm-drive-s1.nlnqMS/home/data/yapii-t1/brief.md (ship, mode=no-mistakes; replace {TASK} and {FIRSTMATE_SPEC})
+
+$ bin/fm-spawn.sh yapii-t1 <project> --mode no-mistakes --yolo off
+spawned yapii-t1 harness=codex kind=ship mode=no-mistakes yolo=off window=firstmate:fm-yapii-t1 worktree=/tmp/nm-drive-s1.nlnqMS/pool
+exit=0
+
+### where the pooled slot actually landed
+HEAD          = 340ed8e develop: project working branch commit
+origin/develop= 340ed8e develop: project working branch commit
+origin/main   = cd346dc foreign: billing change on main
+HEAD==origin/develop ? YES
+HEAD==origin/main    ? NO
+working-branch file present in slot? YES
+foreign billing.txt from main present in slot? NO
+
+### task record state/yapii-t1.meta
+worktree=/tmp/nm-drive-s1.nlnqMS/pool
+mode=no-mistakes
+base_branch=develop
+base_registered=1
+
+### the worker's launch brief: worktree base contract section
+# Current worktree base contract
+This worktree is based on `develop`, the working branch registered for this project.
+This section establishes that base after every Setup or promotion instruction above and supersedes any of them that names a different base, including any that calls this worktree's base the default branch.
+The no-mistakes pipeline opens this task's PR, and nothing in this brief sets the base it opens against.
+Read that PR's own base branch as soon as the PR exists, before you report `done: PR {url} checks green`.
+If it is anything other than `develop`, append `blocked: PR base is {branch}, not develop` to the status file and stop, because a PR raised against another branch would show that branch's own commits as this task's change.
+
+# Current no-mistakes intent contract
+This section supersedes every earlier brief instruction about constructing `--intent`, but not later clarifications actually supplied by the captain.
+Use everything under `## Captain intent authorized for --intent` through the end of this brief, including any nested subheadings but excluding that heading, plus any later words the captain actually supplied as `--intent`; never include Firstmate specification or other mixed Task content.
+Preserve those words without adding speaker labels or direct address.
+Firstmate-authored constraints, acceptance criteria, implementation details, decisions, and tradeoffs are specification, not captain intent.
+The Definition of done's rule that `--intent` must be self-sufficient still governs the string you pass: resolve any report, decision, or PR the intent below refers to into its substance rather than passing the pointer.
+
+## Captain intent authorized for --intent
+Land the pooled-worktree branch fix so lanes stop getting origin/main.
+### END
+CASE=/tmp/nm-drive-s1.nlnqMS

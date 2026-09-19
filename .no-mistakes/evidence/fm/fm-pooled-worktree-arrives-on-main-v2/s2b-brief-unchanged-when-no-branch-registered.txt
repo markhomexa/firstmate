@@ -1,0 +1,11 @@
+Project with NO registered working branch: the worker's launch brief must be
+byte-identical to what the product rendered before this change.
+
+Both briefs were produced by driving the real intake order (bin/fm-brief.sh then
+bin/fm-spawn.sh), once with the product at base commit 1bb72cc and once at
+254f8ce. Only the throwaway fixture home path and the product checkout path
+differ between the two runs, so both are normalized to <HOME> / <PRODUCT> before
+comparing.
+
+$ diff -u old.brief.md new.brief.md   (paths normalized)
+(no output: IDENTICAL - the brief is byte-for-byte what it was before the change)

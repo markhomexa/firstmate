@@ -1,0 +1,15 @@
+### registry an operator wrote
+# Projects
+
+- modefirst [no-mistakes branch=develop +yolo] - mode written first (added 2026-09-18)
+- branchfirst [branch=develop local-only] - branch token written before the mode (added 2026-09-18)
+- yolofirst [+yolo direct-PR] - yolo written before the mode (added 2026-09-18)
+- middle [+yolo branch=release/2.0 no-mistakes] - mode written last (added 2026-09-18)
+- plain [direct-PR] - no branch token (added 2026-09-18)
+
+PROJECT      posture (fm-project-mode.sh) exit         --branch read
+modefirst    no-mistakes on               exit=0       develop (exit=0)
+branchfirst  local-only off               exit=0       develop (exit=0)
+yolofirst    direct-PR on                 exit=0       <none> (exit=1)
+middle       no-mistakes on               exit=0       release/2.0 (exit=0)
+plain        direct-PR off                exit=0       <none> (exit=1)
