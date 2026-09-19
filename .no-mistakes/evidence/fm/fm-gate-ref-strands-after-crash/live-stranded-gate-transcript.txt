@@ -1,0 +1,127 @@
+== pipeline pushed pre-rebase tip to gate mirror, then crashed
+
+$ git push -q no-mistakes fm/stranded-live-demo
+[exit 0]
+== custody recovery rebases the worker onto main
+== re-run's gate push (what axi run does first):
+
+$ git push no-mistakes fm/stranded-live-demo
+To /tmp/stranded-live.ZrTt/mirror.git
+ ! [rejected]        fm/stranded-live-demo -> fm/stranded-live-demo (non-fast-forward)
+error: failed to push some refs to '/tmp/stranded-live.ZrTt/mirror.git'
+hint: Updates were rejected because the tip of your current branch is behind
+hint: its remote counterpart. If you want to integrate the remote changes,
+hint: use 'git pull' before pushing again.
+hint: See the 'Note about fast-forwards' in 'git push --help' for details.
+[exit 1]
+== Scenario 1: helper with REAL gh (no open PR on origin for this branch)
+
+$ /home/homexa/.no-mistakes/worktrees/a20fe525da72/01M2X250T6NJ3BFF0W896CJKE7/bin/fm-nm-stranded-gate.sh
+branch: fm/stranded-live-demo
+head: a74e062d26bc5e27b181f5a853d4074d732c260b
+mirror: /tmp/stranded-live.ZrTt/mirror.git
+mirror_ref: 850e113a5d813e632e5a1bad1bca959843c10666
+state: stranded
+reason: every mirror-ref commit is already in HEAD; the mirror refuses only the rewritten history
+fresh_branch: fm/stranded-live-demo-r2
+next: git switch -c fm/stranded-live-demo-r2
+next: re-run the same no-mistakes axi run invocation from that branch
+[exit 0]
+== following the next: lines
+
+$ git switch -c fm/stranded-live-demo-r2
+Switched to a new branch 'fm/stranded-live-demo-r2'
+[exit 0]
+
+$ git push no-mistakes fm/stranded-live-demo-r2
+To /tmp/stranded-live.ZrTt/mirror.git
+ * [new branch]      fm/stranded-live-demo-r2 -> fm/stranded-live-demo-r2
+[exit 0]
+== mirror refs before/after (stranded ref untouched):
+850e113a5d813e632e5a1bad1bca959843c10666 commit	refs/heads/fm/stranded-live-demo
+850e113a5d813e632e5a1bad1bca959843c10666 commit	refs/heads/fm/stranded-live-demo
+a74e062d26bc5e27b181f5a853d4074d732c260b commit	refs/heads/fm/stranded-live-demo-r2
+== Scenario 2 (adversarial): stranded ref holds unlanded work
+
+$ /home/homexa/.no-mistakes/worktrees/a20fe525da72/01M2X250T6NJ3BFF0W896CJKE7/bin/fm-nm-stranded-gate.sh
+branch: fm/stranded-live-demo
+head: a74e062d26bc5e27b181f5a853d4074d732c260b
+mirror: /tmp/stranded-live.ZrTt/mirror.git
+mirror_ref: c020c41d4dc363f1171780dcdf45f5a4e382ee59
+state: refused
+reason: the mirror ref holds commits HEAD lacks; a fresh branch would abandon them
+unlanded: c020c41d4dc363f1171780dcdf45f5a4e382ee59 task: B only on mirror
+next: stop and report blocked with these commits; do not force the mirror or touch the daemon
+[exit 1]
+== Scenario 3 (adversarial): open PR on stranded branch (real gh, real open PR #4935 head fm/fm-ship-4784)
+usage: git cherry-pick [--edit] [-n] [-m <parent-number>] [-s] [-x] [--ff]
+                       [-S[<keyid>]] <commit>...
+   or: git cherry-pick (--continue | --skip | --abort | --quit)
+
+    --quit                end revert or cherry-pick sequence
+    --continue            resume revert or cherry-pick sequence
+    --abort               cancel revert or cherry-pick sequence
+    --skip                skip current commit and continue
+    --[no-]cleanup <mode> how to strip spaces and #comments from message
+    -n, --no-commit       don't automatically commit
+    --commit              opposite of --no-commit
+    -e, --[no-]edit       edit the commit message
+    -s, --[no-]signoff    add a Signed-off-by trailer
+    -m, --[no-]mainline <parent-number>
+                          select mainline parent
+    --[no-]rerere-autoupdate
+                          update the index with reused conflict resolution if possible
+    --[no-]strategy <strategy>
+                          merge strategy
+    -X, --[no-]strategy-option <option>
+                          option for merge strategy
+    -S, --[no-]gpg-sign[=<key-id>]
+                          GPG sign commit
+    -x                    append commit name
+    --[no-]ff             allow fast-forward
+    --[no-]allow-empty    preserve initially empty commits
+    --[no-]allow-empty-message
+                          allow commits with empty messages
+    --[no-]keep-redundant-commits
+                          deprecated: use --empty=keep instead
+    --empty (stop|drop|keep)
+                          how to handle commits that become empty
+
+
+$ /home/homexa/.no-mistakes/worktrees/a20fe525da72/01M2X250T6NJ3BFF0W896CJKE7/bin/fm-nm-stranded-gate.sh
+branch: fm/fm-ship-4784
+head: 1d01c3b05bb6964917cd9a4e04231871d3d6efbb
+mirror: /tmp/stranded-live.ZrTt/mirror.git
+mirror_ref: fc7060a8ba3ed0e730462ef73e6b12d8693f1e4c
+state: refused
+reason: the mirror ref holds commits HEAD lacks; a fresh branch would abandon them
+unlanded: fc7060a8ba3ed0e730462ef73e6b12d8693f1e4c old tip
+next: stop and report blocked with these commits; do not force the mirror or touch the daemon
+[exit 1]
+== Scenario 4 (adversarial): gh cannot complete (GH_TOKEN invalid, no config)
+
+$ env GH_CONFIG_DIR=/tmp/stranded-live.ZrTt/empty-gh GH_TOKEN=bogus /home/homexa/.no-mistakes/worktrees/a20fe525da72/01M2X250T6NJ3BFF0W896CJKE7/bin/fm-nm-stranded-gate.sh
+branch: fm/fm-ship-4784
+head: 1d01c3b05bb6964917cd9a4e04231871d3d6efbb
+mirror: /tmp/stranded-live.ZrTt/mirror.git
+mirror_ref: fc7060a8ba3ed0e730462ef73e6b12d8693f1e4c
+state: refused
+reason: the mirror ref holds commits HEAD lacks; a fresh branch would abandon them
+unlanded: fc7060a8ba3ed0e730462ef73e6b12d8693f1e4c old tip
+next: stop and report blocked with these commits; do not force the mirror or touch the daemon
+[exit 1]
+== Scenario 5: not stranded (branch fast-forwards)
+
+$ /home/homexa/.no-mistakes/worktrees/a20fe525da72/01M2X250T6NJ3BFF0W896CJKE7/bin/fm-nm-stranded-gate.sh
+branch: ff-demo
+head: 56339e826693868b7b9d23ca01de041b98a2318f
+mirror: /tmp/stranded-live.ZrTt/mirror.git
+mirror_ref: 1d01c3b05bb6964917cd9a4e04231871d3d6efbb
+state: not-stranded
+reason: HEAD already contains the mirror ref, so a push fast-forwards
+[exit 3]
+== Scenario 6: no no-mistakes remote
+
+$ /home/homexa/.no-mistakes/worktrees/a20fe525da72/01M2X250T6NJ3BFF0W896CJKE7/bin/fm-nm-stranded-gate.sh
+error: no 'no-mistakes' remote in /tmp/stranded-live.ZrTt/repo
+[exit 2]

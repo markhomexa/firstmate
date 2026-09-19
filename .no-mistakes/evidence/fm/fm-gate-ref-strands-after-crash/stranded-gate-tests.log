@@ -1,0 +1,8 @@
+ok - refuses a fresh branch when the stranded ref holds a commit HEAD lacks
+ok - refuses when the stranded ref holds a merge commit
+ok - recommends a fresh branch when every stranded commit is in HEAD
+ok - fresh branch name increments an -rN suffix and skips taken names
+ok - refuses a fresh branch while a PR is open for the stranded branch
+ok - refuses a fresh branch when the open-PR query cannot complete
+ok - reports not-stranded for equal, fast-forward, and absent mirror refs
+ok - exits 2 for a missing remote or detached HEAD

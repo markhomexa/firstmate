@@ -1,0 +1,52 @@
+== real open PR on origin for head fm/fm-ship-4784:
+[{"headRefName":"fm/fm-ship-4784","url":"https://github.com/kunchenguid/firstmate/pull/4935"}]
+
+$ git push no-mistakes fm/fm-ship-4784
+To /tmp/stranded-pr.f3bg/mirror.git
+ ! [rejected]        fm/fm-ship-4784 -> fm/fm-ship-4784 (non-fast-forward)
+error: failed to push some refs to '/tmp/stranded-pr.f3bg/mirror.git'
+hint: Updates were rejected because the tip of your current branch is behind
+hint: its remote counterpart. If you want to integrate the remote changes,
+hint: use 'git pull' before pushing again.
+hint: See the 'Note about fast-forwards' in 'git push --help' for details.
+[exit 1]
+== Scenario 3 (adversarial): stranded branch has an OPEN PR (real gh)
+
+$ /home/homexa/.no-mistakes/worktrees/a20fe525da72/01M2X250T6NJ3BFF0W896CJKE7/bin/fm-nm-stranded-gate.sh
+branch: fm/fm-ship-4784
+head: d1c6e4d20f733ac07bb47107ea9c0b12e8d8d465
+mirror: /tmp/stranded-pr.f3bg/mirror.git
+mirror_ref: f356dbac036b5fd31537b5fb51790d3c2123b368
+state: refused
+reason: a PR is open for fm/fm-ship-4784; a fresh branch would open a second PR and orphan it
+open_pr: https://github.com/kunchenguid/firstmate/pull/4935
+next: stop and report blocked naming this PR; do not force the mirror or touch the daemon
+[exit 1]
+== Scenario 4 (adversarial): gh query cannot complete (bad token, empty gh config)
+
+$ env GH_CONFIG_DIR=/tmp/stranded-pr.f3bg/empty-gh GH_TOKEN=bogus /home/homexa/.no-mistakes/worktrees/a20fe525da72/01M2X250T6NJ3BFF0W896CJKE7/bin/fm-nm-stranded-gate.sh
+branch: fm/fm-ship-4784
+head: d1c6e4d20f733ac07bb47107ea9c0b12e8d8d465
+mirror: /tmp/stranded-pr.f3bg/mirror.git
+mirror_ref: f356dbac036b5fd31537b5fb51790d3c2123b368
+state: refused
+reason: could not prove no PR is open for fm/fm-ship-4784 (gh pr list failed); a fresh branch could orphan it
+next: stop and report blocked with this output; do not force the mirror or touch the daemon
+[exit 1]
+== Scenario 4b: gh not on PATH
+
+$ env PATH=/usr/bin:/bin /home/homexa/.no-mistakes/worktrees/a20fe525da72/01M2X250T6NJ3BFF0W896CJKE7/bin/fm-nm-stranded-gate.sh
+branch: fm/fm-ship-4784
+head: d1c6e4d20f733ac07bb47107ea9c0b12e8d8d465
+mirror: /tmp/stranded-pr.f3bg/mirror.git
+mirror_ref: f356dbac036b5fd31537b5fb51790d3c2123b368
+state: refused
+reason: could not prove no PR is open for fm/fm-ship-4784 (gh is not installed); a fresh branch could orphan it
+next: stop and report blocked with this output; do not force the mirror or touch the daemon
+[exit 1]
+== mirror byte fingerprint before=1107515146 1153 after=1107515146 1153
+== local branches (no fresh branch created):
+* fm/fm-ship-4784
+  main
+== PR still open, untouched:
+{"state":"OPEN","url":"https://github.com/kunchenguid/firstmate/pull/4935"}

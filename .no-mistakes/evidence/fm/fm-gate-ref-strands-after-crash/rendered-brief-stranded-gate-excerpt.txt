@@ -1,0 +1,4 @@
+101:If a run stops before its first step with `push to gate` rejected as non-fast-forward while `axi sync` reports nothing to recover, a crash stranded this branch's pre-rebase tip in the gate mirror.
+102-Never force that mirror ref or touch the daemon; run `/home/homexa/.no-mistakes/worktrees/a20fe525da72/01M2X250T6NJ3BFF0W896CJKE7/bin/fm-nm-stranded-gate.sh` from your worktree, which owns the safety check.
+103-When it prints `fresh_branch:`, follow its `next:` lines; when it refuses, append `blocked:` with its `reason:` and any `unlanded:` commits or `open_pr:` URL, and stop.
+104-Any other outcome (not stranded, or an error) goes to rule 7's blocked report with the helper's output.
