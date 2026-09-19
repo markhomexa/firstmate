@@ -1,0 +1,14 @@
+# Live Herdr drift scan + repair (isolated Herdr 0.9.0 server, XDG_CONFIG_HOME=/tmp/fm-drift-live/xdg)
+## pane w1:p1 created with recorded cwd = primary checkout, fake agent 'claude --resume fake-session' running in the primary
+## fm-worktree-drift.sh scan (before repair):
+drift	t1	/tmp/fm-drift-live/proj	/tmp/fm-drift-live/wt	primary
+## fm-worktree-drift.sh repair --wake:
+WORKTREE_DRIFT: task t1's worker was running in the primary checkout /tmp/fm-drift-live/proj (dir /tmp/fm-drift-live/proj), not its worktree /tmp/fm-drift-live/wt; it was relaunched into its worktree
+## pane after repair: {"agent":"claude","cwd":"/tmp/fm-drift-live/wt","foreground_cwd":"/tmp/fm-drift-live/wt"}
+## fake agent launch log (cwd of each launch):
+launch cwd=/tmp/fm-drift-live/proj argc=3
+launch cwd=/tmp/fm-drift-live/wt argc=7
+## durable wake queue row:
+1789835479	1	check	worktree-drift-t1	WORKTREE_DRIFT: task t1's worker was running in the primary checkout /tmp/fm-drift-live/proj (dir /tmp/fm-drift-live/proj), not its worktree /tmp/fm-drift-live/wt; it was relaunched into its worktree
+## primary checkout snapshot diff before/after repair: none (PRIMARY-UNCHANGED)
+## rescan after repair: (empty - no drift)

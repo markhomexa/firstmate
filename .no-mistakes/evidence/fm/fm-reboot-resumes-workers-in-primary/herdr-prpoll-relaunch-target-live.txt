@@ -1,0 +1,65 @@
+== BEFORE (restored-after-reboot shape) ==
+agent state:            alive
+herdr foreground_cwd:   /tmp/fmdrift-herdr-pr/proj
+recorded worktree:      /tmp/fmdrift-herdr-pr/wt
+
+== $ fm-worktree-drift.sh scan ==
+drift	t1	/tmp/fmdrift-herdr-pr/proj	/tmp/fmdrift-herdr-pr/wt	primary
+
+== product under test: dc011a4 ==
+== $ fm-pr-check.sh t1 https://github.com/example/repo/pull/40 ==
+●━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+armed: state/t1.check.sh
+poll authenticates BEFORE relaunch: yes
+
+== $ fm-control.sh t1 relaunch --note ... (the lifecycle call drift repair makes) ==
+relaunched t1 harness=claude from=claude model=default effort=default backend=herdr endpoint=fm-lab-drift-866797:w1:p2 worktree=/tmp/fmdrift-herdr-pr/wt
+poll authenticates AFTER relaunch: yes
+task record tail (pr lines must stay last):
+herdr_tab_id=w1:t2
+herdr_pane_id=w1:p2
+control_relaunch_tx=871176.20260919T164853Z.20580
+pr=https://github.com/example/repo/pull/40
+
+== live watcher check sweep (FM_CHECK_INTERVAL=1, 45s bound) ==
+watcher rc=0 (124 = no wake within 45s)
+-- watcher output:
+check: /tmp/fmdrift-herdr-pr/home/state/contributions.check.sh: contributions: observation unavailable for https://github.com/example/repo/pull/40
+RESULT: watcher did not reject the PR poll
+
+== AFTER ==
+agent state:            alive
+herdr foreground_cwd:   /tmp/fmdrift-herdr-pr/wt
+
+== fake claude log (every agent start/stop with its physical cwd) ==
+09:48:47 start pid=867570 cwd=/tmp/fmdrift-herdr-pr/proj args=--resume 11111111-2222-3333-4444-555555555555
+09:48:52 input pid=867570: /exit
+09:48:52 exit pid=867570
+09:49:00 start pid=883369 cwd=/tmp/fmdrift-herdr-pr/wt args=--dangerously-skip-permissions --settings {"feedbackDrafts":"off","attribution":
+
+== durable wake queue rows ==
+--- /tmp/fmdrift-herdr-pr/home/state/.wake-queue
+1789836546	1	check	/tmp/fmdrift-herdr-pr/home/state/contributions.check.sh	check: /tmp/fmdrift-herdr-pr/home/state/contributions.check.sh: contributions: observation unavailable for https://github.com/example/repo/pull/40
+--- /tmp/fmdrift-herdr-pr/home/state/.wake-queue.seq
+1
+
+== primary checkout untouched? ==
+primary checkout: unchanged (git status + listing identical)
+
+== second scan after repair ==
+(empty = no drift)
+
+== task record diff (before -> after relaunch) ==
+9c9
+< tasktmp=/tmp/fmdrift-herdr-pr/tasktmp
+---
+> tasktmp=/tmp/fm-t1
+11a12,13
+> busy_gen=g1789836538.881322.9328
+> spawn_gen=s1789836539.874946.12878
+16a19,20
+> control_relaunch_tx=871176.20260919T164853Z.20580
+> pr=https://github.com/example/repo/pull/40
+
+== fm-control.sh t1 exit (cleanup of the lab agent) ==
+error: exit-delivered t1 interrupt=delivered verified=agent-alive cancel=unconfirmed exit-command=delivered agent-state=alive exit=unconfirmed; the agent did not stop within 5s

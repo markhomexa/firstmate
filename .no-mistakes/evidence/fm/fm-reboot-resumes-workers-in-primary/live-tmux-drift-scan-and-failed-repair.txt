@@ -1,0 +1,8 @@
+# Live tmux (private TMUX_TMPDIR) drift scan + refused-relaunch path
+## scan:
+drift	t1	/tmp/fm-drift-live/proj	/tmp/fm-drift-live/wt	primary
+## repair --wake #1 (fleet guard refused inside the gate):
+WORKTREE_DRIFT: task t1's worker is running in the primary checkout /tmp/fm-drift-live/proj (dir /tmp/fm-drift-live/proj), not its worktree /tmp/fm-drift-live/wt, and relaunching it into its worktree FAILED: error: no-mistakes gate agent must not drive the fleet (NO_MISTAKES_GATE set)- stop it before it acts there (bin/fm-control.sh t1 exit), then relaunch it
+## repair --wake #2 with the same drift dir: no output, no new wake row (marker suppresses the retry)
+## repair after clearing the marker, with the gate bypass (tmux has no cd-return, so relaunch refuses outside the worktree and leaves the agent stopped):
+WORKTREE_DRIFT: task t1's worker is running in the primary checkout /tmp/fm-drift-live/proj (dir /tmp/fm-drift-live/proj), not its worktree /tmp/fm-drift-live/wt, and relaunching it into its worktree FAILED: warning: /tmp/fm-drift-live/home/data/t1/launch-brief.md records no delivery contract line (scaffolded before ship briefs recorded one); launching on the explicit --mode no-mistakes - confirm its definition of done matches error: task t1's endpoint is in '/tmp/fm-drift-live/proj', not its recorded worktree '/tmp/fm-drift-live/wt'; refusing to relaunch an agent outside the copy holding its work error: the replacement agent for t1 could not be launched on claude error: t1's agent was stopped but the replacement did not launch; no agent is running, and its work plus the recorded progress note are preserved at /tmp/fm-drift-live/wt- stop it before it acts there (bin/fm-control.sh t1 exit), then relaunch it

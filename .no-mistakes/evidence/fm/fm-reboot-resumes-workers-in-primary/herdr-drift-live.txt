@@ -1,0 +1,47 @@
+== BEFORE (restored-after-reboot shape) ==
+agent state:            alive
+herdr foreground_cwd:   /tmp/fmdrift-herdr/proj
+recorded worktree:      /tmp/fmdrift-herdr/wt
+
+== $ fm-worktree-drift.sh scan ==
+drift	t1	/tmp/fmdrift-herdr/proj	/tmp/fmdrift-herdr/wt	primary
+
+== $ fm-worktree-drift.sh repair --wake ==
+WORKTREE_DRIFT: task t1's worker was running in the primary checkout /tmp/fmdrift-herdr/proj (dir /tmp/fmdrift-herdr/proj), not its worktree /tmp/fmdrift-herdr/wt; it was relaunched into its worktree
+rc=0
+
+== AFTER ==
+agent state:            alive
+herdr foreground_cwd:   /tmp/fmdrift-herdr/wt
+
+== fake claude log (every agent start/stop with its physical cwd) ==
+09:43:38 start pid=587849 cwd=/tmp/fmdrift-herdr/proj args=--resume 11111111-2222-3333-4444-555555555555
+09:43:42 input pid=587849: /exit
+09:43:42 exit pid=587849
+09:43:50 start pid=599061 cwd=/tmp/fmdrift-herdr/wt args=--dangerously-skip-permissions --settings {"feedbackDrafts":"off","attribution":
+
+== durable wake queue rows ==
+--- /tmp/fmdrift-herdr/home/state/.wake-queue
+1789836235	1	check	worktree-drift-t1	WORKTREE_DRIFT: task t1's worker was running in the primary checkout /tmp/fmdrift-herdr/proj (dir /tmp/fmdrift-herdr/proj), not its worktree /tmp/fmdrift-herdr/wt; it was relaunched into its worktree
+--- /tmp/fmdrift-herdr/home/state/.wake-queue.seq
+1
+
+== primary checkout untouched? ==
+primary checkout: unchanged (git status + listing identical)
+
+== second scan after repair ==
+(empty = no drift)
+
+== task record diff (before -> after relaunch) ==
+9c9
+< tasktmp=/tmp/fmdrift-herdr/tasktmp
+---
+> tasktmp=/tmp/fm-t1
+11a12,13
+> busy_gen=g1789836229.597637.23976
+> spawn_gen=s1789836229.591991.144
+16a19
+> control_relaunch_tx=590071.20260919T164343Z.3101
+
+== fm-control.sh t1 exit (cleanup of the lab agent) ==
+error: exit-delivered t1 interrupt=delivered verified=agent-alive cancel=unconfirmed exit-command=delivered agent-state=alive exit=unconfirmed; the agent did not stop within 5s

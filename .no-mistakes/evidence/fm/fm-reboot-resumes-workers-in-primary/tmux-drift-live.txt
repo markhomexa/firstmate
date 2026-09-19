@@ -1,0 +1,22 @@
+# Real tmux 3.6 on a private server (TMUX_TMPDIR sandbox), sandbox FM_HOME, fake `claude` (comm=claude)
+# resumed in the primary checkout. setup-sandbox.sh builds it. Transcript of this run:
+
+$ fm_backend_agent_state tmux fmses:fm-t1
+alive
+$ FM_HOME=$SB/home bin/fm-worktree-drift.sh scan
+drift	t1	/tmp/fmdrift-live-A/proj	/tmp/fmdrift-live-A/wt	primary
+
+# Failed-relaunch path (relaunch refused by the no-mistakes gate guard, NO_MISTAKES_GATE set):
+$ FM_HOME=$SB/home bin/fm-worktree-drift.sh repair
+WORKTREE_DRIFT: task t1's worker is running in the primary checkout /tmp/fmdrift-live-A/proj (dir /tmp/fmdrift-live-A/proj), not its worktree /tmp/fmdrift-live-A/wt, and relaunching it into its worktree FAILED: error: no-mistakes gate agent must not drive the fleet (NO_MISTAKES_GATE set)- stop it before it acts there (bin/fm-control.sh t1 exit), then relaunch it
+$ cat $SB/home/state/.worktree-drift-failed-t1
+/tmp/fmdrift-live-A/proj
+$ FM_HOME=$SB/home bin/fm-worktree-drift.sh repair      # second pass: same drift not retried
+(no output) rc=0
+
+# tmux with the pane SHELL also in the primary (not the Herdr reboot shape): relaunch stops the
+# old agent, then fm-spawn's pre-existing tmux guard refuses to start the replacement outside the worktree:
+WORKTREE_DRIFT: task t1's worker is running in the primary checkout ... relaunching it into its worktree FAILED: ...
+error: task t1's endpoint is in '/tmp/fmdrift-live-A/proj', not its recorded worktree '/tmp/fmdrift-live-A/wt'; refusing to relaunch an agent outside the copy holding its work
+error: t1's agent was stopped but the replacement did not launch; no agent is running, and its work plus the recorded progress note are preserved at /tmp/fmdrift-live-A/wt- stop it before it acts there (bin/fm-control.sh t1 exit), then relaunch it
+fake claude log: 09:41:18 input: /exit ; 09:41:18 exit   (no replacement start)

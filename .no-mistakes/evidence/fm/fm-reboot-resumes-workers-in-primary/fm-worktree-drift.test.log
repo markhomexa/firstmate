@@ -1,0 +1,11 @@
+ok - scan: a live worker running in the primary checkout is reported
+ok - scan: a worker in or beneath its worktree is left alone
+ok - scan: a worker outside both its worktree and the primary is reported as outside
+ok - scan: a directory read once outside the worktree and then inside it is not drift
+ok - scan: a dead agent and a secondmate are not treated as drift
+ok - repair: a drifted worker is relaunched into its worktree and the primary checkout is untouched
+ok - repair: a fleet with no drift is left alone
+ok - repair: a refused relaunch is reported once and closes when the worker is back in its worktree
+ok - repair --wake: the outcome is published to the durable wake queue
+ok - repair: a second concurrent repair stands down without touching the worker
+ok - watcher: a drifted worker is relaunched into its worktree and surfaced as a check wake

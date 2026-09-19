@@ -1,0 +1,5 @@
+ok - session start: a worker resumed in the primary checkout is flagged and its relaunch started
+ok - session start: a read-only session flags a drifted worker without relaunching it
+ok - session start: a locked re-emit leaves a drifted worker to the watcher's relaunch
+ok - instruction baselines require SHA-256 and successful startup completion
+# fm-session-start.test.sh: all assertions passed
