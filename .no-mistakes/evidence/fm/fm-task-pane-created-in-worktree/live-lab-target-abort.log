@@ -1,0 +1,25 @@
+lab session: fm-lab-abortb-1051439-10121   root: /home/homexa/.no-mistakes/worktrees/a20fe525da72/01M2ZYTYKB6Q0NBDR90GX7NS51 (f2ee426)
+
+=== Scenario B: flat spawn aborts after launch delivery (In-flight commit fails) ===
+spawn rc=1 (expected non-zero)
+warning: /tmp/fm-live-cwd.0rmyUa/homeB/data/liveB/launch-brief.md records no delivery contract line (scaffolded before ship briefs recorded one); launching on the explicit --mode no-mistakes - confirm its definition of done matches
+🌳 Setting up worktree...
+🌳 Leased worktree at ~/.treehouse/proj-56dc06/1/proj. Run 'treehouse return ~/.treehouse/proj-56dc06/1/proj' to release it.
+error: task liveB's backlog item could not be moved to In flight (error: row could not be moved); its record was removed so no worker is left that the backlog does not own - close out endpoint fm-lab-abortb-1051439-10121:w1:p2 and local copy /home/homexa/.treehouse/proj-56dc06/1/proj by hand, then re-run the spawn
+warning: leaving task liveB's slot claim on /home/homexa/.treehouse/proj-56dc06/1/proj in place; the Treehouse project lock is no longer held, so the next spawn's claim replaces it
+warning: the agent for liveB was already launched in endpoint fm-lab-abortb-1051439-10121:w1:p2, whose shell runs in task liveB's leased Treehouse worktree /home/homexa/.treehouse/proj-56dc06/1/proj, so the aborted spawn leaves that slot leased rather than returning it under a live agent; stop the agent and inspect /home/homexa/.treehouse/proj-56dc06/1/proj, then release it with 'treehouse return --if-lease-holder fm-liveB /home/homexa/.treehouse/proj-56dc06/1/proj'
+task record present? no
+retained-lease record: /tmp/fm-live-cwd.0rmyUa/homeB/state/.treehouse-lease-retained/liveB.1.retained
+task=liveB
+holder=fm-liveB
+worktree=/home/homexa/.treehouse/proj-56dc06/1/proj
+reason=the aborted spawn had already launched its agent in endpoint fm-lab-abortb-1051439-10121:w1:p2
+recorded_at=2026-09-21T02:21:01Z
+live pane for liveB:
+{"pane_id":"w1:p2","cwd":"/home/homexa/.treehouse/proj-56dc06/1/proj","foreground_cwd":"/home/homexa/.treehouse/proj-56dc06/1/proj"}
+treehouse status of slot:
+{"path":"/home/homexa/.treehouse/proj-56dc06/1/proj","status":"leased","lease_holder":"fm-liveB"}
+
+--- fm-bootstrap.sh session-start output (TREEHOUSE_LEASE lines) ---
+TREEHOUSE_LEASE: pool slot /home/homexa/.treehouse/proj-56dc06/1/proj is still leased to fm-liveB for task liveB (the aborted spawn had already launched its agent in endpoint fm-lab-abortb-1051439-10121:w1:p2); once nothing is running in it, inspect it and save any unlanded work, because reclaiming discards it; then reclaim it with: treehouse return --if-lease-holder fm-liveB /home/homexa/.treehouse/proj-56dc06/1/proj, then rm /tmp/fm-live-cwd.0rmyUa/homeB/state/.treehouse-lease-retained/liveB.1.retained
+teardown rc=0

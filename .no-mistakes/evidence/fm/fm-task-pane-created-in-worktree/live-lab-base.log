@@ -1,0 +1,16 @@
+lab session: fm-lab-basecwd-1049907-16618   root: /tmp/fm-base-a09090d (9b3c12b)
+
+=== Scenario A: flat spawn, pane cwd, then server restart ===
+spawn rc=0
+warning: /tmp/fm-live-cwd.X6h8Wq/homeA/data/liveA/launch-brief.md records no delivery contract line (scaffolded before ship briefs recorded one); launching on the explicit --mode no-mistakes - confirm its definition of done matches
+spawned liveA harness=sh kind=ship mode=no-mistakes yolo=off window=fm-lab-basecwd-1049907-16618:w1:p2 worktree=/home/homexa/.treehouse/proj-d1d83f/1/proj
+primary checkout : /tmp/fm-live-cwd.X6h8Wq/proj
+recorded worktree: /home/homexa/.treehouse/proj-d1d83f/1/proj
+task pane        : w1:p2
+{"pane_id":"w1:p2","cwd":"/tmp/fm-live-cwd.X6h8Wq/proj","foreground_cwd":"/home/homexa/.treehouse/proj-d1d83f/1/proj"}
+lab server stopped (simulated reboot)
+lab server restarted
+restored pane after restart:
+{"pane_id":"w1:p2","cwd":"/tmp/fm-live-cwd.X6h8Wq/proj","foreground_cwd":"/tmp/fm-live-cwd.X6h8Wq/proj"}
+RESULT A: FAIL restored pane resumed in '/tmp/fm-live-cwd.X6h8Wq/proj' (primary=/tmp/fm-live-cwd.X6h8Wq/proj)
+teardown rc=0

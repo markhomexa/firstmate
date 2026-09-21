@@ -1,0 +1,8 @@
+ok - a new Herdr task pane records its task worktree as its own cwd
+ok - an aborted projected spawn keeps the slot its live task pane runs in
+ok - an aborted flat spawn keeps the slot its launched agent runs in
+ok - an aborted Herdr spawn returns the worktree it leased
+ok - an aborted respawn keeps the worktree it reused, with its unlanded work
+ok - an abort that keeps its Treehouse lease records the slot for a deliberate reclaim
+ok - a failed worktree lease refuses before any Herdr task pane exists
+ok - a same-identity Herdr respawn reuses the worktree it already leases, unlanded work intact
