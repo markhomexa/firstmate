@@ -1,0 +1,9 @@
+== [head] split constructed: lock names tree A (pid 1119320, group 1119262); tree B (pid 1120638, group 1120580) serves without it
+trees=2 processes=4
+tree B (supervisor included) exited on its own after ~200ms
+owner A still serving; lock pid=1119320
+trees=1 processes=2
+worker log:
+remote-job-worker: worker ownership now belongs to 1119320; this worker stops serving
+command after split: rc=0 answered after-split by worker pid 1122547
+runs of after-split: 1

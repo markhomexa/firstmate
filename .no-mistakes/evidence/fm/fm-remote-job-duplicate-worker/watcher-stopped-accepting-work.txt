@@ -1,0 +1,7 @@
+real ssh: /usr/bin/ssh
+--- fm-watch.sh stdout (wake printed to the primary):
+check: secondmate rsm1 has stopped accepting work: 3 remote probes in a row did not complete (remote host unavailable or endpoint state unknown; route preserved on fm-deaf-host.invalid) - run fm-on.sh rsm1 fm-remote-doctor.sh to see why
+--- queued wake:
+1790361285	1	check	secondmate-unreachable-rsm1-1790361285	check: secondmate rsm1 has stopped accepting work: 3 remote probes in a row did not complete (remote host unavailable or endpoint state unknown; route preserved on fm-deaf-host.invalid) - run fm-on.sh rsm1 fm-remote-doctor.sh to see why
+--- relaunch ledger present? no
+--- triage log:

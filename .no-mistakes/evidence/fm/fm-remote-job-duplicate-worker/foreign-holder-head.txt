@@ -1,0 +1,12 @@
+== [head] non-worker pid 1037016 holds worker.lock with a fresh heartbeat
+command 1: rc=64 after 21s
+  output: error: replacement remote job worker never took ownership of /tmp/fm-live.SMOQyQ/state-f-head/worker.lock (recorded holder: 1037016); the replacement was stopped - inspect /tmp/fm-live.SMOQyQ/state-f-head/logs/dev.firstmate.remote-job.log
+  trees=0 processes=0
+command 2: rc=64 after 20s
+  output: error: replacement remote job worker never took ownership of /tmp/fm-live.SMOQyQ/state-f-head/worker.lock (recorded holder: 1037016); the replacement was stopped - inspect /tmp/fm-live.SMOQyQ/state-f-head/logs/dev.firstmate.remote-job.log
+  trees=0 processes=0
+command 3: rc=64 after 20s
+  output: error: replacement remote job worker never took ownership of /tmp/fm-live.SMOQyQ/state-f-head/worker.lock (recorded holder: 1037016); the replacement was stopped - inspect /tmp/fm-live.SMOQyQ/state-f-head/logs/dev.firstmate.remote-job.log
+  trees=0 processes=0
+non-worker holder 1037016 untouched (not signalled)
+runs recorded: 0

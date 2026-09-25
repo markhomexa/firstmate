@@ -1,0 +1,20 @@
+== [head] deaf worker pid 1138763: records agree, heartbeat fresh
+trees=0 processes=0
+== [head] a parent command against the deaf host (30s budget):
+rc=124 out=Terminated                 sleep "$FM_REMOTE_JOB_POLL_SECONDS"
+== [head] read-only doctor:
+check remote-job-worker=ok: the Linux remote job worker is running
+check remote-job-worker-loaded=skip: Aqua launch agents do not apply on linux
+check remote-job-probe=fixable: the remote job worker did not complete the required-tool probe
+action: remote-job-probe: rerun this command with --fix to restart the worker
+error: this host is not ready for a remote second mate; unresolved: herdr remote-job-probe herdr-server entrypoint-link
+doctor rc=1
+== [head] doctor --fix:
+fix remote-job-probe=failed: the running remote job worker did not complete the required-tool probe; replacing it
+fix remote-job-worker=applied: installed or reloaded dev.firstmate.remote-job
+check remote-job-worker=ok: the Linux remote job worker is running
+check remote-job-worker-loaded=skip: Aqua launch agents do not apply on linux
+check remote-job-probe=ok: the remote job worker completed the required-tool probe
+deaf worker 1138763 was stopped
+trees=1 processes=2
+command after --fix: rc=0 answered after-fix by worker pid 1185263

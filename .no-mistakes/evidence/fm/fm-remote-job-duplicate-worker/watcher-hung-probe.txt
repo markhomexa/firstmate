@@ -1,0 +1,3 @@
+watcher woke after 14s; stdout:
+check: secondmate rsm1 has stopped accepting work: 3 remote probes in a row did not complete (remote endpoint probe did not complete within 3s on 10.255.255.1) - run fm-on.sh rsm1 fm-remote-doctor.sh to see why
+relaunch ledger present? no

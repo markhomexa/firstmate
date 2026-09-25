@@ -1,0 +1,21 @@
+== [head] start one worker through the entrypoint
+answered warmup by worker pid 981613
+rc=0
+trees=1 processes=2
+lock owner pid=980769
+== [head] drift the lock record (start no longer verifies the live holder)
+command 1: rc=0 out=answered cmd1 by worker pid 984032 | trees=1 processes=2
+command 2: rc=0 out=answered cmd2 by worker pid 985959 | trees=1 processes=2
+command 3: rc=0 out=answered cmd3 by worker pid 987814 | trees=1 processes=2
+command 4: rc=0 out=answered cmd4 by worker pid 989948 | trees=1 processes=2
+command 5: rc=0 out=answered cmd5 by worker pid 991781 | trees=1 processes=2
+stale holder 980769 stopped
+runs recorded:
+      1 ran cmd1
+      1 ran cmd2
+      1 ran cmd3
+      1 ran cmd4
+      1 ran cmd5
+      1 ran warmup
+after 5s settle:
+trees=1 processes=2
