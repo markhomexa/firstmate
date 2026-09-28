@@ -1,0 +1,7 @@
+# task-x2 records NO project clone; firstmate's base branch main carries no scripts/full-suite.sh
+$ FM_HOME=/tmp/fm-lab.HjMizE bin/fm-pr-merge.sh task-x2 https://github.com/kunchenguid/firstmate/pull/5941
+armed: state/task-x2.check.sh
+error: refusing to merge https://github.com/kunchenguid/firstmate/pull/5941
+  - state is "MERGED", not open
+  - mergeable is "UNKNOWN", not MERGEABLE
+exit=1

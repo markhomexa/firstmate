@@ -1,0 +1,9 @@
+# project clone checked out at origin/main (predates scripts/full-suite.sh)
+$ FM_HOME=/tmp/fm-lab.HjMizE bin/fm-pr-merge.sh task-x1 https://github.com/austinhellickson/Yapii/pull/2352
+WARNING: watcher still down (same stale episode; last beat: never, grace 300s) - full banner already printed this episode.
+armed: state/task-x1.check.sh
+error: refusing to merge https://github.com/austinhellickson/Yapii/pull/2352
+  - state is "MERGED", not open
+  - mergeable is "UNKNOWN", not MERGEABLE
+  - base branch staging carries scripts/full-suite.sh, so the full suite must have passed at head 7791c0516900387924a903f8d574efe7a18214b7, but the project clone /tmp/fm-lab.HjMizE/projects/Yapii has no executable copy of it to check with; bring that clone's checkout up to date
+exit=1

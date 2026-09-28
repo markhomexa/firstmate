@@ -1,0 +1,15 @@
+$ FM_HOME=/tmp/fm-lab.HjMizE bin/fm-pr-merge.sh task-x1 https://github.com/austinhellickson/Yapii/pull/2352
+●━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+●  WATCHER DOWN - SUPERVISION IS OFF
+●  1 task(s) in flight, but no watcher has a fresh beacon (last beat: never, grace 300s).
+●  Trust the emitted supervision protocol for this harness; do not use shell & for watcher repair.
+●  This is a supervision warning only; the guarded operation WILL still run.
+●  watcher supervision needs Stop-owned automatic recovery; inspect the hook registration and startup status before ending the turn.
+●━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+armed: state/task-x1.check.sh
+error: refusing to merge https://github.com/austinhellickson/Yapii/pull/2352
+  - state is "MERGED", not open
+  - mergeable is "UNKNOWN", not MERGEABLE
+  - base branch staging carries scripts/full-suite.sh, so the full suite must have passed at head 7791c0516900387924a903f8d574efe7a18214b7, but /tmp/fm-lab.HjMizE/projects/Yapii/scripts/full-suite.sh check exited 1; its own output follows, quoted:
+      > full-suite: REFUSED - 7791c0516900387924a903f8d574efe7a18214b7 has no green full run (yapii/full-suite: none). Run scripts/full-suite.sh run --post on it.
+exit=1
