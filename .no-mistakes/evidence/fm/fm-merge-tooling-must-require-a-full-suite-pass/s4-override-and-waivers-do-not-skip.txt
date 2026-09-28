@@ -1,0 +1,19 @@
+$ bin/fm-pr-merge.sh task-lab1 https://github.com/austinhellickson/Yapii/pull/2353 --attended-override --allow-red yapii/full-suite --allow-missing yapii/full-suite -- --admin   # lab FM_HOME=/tmp/fm-lab.FYcJHl, real gh reads, gh pr merge hard-blocked
+setup: clone copy is the base branch's current script (blob d013c68); captain override and both waivers passed
+exit=1
+armed: state/task-lab1.check.sh
+WARNING: watcher still down (same stale episode; last beat: never, grace 300s) - full banner already printed this episode.
+error: refusing to merge https://github.com/austinhellickson/Yapii/pull/2353
+  - base branch staging carries scripts/full-suite.sh, so the full suite must have passed at head 46c26fc2ab184b4dc9bdbfd8380214d52236aa37, but /tmp/fm-lab.FYcJHl/projects/Yapii/scripts/full-suite.sh check exited 1; its own output follows, quoted:
+      > full-suite: REFUSED - 46c26fc2ab184b4dc9bdbfd8380214d52236aa37 has no green full run (yapii/full-suite: none). Run scripts/full-suite.sh run --post on it.
+
+# gh calls made:
+gh pr view https://github.com/austinhellickson/Yapii/pull/2353 --json headRefOid -q .headRefOid
+gh pr view https://github.com/austinhellickson/Yapii/pull/2353 --json state,isDraft,mergeable,mergeStateStatus,headRefOid,baseRefName,statusCheckRollup
+gh api repos/austinhellickson/Yapii/branches/staging
+gh api --paginate repos/austinhellickson/Yapii/rules/branches/staging
+gh api repos/austinhellickson/Yapii/contents/scripts/full-suite.sh?ref=staging --jq .sha
+gh repo view --json nameWithOwner -q .nameWithOwner
+gh api repos/austinhellickson/Yapii/commits/46c26fc2ab184b4dc9bdbfd8380214d52236aa37/status -q [.statuses[] | select(.context == "yapii/full-suite") | .state][0] // "none"
+# blocked outward calls:
+(none)

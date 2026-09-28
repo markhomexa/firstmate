@@ -105,5 +105,6 @@ ok - fm-pr-merge refuses a full-suite pass recorded on any commit but the head b
 ok - fm-pr-merge reports a full-suite refusal together with every other failing condition
 ok - fm-pr-merge refuses an opted-in merge when it has no clone copy of the check to run
 ok - fm-pr-merge refuses when the base branch's full-suite opt-in cannot be read
+ok - fm-pr-merge refuses a full-suite pass from a clone copy that is not the base branch's current script
 ok - fm-pr-merge applies the full-suite requirement under every waiver, override, and posture
 ok - fm-pr-merge merges a repository without the full-suite script, and any GitLab merge, as before

@@ -1,0 +1,16 @@
+$ bin/fm-pr-merge.sh task-lab1 https://github.com/austinhellickson/Yapii/pull/2353   # lab FM_HOME=/tmp/fm-lab.FYcJHl, real gh reads, gh pr merge hard-blocked
+setup: clone copy of scripts/full-suite.sh removed
+exit=1
+armed: state/task-lab1.check.sh
+WARNING: watcher still down (same stale episode; last beat: never, grace 300s) - full banner already printed this episode.
+error: refusing to merge https://github.com/austinhellickson/Yapii/pull/2353
+  - base branch staging carries scripts/full-suite.sh, so the full suite must have passed at head 46c26fc2ab184b4dc9bdbfd8380214d52236aa37, but the project clone /tmp/fm-lab.FYcJHl/projects/Yapii has no executable copy of it to check with; bring that clone's checkout up to date
+
+# gh calls made:
+gh pr view https://github.com/austinhellickson/Yapii/pull/2353 --json headRefOid -q .headRefOid
+gh pr view https://github.com/austinhellickson/Yapii/pull/2353 --json state,isDraft,mergeable,mergeStateStatus,headRefOid,baseRefName,statusCheckRollup
+gh api repos/austinhellickson/Yapii/branches/staging
+gh api --paginate repos/austinhellickson/Yapii/rules/branches/staging
+gh api repos/austinhellickson/Yapii/contents/scripts/full-suite.sh?ref=staging --jq .sha
+# blocked outward calls:
+(none)

@@ -1,0 +1,23 @@
+$ bin/fm-pr-merge.sh task-lab2 https://github.com/austinhellickson/Yapii/pull/1595   # lab FM_HOME=/tmp/fm-lab.FYcJHl, real gh reads, gh pr merge hard-blocked
+setup: PR 1595 targets base main, which does not carry scripts/full-suite.sh (live 404)
+exit=1
+armed: state/task-lab2.check.sh
+WARNING: watcher still down (same stale episode; last beat: never, grace 300s) - full banner already printed this episode.
+error: refusing to merge https://github.com/austinhellickson/Yapii/pull/1595
+  - mergeable is "UNKNOWN", not MERGEABLE
+  - check 'API tests (integration suites)' is not green
+  - check 'API tests (src unit suites)' is not green
+  - check 'Frontend unit tests (advisory)' is not green
+  - check 'Secret scan (gitleaks)' is not green
+  - check 'Static safety checks' is not green
+  - check 'Typecheck' is not green
+error: these checks are not green: API tests (integration suites), API tests (src unit suites), Frontend unit tests (advisory), Secret scan (gitleaks), Static safety checks, Typecheck
+
+# gh calls made:
+gh pr view https://github.com/austinhellickson/Yapii/pull/1595 --json headRefOid -q .headRefOid
+gh pr view https://github.com/austinhellickson/Yapii/pull/1595 --json state,isDraft,mergeable,mergeStateStatus,headRefOid,baseRefName,statusCheckRollup
+gh api repos/austinhellickson/Yapii/branches/main
+gh api --paginate repos/austinhellickson/Yapii/rules/branches/main
+gh api repos/austinhellickson/Yapii/contents/scripts/full-suite.sh?ref=main --jq .sha
+# blocked outward calls:
+(none)

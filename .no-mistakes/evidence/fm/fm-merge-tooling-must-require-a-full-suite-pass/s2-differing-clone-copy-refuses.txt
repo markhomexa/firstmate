@@ -1,0 +1,16 @@
+$ bin/fm-pr-merge.sh task-lab1 https://github.com/austinhellickson/Yapii/pull/2353   # lab FM_HOME=/tmp/fm-lab.FYcJHl, real gh reads, gh pr merge hard-blocked
+setup: clone copy replaced with a script that always exits 0 (blob b68938cc2421ac218477e5cf054c64ba607edbdf); base staging blob is d013c68
+exit=1
+armed: state/task-lab1.check.sh
+WARNING: watcher still down (same stale episode; last beat: never, grace 300s) - full banner already printed this episode.
+error: refusing to merge https://github.com/austinhellickson/Yapii/pull/2353
+  - base branch staging carries scripts/full-suite.sh, so the full suite must have passed at head 46c26fc2ab184b4dc9bdbfd8380214d52236aa37, but the project clone's copy /tmp/fm-lab.FYcJHl/projects/Yapii/scripts/full-suite.sh is not the base branch's current version (blob b68938cc2421ac218477e5cf054c64ba607edbdf, not d013c6805b212e3761be61a11ff22bffd81dcbf5), so its check cannot vouch for the merge; bring that clone's checkout up to date
+
+# gh calls made:
+gh pr view https://github.com/austinhellickson/Yapii/pull/2353 --json headRefOid -q .headRefOid
+gh pr view https://github.com/austinhellickson/Yapii/pull/2353 --json state,isDraft,mergeable,mergeStateStatus,headRefOid,baseRefName,statusCheckRollup
+gh api repos/austinhellickson/Yapii/branches/staging
+gh api --paginate repos/austinhellickson/Yapii/rules/branches/staging
+gh api repos/austinhellickson/Yapii/contents/scripts/full-suite.sh?ref=staging --jq .sha
+# blocked outward calls:
+(none)
