@@ -1,0 +1,19 @@
+### Scenario (adversarial): remote send where pane reads/sends fail at the transport (injected server_not_running from the herdr routing shim for 'pane read'/'pane send-text'/'pane send-keys'; agent liveness still answers)
+--- $ FM_SHIM_FAIL_IO=1 FM_HOME=<fixture> bin/fm-remote-secondmate-control.sh send yapii 'transport probe'
+notice: doorbell did not reach fm-remote:w1:p1 (pane unreadable); the steer is durably recorded at <work>/home/state/parent-route/yapii.inbox/004.msg
+exit=0
+--- herdr calls:
+pane get w1:p1 --session fm-remote
+agent get w1:p1 --session fm-remote
+pane process-info --pane w1:p1 --session fm-remote
+status --json --session fm-remote
+[injected-fail] pane read w1:p1 --source visible --format ansi --session fm-remote
+status --json --session fm-remote
+[injected-fail] pane read w1:p1 --source visible --session fm-remote
+agent get w1:p1 --session fm-remote
+status --json --session fm-remote
+[injected-fail] pane read w1:p1 --source visible --format ansi --session fm-remote
+status --json --session fm-remote
+[injected-fail] pane read w1:p1 --source visible --session fm-remote
+status --json --session fm-remote
+[injected-fail] pane read w1:p1 --source recent --lines 200 --session fm-remote

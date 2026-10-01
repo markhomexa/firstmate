@@ -1,0 +1,18 @@
+### Scenario (regression): remote send to a fresh real Claude pane with SOLID composer rules (no title)
+--- pane before:
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+❯
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  ⚠ Transcript saving is off — inherited CLAUDE_CODE_CHILD_SESSION marker · restart with CLAUDE_CODE_FORCE_SESSION_PE…
+  ⏵⏵ bypass permissions on (shift+tab to cycle)
+--- $ FM_HOME=<fixture> bin/fm-remote-secondmate-control.sh send yapii 'solid-rule steer'
+exit=0 (no notice = doorbell typed and submit confirmed)
+--- pane scrollback after:
+ ▐▛███▛█   Claude Code v2.1.287
+▝▜██████▀  Haiku 4.5 · Claude Max
+ ▝▝   ▝▝   ~/.no-mistakes/worktrees/a20fe525da72/01M3WAC7FGQEX7EFX9KC2T6HVK
+⚠ AGENTS.md is over the 40.0k-char limit (48.0k chars) · /memory to free up context
+❯ : Firstmate instruction waiting: list "$FM_TASK_INBOX"/*.msg in your 'yapii.inbox' steering inbox, read and act on
+  each in numeric order, then mv each into its handled/.
+✢ Churning… (3s · thinking)
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────

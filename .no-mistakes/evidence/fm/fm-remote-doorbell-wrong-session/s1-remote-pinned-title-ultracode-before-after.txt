@@ -1,0 +1,66 @@
+### Scenario: remote send to a real Claude pane whose top rule carries the PINNED title 'ultracode' (the incident shape)
+$ claude --version: 2.1.287 (Claude Code)
+--- pane before:
+─────────────────────────────────────────────────────────────────────────────────────────────────────────── ultracode ─
+❯
+───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  ⚠ Transcript saving is off — inherited CLAUDE_CODE_CHILD_SESSION marker · restart with CLAUDE_CODE_FORCE_SESSION_P…
+  ⏵⏵ bypass permissions on (shift+tab to cycle)
+
+=== BASE commit 8f756bb (before the fix):
+notice: doorbell did not reach fm-remote:w1:p1; the steer is durably recorded at <work>/home/state/parent-route/yapii.inbox/002.msg
+--- pane after base send:
+─────────────────────────────────────────────────────────────────────────────────────────────────────────── ultracode ─
+❯
+───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  ⚠ Transcript saving is off — inherited CLAUDE_CODE_CHILD_SESSION marker · restart with CLAUDE_CODE_FORCE_SESSION_P…
+  ⏵⏵ bypass permissions on (shift+tab to cycle)
+
+=== HEAD aa02e4b (with the fix):
+exit=0
+--- pane after HEAD send:
+
+
+
+
+
+
+✻ Coalescing…
+  ⎿  Tip: Share Claude Code and earn $10 in usage credits · /passes
+
+─────────────────────────────────────────────────────────────────────────────────────────────────────────── ultracode ─
+❯
+───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  ⚠ Transcript saving is off — inherited CLAUDE_CODE_CHILD_SESSION marker · restart with CLAUDE_CODE_FORCE_SESSION_P…
+  ⏵⏵ bypass permissions on (shift+tab to cycle) · esc to interrupt
+--- durable records:
+001.msg
+002.msg
+003.msg
+handled
+--- pane scrollback after HEAD ring (doorbell line submitted to Claude):
+❯ /rename plan
+  ⎿  Session renamed to: plan
+❯ /rename ultracode
+  ⎿  Session renamed to: ultracode
+❯ : Firstmate instruction waiting: list "$FM_TASK_INBOX"/*.msg in your 'yapii.inbox' steering inbox, read and act on
+  each in numeric order, then mv each into its handled/.
+● Captain, I'm ready to assist with this firstmate workflow. I see the steering inbox instruction at the end. Let me
+  start by checking the $FM_TASK_INBOX directory for any pending messages to process.
+  Listed 1 directory, ran 1 shell command
+● The steering inbox isn't active yet, captain. Let me run the session start script to initialize the firstmate
+  environment and check for any work waiting.
+  Ran 1 shell command
+● Captain, the firstmate environment is initialized and ready. Session start shows:
+  - Fleet state: Empty — no work under way
+  - Steering inbox: No pending messages to process
+  - Backlog: Not yet created
+  - Supervision: Active with Claude stop-hook auto-arm
+  The system is shipshape and ready for work. What task would you like me to dispatch, or is there existing work you'd
+  like me to review and process?
+✻ Cooked for 25s · done 11:29 AM
+─────────────────────────────────────────────────────────────────────────────────────────────────────────── ultracode ─
+❯
+───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  ⚠ Transcript saving is off — inherited CLAUDE_CODE_CHILD_SESSION marker · restart with CLAUDE_CODE_FORCE_SESSION_P…
+  ⏵⏵ bypass permissions on (shift+tab to cycle)

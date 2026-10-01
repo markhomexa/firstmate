@@ -1,0 +1,36 @@
+### Scenario: remote send to a real Claude pane whose top rule carries the UNPINNED title 'plan' (set via /rename plan)
+$ claude --version: 2.1.287 (Claude Code)
+--- pane before (visible tail):
+
+──────────────────────────────────────────────────────────────────────────────────────────────────────────────── plan ─
+❯
+───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  ⚠ Transcript saving is off — inherited CLAUDE_CODE_CHILD_SESSION marker · restart with CLAUDE_CODE_FORCE_SESSION_P…
+  ⏵⏵ bypass permissions on (shift+tab to cycle)
+--- $ FM_HOME=<fixture> bin/fm-remote-secondmate-control.sh send yapii 'answer: use option B'
+notice: doorbell did not reach fm-remote:w1:p1 (composer unreadable: unrecognised titled rule 'plan'); the steer is durably recorded at /tmp/fm-doorbell-test.58h8/home/state/parent-route/yapii.inbox/001.msg
+exit=0
+--- pane after (visible tail):
+
+──────────────────────────────────────────────────────────────────────────────────────────────────────────────── plan ─
+❯
+───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  ⚠ Transcript saving is off — inherited CLAUDE_CODE_CHILD_SESSION marker · restart with CLAUDE_CODE_FORCE_SESSION_P…
+  ⏵⏵ bypass permissions on (shift+tab to cycle)
+--- durable records:
+<work>/home/state/parent-route/yapii.inbox/001.msg
+--- herdr invocations made by the send (all carry --session):
+pane get w1:p1 --session fm-remote
+agent get w1:p1 --session fm-remote
+pane process-info --pane w1:p1 --session fm-remote
+status --json --session fm-remote
+pane read w1:p1 --source visible --format ansi --session fm-remote
+agent get w1:p1 --session fm-remote
+status --json --session fm-remote
+pane read w1:p1 --source visible --format ansi --session fm-remote
+status --json --session fm-remote
+pane read w1:p1 --source recent --lines 200 --session fm-remote
+### Idempotency: re-send the identical first steer (pane still titled 'plan')
+records before: 001.msg 002.msg 003.msg 004.msg handled 
+notice: doorbell did not reach fm-remote:w1:p1 (composer unreadable: unrecognised titled rule 'plan'); the steer is durably recorded at <work>/home/state/parent-route/yapii.inbox/001.msg
+records after: 001.msg 002.msg 003.msg 004.msg handled 

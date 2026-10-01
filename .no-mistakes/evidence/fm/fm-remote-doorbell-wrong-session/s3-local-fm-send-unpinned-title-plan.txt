@@ -1,0 +1,27 @@
+### Scenario: local fm-send.sh steer to a real Claude Herdr pane whose top rule carries the UNPINNED title 'plan'
+--- pane before:
+──────────────────────────────────────────────────────────────────────────────────────────────────────────────── plan ─
+❯
+───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  ⚠ Transcript saving is off — inherited CLAUDE_CODE_CHILD_SESSION marker · restart with CLAUDE_CODE_FORCE_SESSION_P…
+  ⏵⏵ bypass permissions on (shift+tab to cycle)
+--- $ FM_HOME=<lab> bin/fm-send.sh fm-doorbell 'please check the inbox'
+fm-gate-refuse: gate agent lifecycle permitted only against lab home <lab>
+●━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+●  WATCHER DOWN - SUPERVISION IS OFF
+●  1 task(s) in flight, but no watcher has a fresh beacon (last beat: never, grace 300s).
+●  Trust the emitted supervision protocol for this harness; do not use shell & for watcher repair.
+●  This is a supervision warning only; the requested message WILL still be sent.
+●  watcher supervision needs Stop-owned automatic recovery; inspect the hook registration and startup status before ending the turn.
+●━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+fm-send: doorbell did not reach fm-lab-doorbell-359502-950:w1:p1 (composer unreadable: unrecognised titled rule 'plan'); the steer is durably recorded at <lab>/state/doorbell.inbox/001.msg and the watcher will re-ring
+exit=0
+--- pane after:
+──────────────────────────────────────────────────────────────────────────────────────────────────────────────── plan ─
+❯
+───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  ⚠ Transcript saving is off — inherited CLAUDE_CODE_CHILD_SESSION marker · restart with CLAUDE_CODE_FORCE_SESSION_P…
+  ⏵⏵ bypass permissions on (shift+tab to cycle)
+--- durable records:
+001.msg
+handled
