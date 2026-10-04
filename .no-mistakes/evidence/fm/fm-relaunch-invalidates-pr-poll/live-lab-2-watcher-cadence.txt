@@ -1,0 +1,41 @@
+# lab record after a pre-fix relaunch (key after pr=):
+window=fmlab:fm-lw1
+endpoint_task_id=lw1
+worktree=/tmp/fm-lab.lq5UOE/x/wt
+project=/tmp/fm-lab.lq5UOE/x/proj
+harness=claude
+kind=ship
+mode=no-mistakes
+yolo=off
+branch=fm/lw1
+tasktmp=/tmp/fm-lw1
+model=default
+effort=default
+pr=https://github.com/example/repo/pull/77
+pr_head=0123456789abcdef0123456789abcdef01234567
+control_relaunch_tx=1234.20261004T040000Z.1
+
+=== bin/fm-watch.sh sweep 1 (fresh process) ===
+rc=0
+--- stdout:
+check: rejected unauthenticated state checks: /tmp/fm-lab.lq5UOE/state/lw1.check.sh
+--- stderr:
+warning: task lw1 has a key after pr= in /tmp/fm-lab.lq5UOE/state/lw1.meta, so its PR merge is no longer watched; re-arm with: bin/fm-pr-check.sh lw1 https://github.com/example/repo/pull/77
+--- stamp: 1791112131
+
+=== bin/fm-watch.sh sweep 2 (fresh process) ===
+rc=0
+--- stdout:
+check: rearm-resurface
+--- stderr:
+--- stamp: 1791112131
+
+# age the stamp past 6h: 1791090531 > .lw1.pr-meta-warned
+
+=== bin/fm-watch.sh sweep 3 (fresh process) ===
+rc=0
+--- stdout:
+check: rejected unauthenticated state checks: /tmp/fm-lab.lq5UOE/state/lw1.check.sh
+--- stderr:
+warning: task lw1 has a key after pr= in /tmp/fm-lab.lq5UOE/state/lw1.meta, so its PR merge is no longer watched; re-arm with: bin/fm-pr-check.sh lw1 https://github.com/example/repo/pull/77
+--- stamp: 1791112133

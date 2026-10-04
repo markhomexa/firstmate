@@ -1,0 +1,31 @@
+$ bin/fm-pr-check.sh lw1 https://github.com/example/repo/pull/77
+●━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+●  WATCHER DOWN - SUPERVISION IS OFF
+●  1 task(s) in flight, but no watcher has a fresh beacon (last beat: never, grace 300s).
+●  Trust the emitted supervision protocol for this harness; do not use shell & for watcher repair.
+●  This is a supervision warning only; the guarded operation WILL still run.
+●  watcher supervision needs Stop-owned automatic recovery; inspect the hook registration and startup status before ending the turn.
+●━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+armed: state/lw1.check.sh
+rc=0
+$ cat state/lw1.meta (armed)
+window=fmlab:fm-lw1
+endpoint_task_id=lw1
+worktree=/tmp/fm-lab.lq5UOE/x/wt
+project=/tmp/fm-lab.lq5UOE/x/proj
+harness=claude
+kind=ship
+mode=no-mistakes
+yolo=off
+branch=fm/lw1
+tasktmp=/tmp/fm-lw1
+model=default
+effort=default
+pr=https://github.com/example/repo/pull/77
+pr_head=0123456789abcdef0123456789abcdef01234567
+contributions.check-trust
+contributions.check.sh
+lw1.check.sh
+lw1.meta
+lw1.pr-poll
+lw1.pr-poll-registration

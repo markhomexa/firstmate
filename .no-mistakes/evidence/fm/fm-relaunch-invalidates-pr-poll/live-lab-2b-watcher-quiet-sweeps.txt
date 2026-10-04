@@ -1,0 +1,23 @@
+# same corrupted lab record; stamp removed; sweeps run as separate fm-watch.sh processes
+
+=== sweep 1 ===
+rc=0 stdout: check: rearm-resurface
+stderr: 
+
+=== sweep 2 ===
+rc=0 stdout: check: rejected unauthenticated state checks: /tmp/fm-lab.lq5UOE/state/lw1.check.sh
+stderr: warning: task lw1 has a key after pr= in /tmp/fm-lab.lq5UOE/state/lw1.meta, so its PR merge is no longer watched; re-arm with: bin/fm-pr-check.sh lw1 https://github.com/example/repo/pull/77
+
+=== sweep 3 ===
+rc=0 stdout: check: rearm-resurface
+stderr: 
+
+=== sweep 4 ===
+rc=0 stdout: check: rejected unauthenticated state checks: /tmp/fm-lab.lq5UOE/state/lw1.check.sh
+stderr: 
+
+# age the stamp past 6h
+
+=== sweep 5 ===
+rc=0 stdout: check: rearm-resurface
+stderr: 

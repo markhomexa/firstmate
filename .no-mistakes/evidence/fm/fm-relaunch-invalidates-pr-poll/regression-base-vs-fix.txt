@@ -1,0 +1,24 @@
+### base-fm-spawn: tests/fm-control-relaunch.test.sh :: test_relaunch_keeps_the_pr_merge_poll_watching
+warning: task rl41 has a key after pr= in /tmp/fm-control-relaunch.yPO4xm/pr-poll-off-752/home/state/rl41.meta, so its PR merge is no longer watched; re-arm with: bin/fm-pr-check.sh rl41 https://github.com/example/repo/pull/41
+not ok - relaunch silently invalidated the PR merge poll (trace off)
+window=fmses:fm-rl41
+endpoint_task_id=rl41
+worktree=/tmp/fm-control-relaunch.yPO4xm/pr-poll-off-752/wt
+project=/tmp/fm-control-relaunch.yPO4xm/pr-poll-off-752/proj
+harness=claude
+kind=ship
+mode=no-mistakes
+yolo=off
+branch=fm/rl41
+tasktmp=/tmp/fm-rl41
+model=default
+effort=default
+busy_gen=g1791112299.2546887.19996
+spawn_gen=s1791112299.2546510.2205
+pr=https://github.com/example/repo/pull/41
+pr_head=0123456789abcdef0123456789abcdef01234567
+control_relaunch_tx=2546138.20261004T111139Z.28540
+rc=0
+### fixed-fm-spawn: tests/fm-control-relaunch.test.sh :: test_relaunch_keeps_the_pr_merge_poll_watching
+ok - fm-control relaunch: a registered PR keeps its merge poll, with tracing on and off
+rc=0
