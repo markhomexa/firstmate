@@ -1,0 +1,41 @@
+## CONTROL (no park marker): real fm-watch.sh against stopped panes with a stale 'paused:' line
+stale: lab:fm-held1 (paused 50022s, awaiting external - declared pause, rechecked on a long cadence not a wedge; confirm the wait still holds)
+
+## fm-park.sh park (FM_HOME=lab)
+parked held1: queued behind the one-worker rule
+exit=0
+parked held2: queued behind held1
+exit=0
+$ fm-park.sh list
+held1	1791316888	queued behind the one-worker rule
+held2	1791316888	queued behind held1
+exit=0
+$ cat state/held1.parked; stat
+parked [at=1791316888]: queued behind the one-worker rule
+700 1 regular file
+$ worker status files unchanged?
+/tmp/fm-lab.4ZLyQG/state/held1.status: OK
+/tmp/fm-lab.4ZLyQG/state/held2.status: OK
+
+## PARKED: same panes, same stale status lines, FM_PAUSE_RESURFACE_SECS=5, watcher ran 90s
+exit=124 (timeout: no wake raised); stdout:
+(empty)
+wake-queue: empty
+pause/wedge tracking files left: none
+triage log sample:
+[2026-10-06T13:03:01-0700] absorbed stale (parked by firstmate, never rechecked): lab:fm-held1
+[2026-10-06T13:03:01-0700] absorbed stale (parked by firstmate, never rechecked): lab:fm-held2
+[2026-10-06T13:03:02-0700] absorbed stale (parked by firstmate, never rechecked): lab:fm-held1
+[2026-10-06T13:03:02-0700] absorbed stale (parked by firstmate, never rechecked): lab:fm-held2
+worker status files unchanged:
+/tmp/fm-lab.4ZLyQG/state/held1.status: OK
+/tmp/fm-lab.4ZLyQG/state/held2.status: OK
+
+## ADVERSARIAL: held1.parked chmod 0644 (malformed) -> real watcher output:
+stale: lab:fm-held1 (park marker unreadable, not treated as absent: park marker /tmp/fm-lab.4ZLyQG/state/held1.parked has mode '644', expected 0700; repair it with bin/fm-park.sh park|unpark)
+
+## held1 marker repaired via fm-park.sh park; held2 status now 'working: step three...' (50000s old), FM_STALE_ESCALATE_SECS=2, both parked; watcher ran 75s:
+exit=124, stdout: (empty); wedge tracking files: none
+
+## UNPARK held2 (fm-park.sh unpark) -> same stale pane surfaces again; held1 still parked stays silent:
+stale: lab:fm-held2

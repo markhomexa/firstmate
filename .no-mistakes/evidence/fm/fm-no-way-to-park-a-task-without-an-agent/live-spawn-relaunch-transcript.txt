@@ -1,0 +1,18 @@
+## LIVE spawn/relaunch clears the park marker (real fm-spawn.sh, real claude worker in lab tmux, treehouse pool inside lab)
+$ fm-spawn.sh park-live1 <lab project> --mode local-only --yolo off
+spawned park-live1 harness=claude kind=ship mode=local-only yolo=off window=lab:fm-park-live1 worktree=/tmp/fm-lab.4ZLyQG/pool/.treehouse/mate-54a994/1/mate
+$ fm-control.sh park-live1 exit   (firstmate stops the worker on purpose)
+stopped park-live1 harness=claude backend=tmux endpoint=lab:fm-park-live1 worktree=/tmp/fm-lab.4ZLyQG/pool/.treehouse/mate-54a994/1/mate
+$ fm-park.sh park park-live1 --reason 'queued behind the one-worker rule'
+parked park-live1: queued behind the one-worker rule
+$ fm-park.sh list
+held1	1791317007	queued behind the one-worker rule (repaired)
+park-live1	1791317767	queued behind the one-worker rule
+sha1sum: /tmp/fm-lab.4ZLyQG/state/park-live1.status: No such file or directory
+$ fm-spawn.sh park-live1 --relaunch
+spawned park-live1 harness=claude kind=ship mode=local-only yolo=off window=lab:fm-park-live1 worktree=/tmp/fm-lab.4ZLyQG/pool/.treehouse/mate-54a994/1/mate
+RELAUNCH_RC=0
+$ ls state/park-live1.parked
+ls: cannot access '/tmp/fm-lab.4ZLyQG/state/park-live1.parked': No such file or directory
+$ fm-park.sh list
+held1	1791317007	queued behind the one-worker rule (repaired)

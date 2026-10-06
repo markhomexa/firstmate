@@ -1,0 +1,40 @@
+ABSENT
+
+Work under way (state/*.meta)
+--------------------------------------------------------------------------------
+
+--- held1 ---
+window=lab:fm-held1
+kind=ship
+endpoint: alive (backend=tmux window=lab:fm-held1)
+status tail (last 5 line(s), each capped at 220 characters, wake-EVENT history, not current state; full log: /tmp/fm-lab.4ZLyQG/state/held1.status):
+paused: waiting for firstmate to say go
+
+--- held2 ---
+window=lab:fm-held2
+kind=ship
+endpoint: alive (backend=tmux window=lab:fm-held2)
+status tail (last 5 line(s), each capped at 220 characters, wake-EVENT history, not current state; full log: /tmp/fm-lab.4ZLyQG/state/held2.status):
+working: step three of the change
+
+Parked work (state/*.parked: stopped on purpose, no rechecks until relaunched)
+--------------------------------------------------------------------------------
+held1: parked at 1791317007 - queued behind the one-worker rule (repaired)
+
+Orphan status logs (state/*.status without matching .meta)
+--------------------------------------------------------------------------------
+(none)
+
+## after writing a malformed held2.parked ('garbage'):
+Parked work (state/*.parked: stopped on purpose, no rechecks until relaunched)
+--------------------------------------------------------------------------------
+held1: parked at 1791317007 - queued behind the one-worker rule (repaired)
+held2: PARK MARKER UNREADABLE - park marker /tmp/fm-lab.4ZLyQG/state/held2.parked does not read 'parked [at=<epoch>]: <reason>' (repair with bin/fm-park.sh park|unpark)
+
+
+## session-start digest after relaunch (park-live1 no longer listed; held2 dropped after unpark):
+Parked work (state/*.parked: stopped on purpose, no rechecks until relaunched)
+--------------------------------------------------------------------------------
+held1: parked at 1791317007 - queued behind the one-worker rule (repaired)
+
+Orphan status logs (state/*.status without matching .meta)

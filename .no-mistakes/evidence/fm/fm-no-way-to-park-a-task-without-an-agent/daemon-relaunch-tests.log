@@ -1,0 +1,13 @@
+ok - classification failure retains the complete durable wake batch
+ok - a permanent classification failure is reported, acknowledged, and never advances its position
+ok - an initial-send failure logs its stage, bytes, and stderr, and the wedge alarm names it
+ok - an Enter-confirmation failure logs its own stage and byte count
+ok - a bounded digest's full-text file survives a failure after typing, and a deferral writes none
+ok - command channel failures redact configured commands while logging their exit status
+ok - a failing channel logs and falls back to the next channel, never crashing the alarm
+ok - fm-send exits non-zero when initial text send fails
+rm: cannot remove '/tmp/fm-control-relaunch.0tqvl7/parkclear-12029/home/state/rl43.git-hooks/pre-commit': Permission denied
+rm: cannot remove '/tmp/fm-control-relaunch.0tqvl7/parkclear-12029/home/state/rl43.git-hooks/post-applypatch': Permission denied
+rm: cannot remove '/tmp/fm-control-relaunch.0tqvl7/parkclear-12029/home/state/rl43.git-hooks/pre-applypatch': Permission denied
+rm: cannot remove '/tmp/fm-control-relaunch.0tqvl7/parkclear-12029/home/state/rl43.git-hooks/applypatch-msg': Permission denied
+rm: cannot remove '/tmp/fm-control-relaunch.0tqvl7/parkclear-12029/home/state/rl43.git-hooks/commit-msg': Permission denied

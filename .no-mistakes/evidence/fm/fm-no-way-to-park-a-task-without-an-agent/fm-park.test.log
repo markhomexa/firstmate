@@ -1,0 +1,6 @@
+ok - park writes a private single-link marker, round-trips, and never touches the status file
+ok - park refuses empty, multi-line, unknown-task, path-shaped, and symlinked input
+ok - a malformed or unsafe marker returns an error status, never absent
+ok - a successful spawn clears the park marker
+ok - a refused spawn keeps the park marker
+# all fm-park tests passed

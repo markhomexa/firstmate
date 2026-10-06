@@ -1,0 +1,4 @@
+ok - a parked task raises no declared-wait recheck and leaves the worker's status file alone
+ok - a parked task is never aged toward a possible-wedge wake
+ok - without the marker a declared wait is rechecked exactly as before
+ok - a malformed or unsafe park marker raises a named alarm instead of being read as absent

@@ -1,0 +1,24 @@
+## LIVE away daemon (bin/fm-afk-start.sh, real tmux lab, FM_PAUSE_RESURFACE_SECS=20, FM_STALE_ESCALATE_SECS=5), ran ~3 min
+held1: parked, status 'paused: waiting for firstmate to say go' (50000s old)
+held2: NOT parked, same stale paused line
+
+$ cat state/.subsuper-escalations
+paused 31s (awaiting external, recheck whether the wait still holds): lab:fm-held2
+paused 29s (awaiting external, recheck whether the wait still holds): lab:fm-held2
+paused 30s (awaiting external, recheck whether the wait still holds): lab:fm-held2
+
+$ ls state/.subsuper-* (per-task recheck markers)
+.subsuper-paused-held2
+
+$ grep -c held1 state/.subsuper-escalations
+0
+
+daemon log:
+[2026-10-06T13:12:49-0700] daemon starting (pid 2619716); target=lab:sup; target_source=FM_SUPERVISOR_TARGET; backend=tmux; backend_source=TMUX_PANE; afk=on; inject_skip='heartbeat'; stale_escalate=5s; batch=5s
+[2026-10-06T13:12:52-0700] wake: signal: /tmp/fm-lab.4ZLyQG/state/held2.status
+[2026-10-06T13:12:54-0700] self-handle: signal: /tmp/fm-lab.4ZLyQG/state/held2.status -> routine signal: held2.status: paused: waiting for firstmate to say go
+
+watcher triage log (held1):
+[2026-10-06T13:14:45-0700] absorbed stale (parked by firstmate, never rechecked): lab:fm-held1
+[2026-10-06T13:14:47-0700] absorbed stale (parked by firstmate, never rechecked): lab:fm-held1
+[2026-10-06T13:14:49-0700] absorbed stale (parked by firstmate, never rechecked): lab:fm-held1
