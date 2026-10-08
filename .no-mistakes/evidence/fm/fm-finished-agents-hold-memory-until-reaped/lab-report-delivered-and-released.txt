@@ -1,0 +1,8 @@
+Resident agent sessions in this home, largest memory first (report only; nothing is stopped).
+active-work  kind=ship  memory=269 MB  running=4m
+    state: working · source: pane · harness busy (claude-hook)
+pr-open  kind=ship  memory=233 MB  running=4m
+    state: done · source: status-log · branch ready at 43fe798e0b149695c7c6902f8131f20e90235175
+    >> SAFE TO RELEASE: work delivered, its pull request or ready branch is waiting on a human; releasing keeps every local copy and commit
+run-failed  kind=scout  memory=not found  running=-
+    state: failed · source: status-log · run failed at review

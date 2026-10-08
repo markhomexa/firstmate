@@ -1,0 +1,12 @@
+# First live run in lab /tmp/fm-lab.0zKJv3 (three real Claude sessions, metas without harness=, so fm-crew-state could not read state)
+Resident agent sessions in this home, largest memory first (report only; nothing is stopped).
+active-work  kind=ship  memory=315 MB  running=0m
+    state: unknown · source: pane · harness state unavailable (unknown missing)
+    >> unknown: state could not be read, so this is not flagged safe to release
+pr-open  kind=ship  memory=277 MB  running=0m
+    state: unknown · source: pane · harness state unavailable (unknown missing)
+    >> unknown: state could not be read, so this is not flagged safe to release
+run-failed  kind=scout  memory=275 MB  running=0m
+    state: unknown · source: pane · harness state unavailable (unknown missing)
+    >> unknown: state could not be read, so this is not flagged safe to release
+EXIT=0

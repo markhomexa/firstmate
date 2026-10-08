@@ -1,0 +1,24 @@
+Resident agent sessions in this home, largest memory first (report only; nothing
+ is stopped).
+active-work  kind=ship  memory=329 MB  running=3m
+    state: working · source: pane · harness busy (claude-hook)
+pr-open  kind=ship  memory=257 MB  running=3m
+    state: done · source: status-log · claims delivered at 938cec36b5779ad717d72
+58d3ae55ccde91d01a6 but never pushed
+    >> SAFE TO RELEASE: work delivered, its pull request or ready branch is wait
+ing on a human; releasing keeps every local copy and commit
+run-failed  kind=scout  memory=256 MB  running=3m
+    state: failed · source: status-log · run failed at review
+    >> run failed - confirm no retry is planned before releasing; releasing keep
+s every local copy and commit
+homexa@WIN-DNHI5I4M0SK:~/.no-mistakes/worktrees/a20fe525da72/01M4CCMHK2576PFGR49
+486MFVY$
+
+
+
+
+
+
+
+
+

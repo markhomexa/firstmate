@@ -1,0 +1,24 @@
+state: blocked · source: status-log · named head 43fe798e0b149695c7c6902f8131f20
+e90235175 is unreachable outside the worker copy
+Resident agent sessions in this home, largest memory first (report only; nothing
+ is stopped).
+active-work  kind=ship  memory=290 MB  running=4m
+    state: working · source: pane · harness busy (claude-hook)
+pr-open  kind=ship  memory=257 MB  running=4m
+    state: blocked · source: status-log · named head 43fe798e0b149695c7c6902f813
+1f20e90235175 is unreachable outside the worker copy
+run-failed  kind=scout  memory=256 MB  running=4m
+    state: failed · source: status-log · run failed at review
+    >> run failed - confirm no retry is planned before releasing; releasing keep
+s every local copy and commit
+homexa@WIN-DNHI5I4M0SK:~/.no-mistakes/worktrees/a20fe525da72/01M4CCMHK2576PFGR49
+486MFVY$
+
+
+
+
+
+
+
+
+
