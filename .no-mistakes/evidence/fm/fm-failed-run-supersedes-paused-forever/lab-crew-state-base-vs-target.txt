@@ -1,0 +1,40 @@
+captured status lines: 52; head:   head: bfd1c12b
+run record: 01M3B1A1DYP1K0E19KY27D1P8H status=failed updated_at=1790301450 (real values)
+
+## S1 incident: failed run, worker later declares paused
+  status> paused [at=1791700000]: waiting on the follow-up review
+  base   (a1ecefb): state: failed · source: run-step · run failed
+  target (cecd196): state: paused · source: status-log · waiting on the follow-up review · earlier run failed, declared after it ended
+
+## S2 guard: paused stamped BEFORE run ended
+  status> paused [at=1790300000]: waiting on my own validation round
+  base   (a1ecefb): state: failed · source: run-step · run failed
+  target (cecd196): state: failed · source: run-step · run failed
+
+## S3 guard: failed run, no status log
+  base   (a1ecefb): state: failed · source: run-step · run failed
+  target (cecd196): state: failed · source: run-step · run failed
+
+## S4 guard: later working line after earlier pause
+  status> paused [at=1790300000]: waiting
+  status> working [at=1791700000]: resumed
+  base   (a1ecefb): state: failed · source: run-step · run failed
+  target (cecd196): state: failed · source: run-step · run failed
+
+## S5 guard: later done line alone (unmerged PR unknown)
+  status> done [at=1791700000]: shipped
+  base   (a1ecefb): state: failed · source: run-step · run failed
+  target (cecd196): state: failed · source: run-step · run failed
+
+## S6 incident: failed run, recorded PR merged
+  base   (a1ecefb): state: failed · source: run-step · run failed
+  target (cecd196): state: done · source: run-step · earlier run failed · PR merged: https://github.com/o/r/pull/77
+
+## S7 guard: failed run, recorded PR still open
+  base   (a1ecefb): state: failed · source: run-step · run failed
+  target (cecd196): state: failed · source: run-step · run failed
+
+## S8 guard: cancelled run + later paused
+  status> paused [at=1791700000]: waiting on the follow-up review
+  base   (a1ecefb): state: unknown · source: run-step · run cancelled: no verdict
+  target (cecd196): state: unknown · source: run-step · run cancelled: no verdict

@@ -1,0 +1,9 @@
+### Live: fm_nm_run_updated_at against the real no-mistakes state DB (read-only) for real failed run 01M3B1A1DYP1K0E19KY27D1P8H
+1790301450
+rc=0
+unknown run rc=1
+
+### Live: real crew on real failed-run worktree (historical head), lab FM_HOME + lab tmux, later paused line
+paused [at=1791700000]: waiting on the follow-up review
+base   (a1ecefb): state: unknown · source: pane · harness state unavailable (unknown missing)
+target (cecd196): state: unknown · source: pane · harness state unavailable (unknown missing)

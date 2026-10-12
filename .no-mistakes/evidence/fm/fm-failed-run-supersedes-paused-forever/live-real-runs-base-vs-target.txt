@@ -1,0 +1,48 @@
+gh: PR 3225 = MERGED; PR 3110 = OPEN
+
+=== crew on fm/tx-preview-half-width-full-suite @ ee9735b4
+  real axi status>   id: "01M4F21BDX9S2CHQKC8TSNTQ9J"
+  real axi status>   status: failed
+  real axi status>   pr: "https://github.com/austinhellickson/Yapii/pull/3225"
+  real axi status> outcome: failed
+  real axi status> error: daemon shutting down
+  run updated_at=1791529813 (via fm_nm_run_updated_at: 1791529813)
+## S1 INCIDENT: run died (daemon shutting down), its PR merged, no later line
+  base   (a1ecefb): state: failed · source: run-step · run failed · run: 01M4F21BDX9S2CHQKC8TSNTQ9J
+  target (HEAD)   : state: done · source: run-step · earlier run failed · PR merged: https://github.com/austinhellickson/Yapii/pull/3225 · run: 01M4F21BDX9S2CHQKC8TSNTQ9J
+## S1b INCIDENT: same, with stale working line from before the run ended
+  status> working [at=1791500000]: validating
+  base   (a1ecefb): state: failed · source: run-step · run failed · run: 01M4F21BDX9S2CHQKC8TSNTQ9J
+  target (HEAD)   : state: done · source: run-step · earlier run failed · PR merged: https://github.com/austinhellickson/Yapii/pull/3225 · run: 01M4F21BDX9S2CHQKC8TSNTQ9J
+## S1c INCIDENT: same, finished worker later declares paused
+  status> paused [at=1791778531]: waiting on captain
+  base   (a1ecefb): state: failed · source: run-step · run failed · run: 01M4F21BDX9S2CHQKC8TSNTQ9J
+  target (HEAD)   : state: done · source: run-step · earlier run failed · PR merged: https://github.com/austinhellickson/Yapii/pull/3225 · run: 01M4F21BDX9S2CHQKC8TSNTQ9J
+
+=== crew on fm/tx-zone-read-failure-falls-back-to-utc-silently @ 831c7e74
+  real axi status>   id: "01M4C4X29V5B9JKSHRX61SWYCC"
+  real axi status>   status: failed
+  real axi status>   pr: "https://github.com/austinhellickson/Yapii/pull/3110"
+  real axi status> outcome: failed
+  real axi status> error: daemon shutting down
+  run updated_at=1791472616
+## S2 INCIDENT: failed run (open PR), worker declares paused afterwards
+  status> paused [at=1791778531]: waiting on the follow-up review
+  base   (a1ecefb): state: failed · source: run-step · run failed · run: 01M4C4X29V5B9JKSHRX61SWYCC
+  target (HEAD)   : state: paused · source: status-log · waiting on the follow-up review · earlier run failed, declared after it ended · run: 01M4C4X29V5B9JKSHRX61SWYCC
+## S3 GUARD: paused stamped BEFORE the run ended
+  status> paused [at=1791400000]: waiting on my validation round
+  base   (a1ecefb): state: failed · source: run-step · run failed · run: 01M4C4X29V5B9JKSHRX61SWYCC
+  target (HEAD)   : state: failed · source: run-step · run failed · run: 01M4C4X29V5B9JKSHRX61SWYCC
+## S4 GUARD: failed run, open PR, no status log
+  base   (a1ecefb): state: failed · source: run-step · run failed · run: 01M4C4X29V5B9JKSHRX61SWYCC
+  target (HEAD)   : state: failed · source: run-step · run failed · run: 01M4C4X29V5B9JKSHRX61SWYCC
+## S5 GUARD: earlier pause then later working line
+  status> paused [at=1791400000]: waiting
+  status> working [at=1791778531]: resumed
+  base   (a1ecefb): state: failed · source: run-step · run failed · run: 01M4C4X29V5B9JKSHRX61SWYCC
+  target (HEAD)   : state: failed · source: run-step · run failed · run: 01M4C4X29V5B9JKSHRX61SWYCC
+## S6 GUARD: later done line alone, PR still open
+  status> done [at=1791778531]: shipped
+  base   (a1ecefb): state: failed · source: run-step · run failed · run: 01M4C4X29V5B9JKSHRX61SWYCC
+  target (HEAD)   : state: failed · source: run-step · run failed · run: 01M4C4X29V5B9JKSHRX61SWYCC

@@ -1,0 +1,20 @@
+ok - cancelled-test: cancellation without delivery carries no verdict
+ok - skipped-test: cancellation without delivery carries no verdict
+ok - synthetic cancelled run leaves fleet inventory unverified without a failure contradiction
+ok - cancelled-outcome: terminal delivery reports only observed evidence
+ok - cancelled-status: terminal delivery reports only observed evidence
+ok - skipped-rebase: terminal delivery reports only observed evidence
+ok - cancelled-skipped-rebase: terminal delivery reports only observed evidence
+ok - passed: terminal delivery reports only observed evidence
+ok - terminal failed run is authoritative
+ok - terminal failed run yields to a later paused declaration
+ok - terminal failed run outranks an earlier paused declaration
+ok - terminal failed run with no later declaration stays failed
+ok - live run still supersedes a later paused declaration
+ok - terminal failed run with a merged PR is not failed
+ok - terminal failed run ignores a later done line alone
+ok - terminal cancelled run is not lifted by a later paused line
+ok - coarse failed run ignores a foreign branch's run fields
+ok - genuinely failing CI keeps the failed verdict
+ok - a second failed step disqualifies the orphaned-monitor reclassification
+ok - orphaned ci monitor after green reads as held-for-merge done

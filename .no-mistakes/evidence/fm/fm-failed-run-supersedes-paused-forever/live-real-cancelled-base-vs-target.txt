@@ -1,0 +1,8 @@
+  real axi status>   id: "01M4H3SQDDHBVFWPE10PSEPWCS"
+  real axi status>   status: cancelled
+  real axi status> outcome: cancelled
+  real axi status> error: "cancelled: aborted by user"
+  status> paused [at=1791778575]: waiting on the follow-up review
+## S7 GUARD: cancelled run + later paused line
+  base   (a1ecefb): state: unknown · source: run-step · run cancelled: no verdict · run: 01M4H3SQDDHBVFWPE10PSEPWCS
+  target (HEAD)   : state: unknown · source: run-step · run cancelled: no verdict · run: 01M4H3SQDDHBVFWPE10PSEPWCS
