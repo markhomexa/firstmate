@@ -1,0 +1,28 @@
+===== S4 (adversarial, re-driven): stale shape but a gate-only commit is unreadable -> must fail closed (exit 2), never 'stale' =====
+copy no longer has gate-only commit a7a43015dbad5bd54261bf187005bd0c4a92b84c
+(removed gate-only commit object a7a43015dbad5bd54261bf187005bd0c4a92b84c from the gate)
+$ fm-gate-ref-probe.sh /tmp/tmp.iJ3uSNMUSd/wt
+branch: fm/lane
+head: a9ee5c06a2f6692ace771d63f1651cc8f5705dca
+gate: /tmp/tmp.iJ3uSNMUSd/gate.git
+gate_tip: 7df2daca0f6e1121470ecb2ab9dcd3b7317ff60b
+anchors: none
+relation: unrelated
+gate_ref: holds-work
+verdict: the gate ref shares no history with HEAD, so nothing can show it is safe to replace
+[exit=11]
+
+===== S4b (adversarial): commit graph readable but a gate-only tree is missing, so the patch comparison cannot run -> exit 2, never 'stale' =====
+copy lacks gate-only tree b1ea253509c6004817f83cd7659ab4e6c38b2981
+(removed gate-only tree b1ea253509c6004817f83cd7659ab4e6c38b2981 from the gate)
+$ fm-gate-ref-probe.sh /tmp/tmp.3ePT8QyOtx/wt
+branch: fm/lane
+head: 100a7222ae9194cd71e7faecb6f0bf1c0f37c923
+gate: /tmp/tmp.3ePT8QyOtx/gate.git
+gate_tip: 8a8b3cc45b6c7cd66b0d11b4dd3e6d61abedacb5
+gate_tip_subject: feature B
+anchors: none
+relation: diverged
+merge_base: 25101acabb0b5de8a543bd504023f857e331f8a1
+error: could not patch-compare the gate ref with HEAD
+[exit=2]

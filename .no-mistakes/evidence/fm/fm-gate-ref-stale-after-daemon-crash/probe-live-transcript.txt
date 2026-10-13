@@ -1,0 +1,102 @@
+===== S1: daemon-crash shape: gate ref holds pre-crash head, lane rebased onto moved main =====
+$ fm-gate-ref-probe.sh /tmp/tmp.7EaYcLFoUW/crash/wt
+branch: fm/lane
+head: 5e2d6e410db63807251705949d1e30d44d3312a4
+gate: /tmp/tmp.7EaYcLFoUW/crash/gate.git
+gate_tip: 5df26dae9ee2b31f05d0a5f3bc17f0078425dfb2
+gate_tip_subject: feature B
+anchors: none
+relation: diverged
+merge_base: f30ed0daef4a5eb8743caa7ad2466890b1629ae2
+gate_only_commits: 2
+gate_only_merges: 0
+unique_commits: 0
+gate_ref: stale
+verdict: the gate ref is the pre-rebase form of work HEAD already carries (every non-merge gate-only commit has a patch-equivalent in HEAD), so a push is rejected non-fast-forward and nothing would be lost; only no-mistakes may move that ref
+[exit=10]
+$ git push no-mistakes fm/lane (real push, prediction check)
+ ! [rejected]        fm/lane -> fm/lane (non-fast-forward)
+hint: Updates were rejected because the tip of your current branch is behind
+READ-ONLY gate: refs+objects unchanged
+READ-ONLY copy: refs+object counts unchanged
+
+===== S2: absent ref and fast-forward are cleared, and the real push succeeds =====
+$ fm-gate-ref-probe.sh /tmp/tmp.7EaYcLFoUW/absent/wt
+branch: fm/lane
+head: 5df26dae9ee2b31f05d0a5f3bc17f0078425dfb2
+gate: /tmp/tmp.7EaYcLFoUW/absent/gate.git
+gate_ref: absent
+verdict: the gate has no ref for fm/lane, so a push creates it
+[exit=0]
+$ git push no-mistakes fm/lane (real push, prediction check)
+ * [new branch]      fm/lane -> fm/lane
+$ fm-gate-ref-probe.sh /tmp/tmp.7EaYcLFoUW/absent/wt
+branch: fm/lane
+head: 1873ff969646e4935138cac7f01bdce433319573
+gate: /tmp/tmp.7EaYcLFoUW/absent/gate.git
+gate_tip: 5df26dae9ee2b31f05d0a5f3bc17f0078425dfb2
+gate_tip_subject: feature B
+anchors: none
+gate_ref: in-sync
+verdict: HEAD carries the gate ref, so the push is a fast-forward
+[exit=0]
+$ git push no-mistakes fm/lane (real push, prediction check)
+   5df26da..1873ff9  fm/lane -> fm/lane
+
+===== S3: gate ref holds work HEAD lacks (diverged, not patch-equivalent) =====
+$ fm-gate-ref-probe.sh /tmp/tmp.7EaYcLFoUW/holds/wt
+branch: fm/lane
+head: d1ac2daaad9b5eefaa159ab633a8556f4ff96482
+gate: /tmp/tmp.7EaYcLFoUW/holds/gate.git
+gate_tip: 5df26dae9ee2b31f05d0a5f3bc17f0078425dfb2
+gate_tip_subject: feature B
+anchors: none
+relation: diverged
+merge_base: 6e9540e61e62a90d1b270993f90cb99464d4fef5
+gate_only_commits: 1
+gate_only_merges: 0
+unique_commits: 1
+gate_ref: holds-work
+verdict: the gate ref carries 1 commit(s) with no patch-equivalent in HEAD, so a push is rejected and replacing the ref would lose them; recover custody or reconcile before running
+[exit=11]
+$ git push no-mistakes fm/lane (real push, prediction check)
+ ! [rejected]        fm/lane -> fm/lane (non-fast-forward)
+hint: Updates were rejected because the tip of your current branch is behind
+--- gate ahead of HEAD
+$ fm-gate-ref-probe.sh /tmp/tmp.7EaYcLFoUW/ahead/wt
+branch: fm/lane
+head: 6e9540e61e62a90d1b270993f90cb99464d4fef5
+gate: /tmp/tmp.7EaYcLFoUW/ahead/gate.git
+gate_tip: 5df26dae9ee2b31f05d0a5f3bc17f0078425dfb2
+gate_tip_subject: feature B
+anchors: none
+relation: gate-ahead
+unique_commits: 1
+gate_ref: holds-work
+verdict: the gate ref is 1 commit(s) ahead of HEAD, so the push is rejected and HEAD does not carry those commits; recover custody first and do not push
+[exit=11]
+
+===== S4 (adversarial): stale shape but gate history unreadable -> must fail closed (exit 2), never 'stale' =====
+(removed gate blob f719efd430d52bcfc8566a43b2eb655688d38871)
+$ fm-gate-ref-probe.sh /tmp/tmp.7EaYcLFoUW/broken/wt
+branch: fm/lane
+head: 5e2d6e410db63807251705949d1e30d44d3312a4
+gate: /tmp/tmp.7EaYcLFoUW/broken/gate.git
+gate_tip: 5df26dae9ee2b31f05d0a5f3bc17f0078425dfb2
+gate_tip_subject: feature B
+anchors: none
+relation: diverged
+merge_base: f30ed0daef4a5eb8743caa7ad2466890b1629ae2
+gate_only_commits: 2
+gate_only_merges: 0
+unique_commits: 0
+gate_ref: stale
+verdict: the gate ref is the pre-rebase form of work HEAD already carries (every non-merge gate-only commit has a patch-equivalent in HEAD), so a push is rejected non-fast-forward and nothing would be lost; only no-mistakes may move that ref
+[exit=10]
+--- detached HEAD and missing remote
+$ fm-gate-ref-probe.sh /tmp/tmp.7EaYcLFoUW/det/wt
+error: HEAD is detached; there is no branch to probe
+[exit=2]
+$ fm-gate-ref-probe.sh /tmp/tmp.7EaYcLFoUW/norem/wt
+error: this copy has no no-mistakes remote
+[exit=2]

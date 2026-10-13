@@ -1,0 +1,63 @@
+===== S5: real no-mistakes gate (/home/homexa/.no-mistakes/repos/a20fe525da72.git), throwaway clone on this run's branch =====
+-- clone HEAD equals the gate's branch ref
+$ fm-gate-ref-probe.sh
+branch: fm/fm-gate-ref-stale-after-daemon-crash
+head: c775eabfebd9c7faecdc723b926b816c3751d886
+gate: /home/homexa/.no-mistakes/repos/a20fe525da72.git
+gate_tip: c775eabfebd9c7faecdc723b926b816c3751d886
+gate_tip_subject: no-mistakes(review): Fail closed in gate-ref probe and route exit 2 decisions
+anchors: none
+gate_ref: in-sync
+verdict: HEAD carries the gate ref, so the push is a fast-forward
+[exit=0]
+
+-- simulate a post-crash rebase: rewrite the top 3 commits (same patches, new SHAs)
+error: no cherry-pick or revert in progress
+fatal: cherry-pick failed
+error: no cherry-pick or revert in progress
+fatal: cherry-pick failed
+error: no cherry-pick or revert in progress
+fatal: cherry-pick failed
+$ fm-gate-ref-probe.sh
+branch: fm/fm-gate-ref-stale-after-daemon-crash
+head: 0819d84205c5d8019dd1da9a7cb5c41bc71c60ca
+gate: /home/homexa/.no-mistakes/repos/a20fe525da72.git
+gate_tip: c775eabfebd9c7faecdc723b926b816c3751d886
+gate_tip_subject: no-mistakes(review): Fail closed in gate-ref probe and route exit 2 decisions
+anchors: none
+relation: diverged
+merge_base: 20dcbf91520b1816663b81873ad67d0b93b3e4d6
+gate_only_commits: 4
+gate_only_merges: 0
+unique_commits: 3
+gate_ref: holds-work
+verdict: the gate ref carries 3 commit(s) with no patch-equivalent in HEAD, so a push is rejected and replacing the ref would lose them; recover custody or reconcile before running
+[exit=11]
+READ-ONLY: real gate refs unchanged
+
+-- the real gate worktree for this run (detached HEAD)
+$ fm-gate-ref-probe.sh .
+error: HEAD is detached; there is no branch to probe
+[exit=2]
+
+===== S5b: real gate, post-crash rebase reproduced: top 3 commits rewritten (same patches, new SHAs) =====
+rebased: ec69153 (gate still at c775eab)
+$ fm-gate-ref-probe.sh
+branch: fm/fm-gate-ref-stale-after-daemon-crash
+head: ec691538688147dc681f329ae46ee71437c46989
+gate: /home/homexa/.no-mistakes/repos/a20fe525da72.git
+gate_tip: c775eabfebd9c7faecdc723b926b816c3751d886
+gate_tip_subject: no-mistakes(review): Fail closed in gate-ref probe and route exit 2 decisions
+anchors: none
+relation: diverged
+merge_base: 6407052f4c521e39401ce2305dfa45d201249827
+gate_only_commits: 3
+gate_only_merges: 0
+unique_commits: 0
+gate_ref: stale
+verdict: the gate ref is the pre-rebase form of work HEAD already carries (every non-merge gate-only commit has a patch-equivalent in HEAD), so a push is rejected non-fast-forward and nothing would be lost; only no-mistakes may move that ref
+[exit=10]
+$ git push --dry-run no-mistakes (what the pipeline push would meet)
+ ! [rejected]        fm/fm-gate-ref-stale-after-daemon-crash -> fm/fm-gate-ref-stale-after-daemon-crash (non-fast-forward)
+hint: Updates were rejected because the tip of your current branch is behind
+READ-ONLY: real gate refs unchanged
