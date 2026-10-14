@@ -1,0 +1,75 @@
+
+=== S1 incident: three lanes, PR head pushed to fork, tracking ref ABSENT ===
+  lane-a: local HEAD 3d27b7a, fork head 3d27b7a, tracking ref: absent
+  lane-b: local HEAD 219a4ec, fork head 219a4ec, tracking ref: absent
+  lane-c: local HEAD 1ca9591, fork head 1ca9591, tracking ref: absent
+$ fm-teardown.sh lane-a   [base 0397cb2]
+    fm-gate-refuse: gate agent lifecycle permitted only against lab home /tmp/fm-lab.8aFKVx
+    REFUSED: worktree /tmp/fm-lab.8aFKVx/lanes/lane-a/wt has work not on any remote and not landed.
+    unpushed commits:
+    3d27b7a feat(lane-a): real work
+    Push the branch, land its PR, or get the captain's explicit OK to discard, then --force.
+    -> exit 1 after 1s; meta present: yes
+$ fm-teardown.sh lane-b   [base 0397cb2]
+    fm-gate-refuse: gate agent lifecycle permitted only against lab home /tmp/fm-lab.8aFKVx
+    REFUSED: worktree /tmp/fm-lab.8aFKVx/lanes/lane-b/wt has work not on any remote and not landed.
+    unpushed commits:
+    219a4ec feat(lane-b): real work
+    Push the branch, land its PR, or get the captain's explicit OK to discard, then --force.
+    -> exit 1 after 0s; meta present: yes
+$ fm-teardown.sh lane-c   [base 0397cb2]
+    fm-gate-refuse: gate agent lifecycle permitted only against lab home /tmp/fm-lab.8aFKVx
+    REFUSED: worktree /tmp/fm-lab.8aFKVx/lanes/lane-c/wt has work not on any remote and not landed.
+    unpushed commits:
+    1ca9591 feat(lane-c): real work
+    Push the branch, land its PR, or get the captain's explicit OK to discard, then --force.
+    -> exit 1 after 1s; meta present: yes
+
+=== S2 tracking ref STALE (fetched once, two more commits pushed by URL) ===
+  tracking ref 260ab54 vs HEAD 7e982a0
+$ fm-teardown.sh lane-d   [base 0397cb2]
+    fm-gate-refuse: gate agent lifecycle permitted only against lab home /tmp/fm-lab.8aFKVx
+    REFUSED: worktree /tmp/fm-lab.8aFKVx/lanes/lane-d/wt has work not on any remote and not landed.
+    unpushed commits:
+    7e982a0 third
+    8d56e52 second
+    Push the branch, land its PR, or get the captain's explicit OK to discard, then --force.
+    -> exit 1 after 1s; meta present: yes
+
+=== S3 adversarial: one commit genuinely only on this disk (rest pushed) ===
+$ fm-teardown.sh lane-e   [base 0397cb2]
+    fm-gate-refuse: gate agent lifecycle permitted only against lab home /tmp/fm-lab.8aFKVx
+    REFUSED: worktree /tmp/fm-lab.8aFKVx/lanes/lane-e/wt has work not on any remote and not landed.
+    unpushed commits:
+    44da0d4 LOCAL-ONLY commit
+    e1421b1 pushed commit
+    Push the branch, land its PR, or get the captain's explicit OK to discard, then --force.
+    -> exit 1 after 1s; meta present: yes
+
+=== S4 adversarial: fork remote unreachable (path gone) ===
+$ fm-teardown.sh lane-f   [base 0397cb2]
+    fm-gate-refuse: gate agent lifecycle permitted only against lab home /tmp/fm-lab.8aFKVx
+    REFUSED: worktree /tmp/fm-lab.8aFKVx/lanes/lane-f/wt has work not on any remote and not landed.
+    unpushed commits:
+    30f2922 pushed commit
+    Push the branch, land its PR, or get the captain's explicit OK to discard, then --force.
+    -> exit 1 after 1s; meta present: yes
+
+=== S5 adversarial: fork remote HANGS (ssh never answers), FM_TEARDOWN_FETCH_TIMEOUT=3 ===
+$ fm-teardown.sh lane-g   [base 0397cb2]
+    fm-gate-refuse: gate agent lifecycle permitted only against lab home /tmp/fm-lab.8aFKVx
+    REFUSED: worktree /tmp/fm-lab.8aFKVx/lanes/lane-g/wt has work not on any remote and not landed.
+    unpushed commits:
+    bc27d19 pushed commit
+    Push the branch, land its PR, or get the captain's explicit OK to discard, then --force.
+    -> exit 1 after 1s; meta present: yes
+
+=== S6 adversarial: pushed work but uncommitted edit in worktree ===
+$ fm-teardown.sh lane-h   [base 0397cb2]
+    fm-gate-refuse: gate agent lifecycle permitted only against lab home /tmp/fm-lab.8aFKVx
+    REFUSED: worktree /tmp/fm-lab.8aFKVx/lanes/lane-h/wt has uncommitted changes.
+    uncommitted changes present (includes tracked edits)
+    Commit them (or get the captain's explicit OK to discard, then --force).
+    -> exit 1 after 1s; meta present: yes
+
+lab removed: yes

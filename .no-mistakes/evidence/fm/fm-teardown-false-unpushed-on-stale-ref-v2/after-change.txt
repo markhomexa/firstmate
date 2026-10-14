@@ -1,0 +1,71 @@
+
+=== S1 incident: three lanes, PR head pushed to fork, tracking ref ABSENT ===
+  lane-a: local HEAD e0835ee, fork head e0835ee, tracking ref: absent
+  lane-b: local HEAD 03bf1aa, fork head 03bf1aa, tracking ref: absent
+  lane-c: local HEAD 0b66f24, fork head 0b66f24, tracking ref: absent
+$ fm-teardown.sh lane-a   [change 024b4d6]
+    fm-gate-refuse: gate agent lifecycle permitted only against lab home /tmp/fm-lab.UiQ4fD
+    /tmp/fm-lab.UiQ4fD/lanes/lane-a/project: already current
+    teardown lane-a complete (window firstmate:fm-lane-a, worktree /tmp/fm-lab.UiQ4fD/lanes/lane-a/wt)
+    Backlog: lane-a just finished (this home keeps no markdown backlog at /tmp/fm-lab.UiQ4fD/data/backlog.md). Update /tmp/fm-lab.UiQ4fD/data/backlog.md - move lane-a to Done, keep Done to the 10 most recent, then re-scan Queued and dispatch only work whose blockers are gone and date is due.
+    -> exit 0 after 2s; meta present: no
+$ fm-teardown.sh lane-b   [change 024b4d6]
+    fm-gate-refuse: gate agent lifecycle permitted only against lab home /tmp/fm-lab.UiQ4fD
+    /tmp/fm-lab.UiQ4fD/lanes/lane-b/project: already current
+    teardown lane-b complete (window firstmate:fm-lane-b, worktree /tmp/fm-lab.UiQ4fD/lanes/lane-b/wt)
+    Backlog: lane-b just finished (this home keeps no markdown backlog at /tmp/fm-lab.UiQ4fD/data/backlog.md). Update /tmp/fm-lab.UiQ4fD/data/backlog.md - move lane-b to Done, keep Done to the 10 most recent, then re-scan Queued and dispatch only work whose blockers are gone and date is due.
+    -> exit 0 after 2s; meta present: no
+$ fm-teardown.sh lane-c   [change 024b4d6]
+    fm-gate-refuse: gate agent lifecycle permitted only against lab home /tmp/fm-lab.UiQ4fD
+    /tmp/fm-lab.UiQ4fD/lanes/lane-c/project: already current
+    teardown lane-c complete (window firstmate:fm-lane-c, worktree /tmp/fm-lab.UiQ4fD/lanes/lane-c/wt)
+    Backlog: lane-c just finished (this home keeps no markdown backlog at /tmp/fm-lab.UiQ4fD/data/backlog.md). Update /tmp/fm-lab.UiQ4fD/data/backlog.md - move lane-c to Done, keep Done to the 10 most recent, then re-scan Queued and dispatch only work whose blockers are gone and date is due.
+    -> exit 0 after 2s; meta present: no
+
+=== S2 tracking ref STALE (fetched once, two more commits pushed by URL) ===
+  tracking ref dc3dd41 vs HEAD 76b6a7e
+$ fm-teardown.sh lane-d   [change 024b4d6]
+    fm-gate-refuse: gate agent lifecycle permitted only against lab home /tmp/fm-lab.UiQ4fD
+    /tmp/fm-lab.UiQ4fD/lanes/lane-d/project: already current
+    teardown lane-d complete (window firstmate:fm-lane-d, worktree /tmp/fm-lab.UiQ4fD/lanes/lane-d/wt)
+    Backlog: lane-d just finished (this home keeps no markdown backlog at /tmp/fm-lab.UiQ4fD/data/backlog.md). Update /tmp/fm-lab.UiQ4fD/data/backlog.md - move lane-d to Done, keep Done to the 10 most recent, then re-scan Queued and dispatch only work whose blockers are gone and date is due.
+    -> exit 0 after 2s; meta present: no
+
+=== S3 adversarial: one commit genuinely only on this disk (rest pushed) ===
+$ fm-teardown.sh lane-e   [change 024b4d6]
+    fm-gate-refuse: gate agent lifecycle permitted only against lab home /tmp/fm-lab.UiQ4fD
+    REFUSED: worktree /tmp/fm-lab.UiQ4fD/lanes/lane-e/wt has work not on any remote and not landed.
+    unpushed commits:
+    4602642 LOCAL-ONLY commit
+    Push the branch, land its PR, or get the captain's explicit OK to discard, then --force.
+    -> exit 1 after 1s; meta present: yes
+
+=== S4 adversarial: fork remote unreachable (path gone) ===
+$ fm-teardown.sh lane-f   [change 024b4d6]
+    fm-gate-refuse: gate agent lifecycle permitted only against lab home /tmp/fm-lab.UiQ4fD
+    REFUSED: worktree /tmp/fm-lab.UiQ4fD/lanes/lane-f/wt has work not on any remote and not landed.
+    unpushed commits:
+    ce93f60 pushed commit
+    note: a remote could not be refreshed (possibly timed out; see FM_TEARDOWN_FETCH_TIMEOUT), so these commits may already be on it.
+    Push the branch, land its PR, or get the captain's explicit OK to discard, then --force.
+    -> exit 1 after 1s; meta present: yes
+
+=== S5 adversarial: fork remote HANGS (ssh never answers), FM_TEARDOWN_FETCH_TIMEOUT=3 ===
+$ fm-teardown.sh lane-g   [change 024b4d6]
+    fm-gate-refuse: gate agent lifecycle permitted only against lab home /tmp/fm-lab.UiQ4fD
+    REFUSED: worktree /tmp/fm-lab.UiQ4fD/lanes/lane-g/wt has work not on any remote and not landed.
+    unpushed commits:
+    0fa1b39 pushed commit
+    note: a remote could not be refreshed (possibly timed out; see FM_TEARDOWN_FETCH_TIMEOUT), so these commits may already be on it.
+    Push the branch, land its PR, or get the captain's explicit OK to discard, then --force.
+    -> exit 1 after 4s; meta present: yes
+
+=== S6 adversarial: pushed work but uncommitted edit in worktree ===
+$ fm-teardown.sh lane-h   [change 024b4d6]
+    fm-gate-refuse: gate agent lifecycle permitted only against lab home /tmp/fm-lab.UiQ4fD
+    REFUSED: worktree /tmp/fm-lab.UiQ4fD/lanes/lane-h/wt has uncommitted changes.
+    uncommitted changes present (includes tracked edits)
+    Commit them (or get the captain's explicit OK to discard, then --force).
+    -> exit 1 after 1s; meta present: yes
+
+lab removed: yes
