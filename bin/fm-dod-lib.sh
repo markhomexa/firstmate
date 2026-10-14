@@ -377,6 +377,15 @@ $drive_block
 A killed or timed-out call is never evidence the daemon died: the daemon accepts your response immediately and runs the round in the background, so the call was only ever waiting for a read while the run kept working.
 Reattach and keep going rather than reporting the pipeline blocked; rule 7 owns the checks that decide when a pipeline block is real.
 
+Every fix round runs under a hard wall-clock cap (30 minutes by default), and an agent killed at it leaves nothing but what it had already committed: its uncommitted edits die with the run's disposable worktree.
+Measured over the pipeline's recorded fix rounds, the cap is almost never a size problem: a round fixing 9 findings finished in 4 minutes while single-finding rounds died at the cap, so neither raising the cap nor splitting a round helps.
+The deaths are a fixer stuck without output, or a test fixer re-running the whole gate itself and queueing on a contended machine; the step re-runs the gate after the fix anyway.
+So pass \`--instructions\` on every \`no-mistakes axi respond --action fix\`: commit each finding as soon as it is fixed, and verify only with the targeted check for that finding, never the full gate or a long suite.
+A run that fails with \`absolute wall-clock limit\` or \`timed out after 30m0s\` hit this cap: it is a budget failure, not a daemon failure, so rule 7's daemon checks do not apply.
+Recover it in this order: read \`branch_sync.next_action\` from \`no-mistakes axi status\`, run the exact recover command it prints (\`no-mistakes axi sync --recover\` for \`recover_custody\`), confirm \`custody_returned\` on a clean tree and that \`git log\` carries the fix commits, then start a new run with the same \`--intent\`.
+Hand-edit nothing before custody returns, because a head the pipeline did not record is refused as \`not a descendant of the pipeline's recorded head\`.
+If the same finding kills a second run, append \`blocked\` rather than looping.
+
 Two firstmate-specific rules layer on top of that guidance:
 - ask-user findings are never yours to answer: escalate to firstmate using rule 6's ask-user format and stop.
   Firstmate applies \`ask-user-authority\` and obtains any required captain decision.
