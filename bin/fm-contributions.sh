@@ -18,7 +18,7 @@
 # endpoint teardown. Repository-wide PR discovery never establishes ownership.
 # Only canonical PR and issue URLs on the exact github.com host are supported;
 # other accepted URLs remain visibly unmeasured.
-# poll skips unsupported URLs without forge calls, unavailable output, wakes or
+# poll skips unsupported URLs without forge calls, failure output, wakes or
 # new error stamps, and clears their legacy errors without changing observation,
 # timestamps or ownership evidence.
 #
@@ -65,13 +65,13 @@
 # reordering. Terminal URLs settle separately before the forge budget starts
 # and consume no rotation slots.
 # A deliberately smaller configured budget remains bounded and may be
-# unmeasured, rather than being mislabeled unavailable. Each distinct supported
+# unmeasured, rather than being mislabeled failed. Each distinct supported
 # URL is attempted at most once per poll and its observation applied to every owner.
 # A supported URL's final observation applies
 # to every owner without another forge read. When the budget refuses a read
 # mid-observation, that URL's records stay untouched and the poll moves to the
-# next URL that still has a full observation reserve; only a genuine forge
-# failure or head change records an error.
+# next URL that still has a full observation reserve; only a failed read,
+# malformed response or head change records an error.
 # API failure leaves error evidence; an expired or absent observation is not
 # silence. FM_CONTRIBUTIONS_MAX_AGE (default 900 seconds) bounds freshness.
 # A supported URL whose last good observation is merged or closed is final: it is
