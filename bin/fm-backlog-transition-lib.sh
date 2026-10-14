@@ -72,11 +72,6 @@ FM_BACKLOG_ROW_HOLD_KIND=
 # retained_incomplete | answered | stale | noop.
 # shellcheck disable=SC2034 # Output global, read by the sourcing caller.
 FM_BACKLOG_CLOSE_REPLAY_RESULT=
-# The one completion note a retirement without a worktree identity records
-# (bin/fm-teardown.sh --retire-unidentified-worktree). The pending-close record
-# stores it with %20 for spaces, exactly as it stores "local main", and replay
-# restores it, so an interrupted retirement still lands the same honest note.
-FM_BACKLOG_UNVERIFIED_NOTE="cleanup NOT verified - worktree identity unknown so landed work was not checked"
 
 # Bounded execution is fm-timeout-lib.sh's alone; source it rather than
 # re-deriving a deadline here. It is stateless, so the memoisation reason this
@@ -554,6 +549,63 @@ fm_backlog_row_artifact_supported() {
   esac
 }
 
+# Append <line> to the end of a row's task body through tasks-axi, leaving a
+# line already present alone.
+fm_backlog_body_append_line() {  # <resolved-data-dir> <authorized-data-dir> <id> <line>
+  local data=$1 authorized_data=$2 id=$3 line=$4 out command_status body new_body tmp
+  out=$(fm_backlog_row_show "$data" "$id" --full)
+  command_status=$?
+  [ "$command_status" -ne 124 ] || FM_BACKLOG_ROW_SHOW_WEDGED=1
+  if [ "$command_status" -ne 0 ]; then
+    FM_BACKLOG_TRANSITION_ERROR=$(printf '%s\n' "$out" | sed -n '1p')
+    [ -n "$FM_BACKLOG_TRANSITION_ERROR" ] \
+      || FM_BACKLOG_TRANSITION_ERROR="tasks-axi show $id failed with no output"
+    return "$command_status"
+  fi
+  # The leading quote selects a JSON-encoded bare string, which is exactly the
+  # value an older JSON::PP rejects unless allow_nonref is asked for, so the
+  # decoder below requests it rather than inheriting the local default. It then
+  # writes bytes, because printing the decoded characters to a stream with no
+  # :raw layer emits a codepoint at or below U+00FF as one latin-1 byte and
+  # silently corrupts the body this rewrites.
+  body=$(printf '%s\n' "$out" | sed -n 's/^  body: //p' | head -1 \
+    | LC_ALL=C perl -MJSON::PP -e '
+      local $/;
+      my $shown = <STDIN>;
+      $shown =~ s/\s+\z//;
+      exit 0 if $shown eq "" || $shown eq "-";
+      my $value = $shown =~ /\A"/
+        ? JSON::PP->new->utf8->allow_nonref->decode($shown) : $shown;
+      binmode STDOUT, ":raw";
+      utf8::encode($value) if utf8::is_utf8($value);
+      print $value unless $value eq "-";
+    ') || {
+    FM_BACKLOG_TRANSITION_ERROR="could not decode the task body of $id"
+    return 1
+  }
+  case $'\n'"$body"$'\n' in
+    *$'\n'"$line"$'\n'*) ;;
+    *)
+      new_body=$line
+      [ -z "$body" ] || new_body=$(printf '%s\n\n%s' "$body" "$line")
+      tmp=$(umask 077; mktemp "${TMPDIR:-/tmp}/fm-backlog-retain-body.XXXXXX") || {
+        FM_BACKLOG_TRANSITION_ERROR="cannot stage the deliverable for $id"
+        return 1
+      }
+      if ! printf '%s\n' "$new_body" > "$tmp"; then
+        rm -f -- "$tmp"
+        FM_BACKLOG_TRANSITION_ERROR="cannot stage the deliverable for $id"
+        return 1
+      fi
+      if ! fm_backlog_mutate "$authorized_data" update "$id" --body-file "$tmp"; then
+        rm -f -- "$tmp"
+        return 1
+      fi
+      rm -f -- "$tmp"
+      ;;
+  esac
+}
+
 # Keep a captain-held row open across the removal of the work record that
 # discovered it: record the finished work's deliverable as one line at the end
 # of the task body (a line already present is left alone), preserve supported
@@ -562,8 +614,8 @@ fm_backlog_row_artifact_supported() {
 # bin/fm-fleet-snapshot.sh classifies that retained hold from its structured
 # fields; only bin/fm-captain-hold.sh answer resolves the call.
 fm_backlog_retain() {  # <data-dir> <id> [flag...]
-  local data authorized_data=$1 id=$2 out command_status previous_arg=''
-  local arg deliverable='' line body new_body tmp
+  local data authorized_data=$1 id=$2 previous_arg=''
+  local arg deliverable=''
   local -a row_args=()
   if ! data=$(fm_backlog_data_absolute "$1"); then
     FM_BACKLOG_TRANSITION_ERROR="data directory cannot be resolved: $1"
@@ -592,62 +644,26 @@ fm_backlog_retain() {  # <data-dir> <id> [flag...]
     previous_arg=$arg
   done
   if [ -n "$deliverable" ]; then
-    out=$(fm_backlog_row_show "$data" "$id" --full)
-    command_status=$?
-    [ "$command_status" -ne 124 ] || FM_BACKLOG_ROW_SHOW_WEDGED=1
-    if [ "$command_status" -ne 0 ]; then
-      FM_BACKLOG_TRANSITION_ERROR=$(printf '%s\n' "$out" | sed -n '1p')
-      [ -n "$FM_BACKLOG_TRANSITION_ERROR" ] \
-        || FM_BACKLOG_TRANSITION_ERROR="tasks-axi show $id failed with no output"
-      return "$command_status"
-    fi
-    # The leading quote selects a JSON-encoded bare string, which is exactly the
-    # value an older JSON::PP rejects unless allow_nonref is asked for, so the
-    # decoder below requests it rather than inheriting the local default. It then
-    # writes bytes, because printing the decoded characters to a stream with no
-    # :raw layer emits a codepoint at or below U+00FF as one latin-1 byte and
-    # silently corrupts the body this rewrites.
-    body=$(printf '%s\n' "$out" | sed -n 's/^  body: //p' | head -1 \
-      | LC_ALL=C perl -MJSON::PP -e '
-        local $/;
-        my $shown = <STDIN>;
-        $shown =~ s/\s+\z//;
-        exit 0 if $shown eq "" || $shown eq "-";
-        my $value = $shown =~ /\A"/
-          ? JSON::PP->new->utf8->allow_nonref->decode($shown) : $shown;
-        binmode STDOUT, ":raw";
-        utf8::encode($value) if utf8::is_utf8($value);
-        print $value unless $value eq "-";
-      ') || {
-      FM_BACKLOG_TRANSITION_ERROR="could not decode the task body of $id"
-      return 1
-    }
-    line="Deliverable of the finished work: $deliverable"
-    case $'\n'"$body"$'\n' in
-      *$'\n'"$line"$'\n'*) ;;
-      *)
-        new_body=$line
-        [ -z "$body" ] || new_body=$(printf '%s\n\n%s' "$body" "$line")
-        tmp=$(umask 077; mktemp "${TMPDIR:-/tmp}/fm-backlog-retain-body.XXXXXX") || {
-          FM_BACKLOG_TRANSITION_ERROR="cannot stage the deliverable for $id"
-          return 1
-        }
-        if ! printf '%s\n' "$new_body" > "$tmp"; then
-          rm -f -- "$tmp"
-          FM_BACKLOG_TRANSITION_ERROR="cannot stage the deliverable for $id"
-          return 1
-        fi
-        if ! fm_backlog_mutate "$authorized_data" update "$id" --body-file "$tmp"; then
-          rm -f -- "$tmp"
-          return 1
-        fi
-        rm -f -- "$tmp"
-        ;;
-    esac
+    fm_backlog_body_append_line "$data" "$authorized_data" "$id" \
+      "Deliverable of the finished work: $deliverable" || return
   fi
   if [ "${#row_args[@]}" -gt 0 ]; then
     fm_backlog_mutate "$authorized_data" update "$id" "${row_args[@]}" || return 1
   fi
+  fm_backlog_mutate "$authorized_data" reopen "$id"
+}
+
+# Return a row to Queued with <note> recorded as one line at the end of its
+# task body, for work whose outcome nobody checked: the row stays open rather
+# than closing on a completion that was never verified.
+fm_backlog_reopen_with_note() {  # <data-dir> <id> <note>
+  local data authorized_data=$1 id=$2
+  if ! data=$(fm_backlog_data_absolute "$1"); then
+    FM_BACKLOG_TRANSITION_ERROR="data directory cannot be resolved: $1"
+    return 1
+  fi
+  FM_BACKLOG_TRANSITION_ERROR=
+  fm_backlog_body_append_line "$data" "$authorized_data" "$id" "$3" || return
   fm_backlog_mutate "$authorized_data" reopen "$id"
 }
 
@@ -883,15 +899,6 @@ fm_backlog_close_marker_path() {  # <state-dir> <id>
   printf '%s/%s.backlog-close\n' "$1" "$2"
 }
 
-# A completion --report link must be a plain relative path inside the data
-# directory: no traversal, no absolute path, no flag-looking value.
-fm_backlog_close_marker_report_ok() {  # <report-path>
-  local arg_value=$1
-  [ "${#arg_value}" -le 4096 ] \
-    && [ -n "${arg_value// /}" ] \
-    && case "$arg_value" in .|..|-*|/*|../*|*/../*|*/..) false ;; *) true ;; esac
-}
-
 fm_backlog_close_marker_validate() {  # <marker-path> <authorized-data-dir> <expected-id> <state-dir>
   local marker=$1 authorized_data data_resolved expected_id=$3 state=$4
   local id='' data='' marker_spawn_gen='' cleanup_incomplete=0 mode=close line raw_bytes arg_value
@@ -991,10 +998,7 @@ fm_backlog_close_marker_validate() {  # <marker-path> <authorized-data-dir> <exp
     0) ;;
     2)
       case "${args[0]}" in
-        --note)
-          [ "${args[1]}" = "local%20main" ] \
-            || [ "${args[1]}" = "${FM_BACKLOG_UNVERIFIED_NOTE// /%20}" ]
-          ;;
+        --note) [ "${args[1]}" = "local%20main" ] ;;
         --pr)
           arg_value=${args[1]}
           [ "${#arg_value}" -le 2048 ] \
@@ -1048,17 +1052,14 @@ fm_backlog_close_marker_validate() {  # <marker-path> <authorized-data-dir> <exp
                 }
             }
           ;;
-        --report) fm_backlog_close_marker_report_ok "${args[1]}" ;;
+        --report)
+          arg_value=${args[1]}
+          [ "${#arg_value}" -le 4096 ] \
+            && [ -n "${arg_value// /}" ] \
+            && case "$arg_value" in .|..|-*|/*|../*|*/../*|*/..) false ;; *) true ;; esac
+          ;;
         *) false ;;
       esac || { FM_BACKLOG_TRANSITION_ERROR="invalid pending-close arguments in $marker"; return 1; }
-      ;;
-    4)
-      # A scout retired without a verified close keeps its report link and adds
-      # the unverified note beside it.
-      { [ "${args[0]}" = --report ] && fm_backlog_close_marker_report_ok "${args[1]}" \
-          && [ "${args[2]}" = --note ] \
-          && [ "${args[3]}" = "${FM_BACKLOG_UNVERIFIED_NOTE// /%20}" ]; } \
-        || { FM_BACKLOG_TRANSITION_ERROR="invalid pending-close arguments in $marker"; return 1; }
       ;;
     *) FM_BACKLOG_TRANSITION_ERROR="invalid pending-close arguments in $marker"; return 1 ;;
   esac
@@ -1095,9 +1096,8 @@ fm_backlog_close_marker_stage() {  # <temporary-path> <id> <data-dir> <spawn-gen
     shift
   fi
   for arg in "$@"; do
-    if [ "$previous_arg" = --note ] \
-       && { [ "$arg" = "local main" ] || [ "$arg" = "$FM_BACKLOG_UNVERIFIED_NOTE" ]; }; then
-      serialized_args+=("${arg// /%20}")
+    if [ "$previous_arg" = --note ] && [ "$arg" = "local main" ]; then
+      serialized_args+=("local%20main")
     else
       serialized_args+=("$arg")
     fi
@@ -1172,12 +1172,9 @@ fm_backlog_close_marker_replay() {  # <state-dir> <marker-path> <authorized-data
   mode=$FM_BACKLOG_CLOSE_VALIDATED_MODE
   [ "$mode" = close ] || mode_flags=(--retain)
   args=("${FM_BACKLOG_CLOSE_VALIDATED_ARGS[@]+"${FM_BACKLOG_CLOSE_VALIDATED_ARGS[@]}"}")
-  local arg_index
-  for arg_index in "${!args[@]}"; do
-    if [ "$arg_index" -gt 0 ] && [ "${args[$((arg_index - 1))]}" = --note ]; then
-      args[arg_index]=${args[arg_index]//%20/ }
-    fi
-  done
+  if [ "${args[0]-}" = --note ]; then
+    args[1]="local main"
+  fi
   meta="$state/$id.meta"
   if [ -e "$meta" ] || [ -L "$meta" ]; then
     if ! fm_backlog_record_present "$meta" "task record" "$state"; then
