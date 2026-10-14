@@ -45,17 +45,19 @@
 # names no worktree (missing or empty worktree=), which the ordinary path
 # refuses and --force cannot relax, so such a record would hold its live-lane
 # slot forever. It closes the endpoint and removes the record like any cleanup,
-# but verifies nothing: it never moves, deletes, or writes inside any worktree
-# or pool slot, never guesses one from the project, window, or pool layout, and
+# but verifies nothing: it never moves, deletes, or changes the checkout of any
+# worktree or pool slot (the landed-work check it shares with the ordinary path
+# may refresh a claimed slot's remote-tracking ref, as it does there), never
+# guesses one from the project, window, or pool layout, and
 # never closes the backlog item - an open item goes back to Queued and an item
 # already Done stays Done, either way with the note RETIRE_BACKLOG_NOTE. It says
 # so everywhere - the "RETIRED UNVERIFIED" success line, that backlog note, and
 # data/<id>/retired-unverified.txt - and each names any pool slot still claimed
 # by this task and the home that recorded the claim (see
 # retire_read_claimed_slot). It refuses a record that names a worktree, a
-# secondmate, an Orca record, a pool whose slot claims cannot be listed, a
-# claimed pool slot holding commits on no remote or whose state cannot be read
-# (exit 1), and --force (exit 2).
+# secondmate, an Orca record, a pool whose slot claims cannot be listed, an
+# unreadable slot claim, a claimed pool slot the ordinary landed-work check
+# refuses (exit 1), and --force (exit 2).
 # REFUSES if the worktree holds work that has not LANDED, because cleanup
 # hard-resets/removes the worktree and kills its processes. Work has landed when it is
 # reachable from any remote-tracking branch (a fork counts as a remote, so
@@ -1170,13 +1172,20 @@ RETIRE_BACKLOG_NOTE="cleanup NOT verified - worktree identity unknown so landed 
 # is recorded evidence, never a guess, and it is only read here: no claim and no
 # checkout is ever changed, so the claim keeps protecting whatever the slot
 # holds. A claim is matched on the task id alone; its recorded home is
-# reported, never matched. A claimed slot whose HEAD is on no remote ref, whose
-# state cannot be read, or a pool that cannot be listed at all, refuses the
-# retirement before anything changes; nothing forces past it.
+# reported, never matched. A claim naming another task is that task's
+# (reassigned, as the ordinary path treats it) and is ignored. A slot claimed by
+# this task faces the ordinary path's own validate_worktree_teardown_safety, so
+# dirty, unlanded, uninspectable, or lock-blocked work refuses exactly as it
+# does there, except that no stale lock is cleared. An unreadable claim, or a
+# pool that cannot be listed at all, also refuses. Every refusal comes before
+# anything changes, and nothing forces past it. Another record naming the same
+# slot is not checked here: require_exclusive_worktree_slot_record guards the
+# return and process kill the ordinary path performs on a slot, and this path
+# returns, kills, and writes nothing under any slot.
 # Sets RETIRE_SLOT_NOTE to what was found.
 RETIRE_SLOT_NOTE=
 retire_read_claimed_slot() {
-  local status_json slot_paths path head remote_refs unreadable=0 claimed='' unlisted=''
+  local status_json slot_paths path claimed='' unlisted='' marker
   RETIRE_SLOT_NOTE="the pool was searched and no durable pool-slot claim naming this task was found, so a pool slot may still be held without a claim"
   if [ -z "$PROJ" ]; then
     unlisted="task $ID's record names no project path"
@@ -1196,25 +1205,27 @@ retire_read_claimed_slot() {
     fm_treehouse_slot_owner_state "$path" "$ID"
     case "$FM_TREEHOUSE_SLOT_OWNER" in
       mine)
-        if ! head=$(git --no-optional-locks -C "$path" rev-parse --verify -q 'HEAD^{commit}' 2>/dev/null) \
-           || ! remote_refs=$(git --no-optional-locks -C "$path" for-each-ref --contains "$head" --format='%(refname)' refs/remotes 2>/dev/null); then
-          echo "REFUSED: pool slot $path is claimed by task $ID, but whether it holds unpushed commits cannot be determined; inspect it by hand before retiring this record. Nothing was changed." >&2
-          return 1
-        fi
-        if [ -z "$remote_refs" ]; then
-          echo "REFUSED: pool slot $path is claimed by task $ID and its HEAD is not on any remote ref, so it may hold this task's unlanded work; land or discard it by hand before retiring this record. Nothing was changed." >&2
+        if ! (
+          WT=$path
+          TEARDOWN_WORKTREE_BRANCH_FOR_SAFETY=
+          GIT_OPTIONAL_LOCKS=0
+          export GIT_OPTIONAL_LOCKS
+          validate_worktree_teardown_safety
+        ); then
+          echo "REFUSED: pool slot $path is claimed by task $ID (claim recorded by home ${FM_TREEHOUSE_SLOT_OWNER_HOME:-unrecorded}). --retire-unidentified-worktree accepts no --force: commit and land the slot's work, or have the captain explicitly authorise discarding it, through firstmate. Nothing was changed." >&2
           return 1
         fi
         claimed="$claimed${claimed:+, }$path (claim recorded by home ${FM_TREEHOUSE_SLOT_OWNER_HOME:-unrecorded})"
         ;;
-      unsafe) unreadable=1 ;;
+      unsafe)
+        marker=$(fm_treehouse_slot_owner_marker "$path") || marker="the claim beside $path"
+        echo "REFUSED: the slot-owner claim $marker for pool slot $path cannot be read, so whether it names task $ID cannot be told and unlanded work there cannot be ruled out. Inspect or repair that claim file, or have the captain explicitly authorise discarding the work, through firstmate. Nothing was changed - not even with --force." >&2
+        return 1
+        ;;
     esac
   done <<< "$slot_paths"
   if [ -n "$claimed" ]; then
     RETIRE_SLOT_NOTE="the pool slot at $claimed may still be claimed by this task; its claim and checkout were left untouched"
-    [ "$unreadable" = 0 ] || RETIRE_SLOT_NOTE="$RETIRE_SLOT_NOTE, and another slot claim could not be read"
-  elif [ "$unreadable" = 1 ]; then
-    RETIRE_SLOT_NOTE="a pool-slot claim could not be read, so a pool slot may still be claimed"
   fi
 }
 if [ "$RETIRE_UNIDENTIFIED" = 1 ]; then
@@ -1231,7 +1242,6 @@ if [ "$RETIRE_UNIDENTIFIED" = 1 ]; then
     exit 1
   fi
   WT=
-  retire_read_claimed_slot || exit 1
 fi
 if [ "$TEARDOWN_WINDOWLESS" = 1 ]; then
   BACKEND=tmux
@@ -3631,7 +3641,9 @@ if [ "$BACKEND" = orca ] && [ "$KIND" != scout ] && [ "$KIND" != secondmate ] &&
   ORCA_PATH_MATCH_VERIFIED=1
 fi
 
-if teardown_owns_worktree && [ -d "$WT" ] && [ "$FORCE" != "--force" ]; then
+if [ "$RETIRE_UNIDENTIFIED" = 1 ]; then
+  retire_read_claimed_slot || exit 1
+elif teardown_owns_worktree && [ -d "$WT" ] && [ "$FORCE" != "--force" ]; then
   if validate_worktree_teardown_safety; then
     :
   else

@@ -918,7 +918,7 @@ test_unidentified_retirement_slot_claim_and_ledger() {
   rc=$?
   set -e
   expect_code 1 "$rc" "slot-other-home: a claim recorded by another home must still face the unpushed refusal"
-  printf '%s' "$out" | grep -F "REFUSED: pool slot $slot_a is claimed by task tx-unid and its HEAD is not on any remote ref" >/dev/null \
+  printf '%s' "$out" | grep -F "REFUSED: worktree $slot_a has work not on any remote and not landed." >/dev/null \
     || fail "slot-other-home: refusal does not name the unpushed slot: $out"
   assert_present "$case_dir/state/tx-unid.meta" "slot-other-home: the refused retirement removed the record"
   git -C "$slot_a" push -q origin HEAD:refs/heads/main
@@ -944,7 +944,7 @@ test_unidentified_retirement_slot_claim_and_ledger() {
   rc=$?
   set -e
   expect_code 1 "$rc" "slot-unpushed: retirement over a claimed slot with unpushed commits must refuse"
-  printf '%s' "$out" | grep -F "REFUSED: pool slot $slot_a is claimed by task tx-unid and its HEAD is not on any remote ref" >/dev/null \
+  printf '%s' "$out" | grep -F "REFUSED: worktree $slot_a has work not on any remote and not landed." >/dev/null \
     || fail "slot-unpushed: refusal does not name the unpushed slot: $out"
   assert_present "$case_dir/state/tx-unid.meta" "slot-unpushed: the refused retirement removed the record"
   assert_grep "task=tx-unid" "$case_dir/pool/a/.fm-slot-owner" "slot-unpushed: the claim was changed"
@@ -962,11 +962,62 @@ test_unidentified_retirement_slot_claim_and_ledger() {
   rc=$?
   set -e
   expect_code 1 "$rc" "slot-unreadable: retirement over a claimed slot of unknown state must refuse"
-  printf '%s' "$out" | grep -F "REFUSED: pool slot $slot_a is claimed by task tx-unid, but whether it holds unpushed commits cannot be determined" >/dev/null \
+  printf '%s' "$out" | grep -F "REFUSED: cannot inspect worktree $slot_a for uncommitted changes." >/dev/null \
     || fail "slot-unreadable: refusal does not name the unreadable slot: $out"
   assert_present "$case_dir/state/tx-unid.meta" "slot-unreadable: the refused retirement removed the record"
   assert_grep "task=tx-unid" "$case_dir/pool/a/.fm-slot-owner" "slot-unreadable: the claim was changed"
   assert_absent "$case_dir/herdr.log" "slot-unreadable: the endpoint was touched before the refusal"
+
+  # (2f) the claimed slot has uncommitted changes on a pushed HEAD: refused by
+  # the ordinary path's own check, and the claim and checkout are untouched.
+  case_dir=$(make_case unidentified-slot-dirty)
+  slot_a="$case_dir/pool/a/repo"
+  make_pushed_slot "$slot_a"
+  printf 'unlanded\n' > "$slot_a/sentinel"
+  : > "$slot_a/untracked"
+  printf 'task=tx-unid\nhome=%s\n' "$case_dir" > "$case_dir/pool/a/.fm-slot-owner"
+  setup_unidentified_slot_case "$case_dir" "$slot_a"
+  set +e
+  out=$(FM_HOME="$case_dir" run_teardown_id "$case_dir" tx-unid --retire-unidentified-worktree 2>&1)
+  rc=$?
+  set -e
+  expect_code 1 "$rc" "slot-dirty: retirement over a claimed slot with uncommitted changes must refuse"
+  printf '%s' "$out" | grep -F "REFUSED: worktree $slot_a has uncommitted changes." >/dev/null \
+    || fail "slot-dirty: refusal does not name the dirty slot: $out"
+  printf '%s' "$out" | grep -F "accepts no --force: commit and land the slot's work, or have the captain explicitly authorise discarding it, through firstmate" >/dev/null \
+    || fail "slot-dirty: refusal does not give the way forward without --force: $out"
+  assert_present "$case_dir/state/tx-unid.meta" "slot-dirty: the refused retirement removed the record"
+  assert_grep "task=tx-unid" "$case_dir/pool/a/.fm-slot-owner" "slot-dirty: the dirty slot's claim was changed"
+  assert_grep "unlanded" "$slot_a/sentinel" "slot-dirty: the dirty checkout was changed"
+  assert_present "$slot_a/untracked" "slot-dirty: an untracked file in the dirty slot was removed"
+  assert_absent "$case_dir/herdr.log" "slot-dirty: the endpoint was touched before the refusal"
+
+  # (2g) a slot-owner claim that cannot be read refuses: a symlink, a
+  # directory, or a file with no task= line.
+  local claim_shape marker
+  for claim_shape in symlink directory no-task; do
+    case_dir=$(make_case "unidentified-claim-$claim_shape")
+    slot_a="$case_dir/pool/a/repo"
+    make_pushed_slot "$slot_a"
+    marker="$case_dir/pool/a/.fm-slot-owner"
+    case "$claim_shape" in
+      symlink) printf 'task=tx-unid\n' > "$case_dir/elsewhere"; ln -s "$case_dir/elsewhere" "$marker" ;;
+      directory) mkdir "$marker" ;;
+      no-task) printf 'home=%s\n' "$case_dir" > "$marker" ;;
+    esac
+    setup_unidentified_slot_case "$case_dir" "$slot_a"
+    set +e
+    out=$(FM_HOME="$case_dir" run_teardown_id "$case_dir" tx-unid --retire-unidentified-worktree 2>&1)
+    rc=$?
+    set -e
+    expect_code 1 "$rc" "claim-$claim_shape: an unreadable slot claim must refuse"
+    printf '%s' "$out" | grep -F "REFUSED: the slot-owner claim $marker for pool slot $slot_a cannot be read" >/dev/null \
+      || fail "claim-$claim_shape: refusal does not name the slot and its claim file: $out"
+    printf '%s' "$out" | grep -F "unlanded work there cannot be ruled out. Inspect or repair that claim file, or have the captain explicitly authorise discarding the work, through firstmate" >/dev/null \
+      || fail "claim-$claim_shape: refusal does not give the way forward: $out"
+    assert_present "$case_dir/state/tx-unid.meta" "claim-$claim_shape: the refused retirement removed the record"
+    assert_absent "$case_dir/herdr.log" "claim-$claim_shape: the endpoint was touched before the refusal"
+  done
 
   # (2e) the pool's slot claims cannot be listed: refused, nothing changed.
   local unlistable

@@ -588,13 +588,13 @@ fm_backlog_body_append_line() {  # <resolved-data-dir> <authorized-data-dir> <id
     *)
       new_body=$line
       [ -z "$body" ] || new_body=$(printf '%s\n\n%s' "$body" "$line")
-      tmp=$(umask 077; mktemp "${TMPDIR:-/tmp}/fm-backlog-retain-body.XXXXXX") || {
-        FM_BACKLOG_TRANSITION_ERROR="cannot stage the deliverable for $id"
+      tmp=$(umask 077; mktemp "${TMPDIR:-/tmp}/fm-backlog-task-body.XXXXXX") || {
+        FM_BACKLOG_TRANSITION_ERROR="cannot stage the task body for $id"
         return 1
       }
       if ! printf '%s\n' "$new_body" > "$tmp"; then
         rm -f -- "$tmp"
-        FM_BACKLOG_TRANSITION_ERROR="cannot stage the deliverable for $id"
+        FM_BACKLOG_TRANSITION_ERROR="cannot stage the task body for $id"
         return 1
       fi
       if ! fm_backlog_mutate "$authorized_data" update "$id" --body-file "$tmp"; then
