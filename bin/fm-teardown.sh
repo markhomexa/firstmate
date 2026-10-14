@@ -2052,8 +2052,9 @@ validate_worktree_teardown_safety() {
 # (a fork counts, not only origin) so the reachability test below reads the
 # remotes' current branch heads instead of whatever was last fetched. Used only
 # once commits already look unpushed, so it can clear a false refusal and never
-# turns anything into a pass by itself: a remote that cannot be fetched keeps
-# its old refs, and the refusal stands unless some fetched ref now contains HEAD.
+# turns anything into a pass by itself: a failed fetch may leave its refs old or
+# only partly updated, so the caller rereads the refs after every attempt and the
+# refusal stands unless some tracking ref now contains HEAD.
 refresh_remote_tracking_refs() {
   local remote limit=${FM_TEARDOWN_FETCH_TIMEOUT:-60}
   local -a fetch=(git -C "$WT" fetch --quiet --no-tags)
