@@ -3420,7 +3420,7 @@ fm_backend_herdr_proof_content() {  # <target>
   fi
   [ "${FM_HERDR_COMPOSER_PREPROVED:-}" = 1 ] || return 1
   cap=$(fm_backend_herdr_visible_capture_ansi "$target" 2>/dev/null) && [ -n "$cap" ] || return 1
-  FM_COMPOSER_GHOST_LUMA_MAX=0 fm_composer_claude_glyph_row_content 'styled=1' "$cap"
+  fm_composer_claude_glyph_row_content 'styled=1' "$cap"
 }
 
 fm_backend_herdr_proof_state() {  # <target>

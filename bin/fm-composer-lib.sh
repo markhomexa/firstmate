@@ -736,11 +736,14 @@ fm_composer_classify_content() {  # <bordered> <content> [idle_re] [idle_case] [
 # Claude payload proof, built on that same failing reader, refused to type.
 # This reader never measures a rule's width. It recognizes only this picture,
 # read from the plain screen: the LAST row that opens with an agent prompt
-# glyph, directly under a row that opens with an 8-column `─` run (a plain or
-# titled top rule), followed by zero or more wrapped continuation rows and
+# glyph directly under a row that opens with an 8-column `─` run (a plain or
+# titled top rule), followed by zero or more wrapped continuation rows (which
+# may themselves open with a glyph such as `→`) and
 # then a row of nothing but `─` at least 8 wide, with at most 3 non-blank
 # furniture rows below it and no other glyph or rule row among them. It prints
-# the prompt's content (glyph removed, ghost text stripped on a styled capture,
+# the prompt's content (glyph removed, Claude's SGR-2 dim ghost text stripped on
+# a styled capture but its muted-grey typed slash commands kept, the same
+# FM_COMPOSER_GHOST_LUMA_MAX=0 read fm_backend_herdr_composer_content uses,
 # each continuation row on its own line) and returns 1 on anything else,
 # including a blocking dialog. Only explicit opt-ins consult it: the away
 # daemon's unknown-verdict path (bin/fm-supervise-daemon.sh inject_msg) and the
@@ -759,15 +762,15 @@ EOF
   mapfile -t rrows <<<"$screen"
   n=${#prows[@]}
   [ "$n" -eq "${#rrows[@]}" ] || return 1
-  for ((i = 0; i < n; i++)); do
+  for ((i = 1; i < n; i++)); do
     row=${prows[i]}
     fm_composer_normalize_trim_var row
-    if fm_composer_leading_agent_glyph_var glyph "$row"; then last=$i; fi
+    fm_composer_leading_agent_glyph_var glyph "$row" || continue
+    row=${prows[i - 1]}
+    fm_composer_normalize_trim_var row
+    case "$row" in ────────*) last=$i ;; esac
   done
   [ "$last" -ge 1 ] || return 1
-  row=${prows[last - 1]}
-  fm_composer_normalize_trim_var row
-  case "$row" in ────────*) ;; *) return 1 ;; esac
   for ((i = last + 1; i < n; i++)); do
     row=${prows[i]}
     fm_composer_normalize_trim_var row
@@ -786,12 +789,12 @@ EOF
     case "$row" in ────────*) return 1 ;; esac
   done
   [ "$rest" -le 3 ] || return 1
-  content=$(_fm_composer_row_content "${rrows[last]}" "$styled")
+  content=$(FM_COMPOSER_GHOST_LUMA_MAX=0 _fm_composer_row_content "${rrows[last]}" "$styled")
   if fm_composer_leading_agent_glyph_var glyph "$content"; then content=${content#*"$glyph"}; fi
   fm_composer_normalize_trim_var content
   joined=$content
   for ((i = last + 1; i < close; i++)); do
-    content=$(_fm_composer_row_content "${rrows[i]}" "$styled")
+    content=$(FM_COMPOSER_GHOST_LUMA_MAX=0 _fm_composer_row_content "${rrows[i]}" "$styled")
     joined+=$'\n'$content
   done
   printf '%s' "$joined"

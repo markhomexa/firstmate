@@ -1254,7 +1254,14 @@ test_claude_glyph_row_proof_reads_titled_rules_of_any_title() {
     got=$(fm_composer_claude_glyph_row_content "$caps" "$top"$'\n❯ first wrapped half\n  second half\n'"$bottom"$'\n'"$foot") \
       || fail "wrapped payload under titled rule [$title] not recognized"
     [ "$got" = $'first wrapped half\nsecond half' ] || fail "wrapped payload under titled rule [$title] read [$got]"
+    got=$(fm_composer_claude_glyph_row_content "$caps" "$top"$'\n❯ worker status: tests\n  → green, lane free\n'"$bottom"$'\n'"$foot") \
+      || fail "wrapped payload with a continuation row opening on an arrow under [$title] not recognized"
+    [ "$got" = $'worker status: tests\n→ green, lane free' ] || fail "arrow continuation under [$title] read [$got]"
   done
+  got=$(FM_COMPOSER_GHOST_LUMA_MAX=128 fm_composer_claude_glyph_row_proof 'styled=1' "$top"$'\n❯ \e[38;2;112;112;112m/compact\e[0m\n'"$bottom"$'\n'"$foot")
+  [ "$got" = pending ] || fail "a muted-grey typed slash command read $got"
+  got=$(fm_composer_claude_glyph_row_proof 'styled=1' "$top"$'\n❯ \e[2mTry "fix lint errors"\e[0m\n'"$bottom"$'\n'"$foot")
+  [ "$got" = empty ] || fail "a dim ghost suggestion read $got"
   got=$(fm_composer_claude_glyph_row_proof "$caps" "recap"$'\n'"user@host:~\$ ")
   [ "$got" = unknown ] || fail "dead shell read $got"
   got=$(fm_composer_claude_glyph_row_proof "$caps" "recap"$'\n❯'"$NBSP"$'\n'"$bottom"$'\n'"$foot")
