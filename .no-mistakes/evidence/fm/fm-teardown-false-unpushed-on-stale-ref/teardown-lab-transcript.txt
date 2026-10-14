@@ -1,0 +1,76 @@
+=== S0: BASELINE at base commit 0397cb2 (pre-fix code), same incident setup ===
+before:
+  HEAD: 8bdbb0e
+$ FM_HOME=$LAB bin/fm-teardown.sh s0 
+REFUSED: worktree $LAB/projects/s0/wt has work not on any remote and not landed.
+unpushed commits:
+8bdbb0e feat c
+89b1a9f feat b
+f1963e0 feat a
+Push the branch, land its PR, or get the captain's explicit OK to discard, then --force.
+[exit=1 elapsed=1s meta_present=yes]
+=== S1: incident repro - 3 commits pushed to fork by URL, fork/<branch> tracking ref ABSENT ===
+before:
+  HEAD: 4aceeb2
+$ FM_HOME=$LAB bin/fm-teardown.sh s1 
+fm-gate-refuse: gate agent lifecycle permitted only against lab home $LAB
+project: already current
+teardown s1 complete (window firstmate:fm-s1, worktree $LAB/projects/s1/wt)
+Backlog: s1 just finished (this home keeps no markdown backlog at $LAB/data/backlog.md). Update $LAB/data/backlog.md - move s1 to Done, keep Done to the 10 most recent, then re-scan Queued and dispatch only work whose blockers are gone and date is due.
+[exit=0 elapsed=2s meta_present=no]
+after:
+  tracking: fork/fm/s1 4aceeb2
+  HEAD: 4aceeb2
+
+=== S2: tracking ref STALE (fetched after 1st commit, 2 more pushed by URL) ===
+before:
+  tracking: fork/fm/s2 4aaee0f
+  HEAD: be88a8b
+$ FM_HOME=$LAB bin/fm-teardown.sh s2 
+fm-gate-refuse: gate agent lifecycle permitted only against lab home $LAB
+project: already current
+teardown s2 complete (window firstmate:fm-s2, worktree $LAB/projects/s2/wt)
+Backlog: s2 just finished (this home keeps no markdown backlog at $LAB/data/backlog.md). Update $LAB/data/backlog.md - move s2 to Done, keep Done to the 10 most recent, then re-scan Queued and dispatch only work whose blockers are gone and date is due.
+[exit=0 elapsed=3s meta_present=no]
+after:
+  tracking: fork/fm/s2 be88a8b
+  HEAD: be88a8b
+
+=== S3 (adversarial): pushed commit + one commit only on this disk -> must still REFUSE ===
+$ FM_HOME=$LAB bin/fm-teardown.sh s3 
+fm-gate-refuse: gate agent lifecycle permitted only against lab home $LAB
+REFUSED: worktree $LAB/projects/s3/wt has work not on any remote and not landed.
+unpushed commits:
+ade4dbd local only work
+Push the branch, land its PR, or get the captain's explicit OK to discard, then --force.
+[exit=1 elapsed=1s meta_present=yes]
+
+=== S4 (adversarial): fork remote unreachable (repo moved away) -> must REFUSE with refresh note ===
+$ FM_HOME=$LAB bin/fm-teardown.sh s4 
+fm-gate-refuse: gate agent lifecycle permitted only against lab home $LAB
+REFUSED: worktree $LAB/projects/s4/wt has work not on any remote and not landed.
+unpushed commits:
+2759b71 pushed
+note: a remote could not be refreshed (possibly timed out; see FM_TEARDOWN_FETCH_TIMEOUT), so these commits may already be on it.
+Push the branch, land its PR, or get the captain's explicit OK to discard, then --force.
+[exit=1 elapsed=1s meta_present=yes]
+
+=== S5 (adversarial): hanging ssh remote, FM_TEARDOWN_FETCH_TIMEOUT=3 -> bounded, no prompt, REFUSE with note ===
+$ FM_HOME=$LAB bin/fm-teardown.sh s5 
+fm-gate-refuse: gate agent lifecycle permitted only against lab home $LAB
+REFUSED: worktree $LAB/projects/s5/wt has work not on any remote and not landed.
+unpushed commits:
+b65a308 pushed
+note: a remote could not be refreshed (possibly timed out; see FM_TEARDOWN_FETCH_TIMEOUT), so these commits may already be on it.
+Push the branch, land its PR, or get the captain's explicit OK to discard, then --force.
+[exit=1 elapsed=4s meta_present=yes]
+
+=== S6: genuine local-only work + --force escape hatch still works ===
+$ FM_HOME=$LAB bin/fm-teardown.sh s3 --force
+fm-gate-refuse: gate agent lifecycle permitted only against lab home $LAB
+project: already current
+teardown s3 complete (window firstmate:fm-s3, worktree $LAB/projects/s3/wt)
+Backlog: s3 just finished (this home keeps no markdown backlog at $LAB/data/backlog.md). Update $LAB/data/backlog.md - move s3 to Done, keep Done to the 10 most recent, then re-scan Queued and dispatch only work whose blockers are gone and date is due.
+[exit=0 elapsed=2s meta_present=no]
+
+lab removed: yes
