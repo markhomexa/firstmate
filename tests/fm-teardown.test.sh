@@ -992,6 +992,33 @@ test_unidentified_retirement_slot_claim_and_ledger() {
   assert_present "$slot_a/untracked" "slot-dirty: an untracked file in the dirty slot was removed"
   assert_absent "$case_dir/herdr.log" "slot-dirty: the endpoint was touched before the refusal"
 
+  # (2f') the claimed slot cannot be inspected while its git index is locked
+  # (a lone lock does not block the read-only status; a broken index under a
+  # lock does): refused, naming the lock, and the lock is left in place.
+  case_dir=$(make_case unidentified-slot-locked)
+  slot_a="$case_dir/pool/a/repo"
+  make_pushed_slot "$slot_a"
+  printf 'not an index' > "$slot_a/.git/index"
+  : > "$slot_a/.git/index.lock"
+  printf 'task=tx-unid\nhome=%s\n' "$case_dir" > "$case_dir/pool/a/.fm-slot-owner"
+  setup_unidentified_slot_case "$case_dir" "$slot_a"
+  set +e
+  out=$(FM_HOME="$case_dir" run_teardown_id "$case_dir" tx-unid --retire-unidentified-worktree 2>&1)
+  rc=$?
+  set -e
+  expect_code 1 "$rc" "slot-locked: retirement over a claimed slot with a locked git index must refuse"
+  printf '%s' "$out" | grep -F "REFUSED: pool slot $slot_a is claimed by task tx-unid (claim recorded by home $case_dir), and its git index is locked" >/dev/null \
+    || fail "slot-locked: refusal does not say the slot's git index is locked: $out"
+  printf '%s' "$out" | grep -F "index.lock), so its state cannot be determined and unlanded work there cannot be ruled out" >/dev/null \
+    || fail "slot-locked: refusal does not name the lock or say unlanded work cannot be ruled out: $out"
+  printf '%s' "$out" | grep -F "wait for the lock's holder to finish, or clear the lock once its holder is gone, then retry; or have the captain explicitly authorise discarding the work, through firstmate" >/dev/null \
+    || fail "slot-locked: refusal does not give the way forward: $out"
+  printf '%s' "$out" | grep -F "commit and land the slot's work" >/dev/null \
+    && fail "slot-locked: refusal gives commit advice that the lock blocks: $out"
+  assert_present "$slot_a/.git/index.lock" "slot-locked: the lock was removed"
+  assert_present "$case_dir/state/tx-unid.meta" "slot-locked: the refused retirement removed the record"
+  assert_absent "$case_dir/herdr.log" "slot-locked: the endpoint was touched before the refusal"
+
   # (2g) a slot-owner claim that cannot be read refuses: a symlink, a
   # directory, or a file with no task= line.
   local claim_shape marker

@@ -1185,7 +1185,7 @@ RETIRE_BACKLOG_NOTE="cleanup NOT verified - worktree identity unknown so landed 
 # Sets RETIRE_SLOT_NOTE to what was found.
 RETIRE_SLOT_NOTE=
 retire_read_claimed_slot() {
-  local status_json slot_paths path claimed='' unlisted='' marker
+  local status_json slot_paths path claimed='' unlisted='' marker safety_rc lock
   RETIRE_SLOT_NOTE="the pool was searched and no durable pool-slot claim naming this task was found, so a pool slot may still be held without a claim"
   if [ -z "$PROJ" ]; then
     unlisted="task $ID's record names no project path"
@@ -1205,13 +1205,19 @@ retire_read_claimed_slot() {
     fm_treehouse_slot_owner_state "$path" "$ID"
     case "$FM_TREEHOUSE_SLOT_OWNER" in
       mine)
-        if ! (
+        safety_rc=0
+        (
           WT=$path
           TEARDOWN_WORKTREE_BRANCH_FOR_SAFETY=
           GIT_OPTIONAL_LOCKS=0
           export GIT_OPTIONAL_LOCKS
           validate_worktree_teardown_safety
-        ); then
+        ) || safety_rc=$?
+        if [ "$safety_rc" -eq "$TEARDOWN_WORKTREE_SAFETY_LOCK_BLOCKED" ]; then
+          lock=$(worktree_git_lock_path "$path") || lock="its git index lock"
+          echo "REFUSED: pool slot $path is claimed by task $ID (claim recorded by home ${FM_TREEHOUSE_SLOT_OWNER_HOME:-unrecorded}), and its git index is locked ($lock), so its state cannot be determined and unlanded work there cannot be ruled out. This path does not check or remove locks: wait for the lock's holder to finish, or clear the lock once its holder is gone, then retry; or have the captain explicitly authorise discarding the work, through firstmate. Nothing was changed." >&2
+          return 1
+        elif [ "$safety_rc" -ne 0 ]; then
           echo "REFUSED: pool slot $path is claimed by task $ID (claim recorded by home ${FM_TREEHOUSE_SLOT_OWNER_HOME:-unrecorded}). --retire-unidentified-worktree accepts no --force: commit and land the slot's work, or have the captain explicitly authorise discarding it, through firstmate. Nothing was changed." >&2
           return 1
         fi
