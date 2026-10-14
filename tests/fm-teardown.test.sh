@@ -799,6 +799,7 @@ test_unidentified_worktree_retirement() {
     assert_grep "RETIRED UNVERIFIED tx-unid" "$case_dir/r.out" "unidentified-$shape: success line does not say it is unverified"
     assert_grep "landed work was NOT checked" "$case_dir/r.out" "unidentified-$shape: success line hides that nothing was checked"
     assert_no_grep "teardown tx-unid complete" "$case_dir/r.out" "unidentified-$shape: reported an ordinary clean close"
+    assert_no_grep "legacy record" "$case_dir/r.out" "unidentified-$shape: a record with spawn_gen was reported as legacy"
     assert_absent "$case_dir/state/tx-unid.meta" "unidentified-$shape: record not released"
     assert_present "$case_dir/state/task-x1.meta" "unidentified-$shape: a valid record was disturbed"
     after=$(find "$case_dir/state" -maxdepth 1 -name "*.meta" | wc -l)
@@ -1103,6 +1104,8 @@ test_unidentified_retirement_of_a_legacy_record_reports_unverified() {
     || fail "legacy: a legacy record's retirement is not reported as unverified: $out"
   printf '%s' "$out" | grep -F "teardown tx-unid complete" >/dev/null \
     && fail "legacy: a legacy record's retirement reported an ordinary clean close: $out"
+  printf '%s' "$out" | grep -F "(legacy record without spawn_gen, endpoint missing)" >/dev/null \
+    || fail "legacy: a legacy record's retirement does not name the legacy acceptance and its endpoint: $out"
   assert_absent "$case_dir/state/tx-unid.meta" "legacy: record not released"
   pass "teardown: retiring a legacy record with no worktree identity still reports RETIRED UNVERIFIED, never a clean close"
 }

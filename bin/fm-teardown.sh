@@ -4097,7 +4097,9 @@ fi
 if [ "$TEARDOWN_POOL_SLOT_LOST" = 1 ]; then
   echo "teardown $ID finished its cleanup and removed its task record, but a returned pool slot did not come back clean (see the warning above); clear those paths so the pool can reuse the slot" >&2
 elif [ "$RETIRE_UNIDENTIFIED" = 1 ]; then
-  echo "RETIRED UNVERIFIED $ID: record released and endpoint ${T:-none} closed${TEARDOWN_LEGACY_ACCEPTED:+ (legacy record without spawn_gen, endpoint $TEARDOWN_LEGACY_ENDPOINT)}, but its worktree could not be identified, so landed work was NOT checked and no worktree was touched; $RETIRE_SLOT_NOTE; this is not an ordinary clean close"
+  retire_legacy_note=""
+  [ "$TEARDOWN_LEGACY_ACCEPTED" = 1 ] && retire_legacy_note=" (legacy record without spawn_gen, endpoint $TEARDOWN_LEGACY_ENDPOINT)"
+  echo "RETIRED UNVERIFIED $ID: record released and endpoint ${T:-none} closed$retire_legacy_note, but its worktree could not be identified, so landed work was NOT checked and no worktree was touched; $RETIRE_SLOT_NOTE; this is not an ordinary clean close"
 elif [ "$TEARDOWN_LEGACY_ACCEPTED" = 1 ]; then
   echo "teardown $ID complete (window ${T:-none}, worktree $WT, legacy record accepted without spawn_gen: endpoint $TEARDOWN_LEGACY_ENDPOINT, incarnation $TEARDOWN_META_SPAWN_GEN)"
 elif teardown_owns_worktree; then
