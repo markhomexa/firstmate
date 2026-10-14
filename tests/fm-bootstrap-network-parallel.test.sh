@@ -71,6 +71,14 @@ case "$command_name" in
   fm-remote-secondmate-control.sh)
     case "$subcommand" in state|sync) slow=1 ;; esac
     ;;
+  fm-remote-file.sh|fm-backlog-receive.sh)
+    # Handoff delivery round trips: slow only when the caller asks, so the
+    # existing probe-scheduling cases keep their timeline.
+    if [ -n "${FM_FAKE_SSH_HANDOFF_SLEEP:-}" ]; then
+      printf 'HANDOFF %s %s\n' "$host" "$command_name" >> "$log"
+      sleep "$FM_FAKE_SSH_HANDOFF_SLEEP"
+    fi
+    ;;
 esac
 if [ "$slow" -eq 1 ]; then
   printf 'START %s %s %s\n' "$host" "$command_name" "$subcommand" >> "$log"
@@ -401,7 +409,88 @@ EOF
   pass "a remote inheritance failure reports its own error line, not an earlier unchanged item"
 }
 
+# The condition that broke session start: two remote secondmates, so liveness
+# and convergence are each one slow round trip and handoff delivery follows
+# them. Run serially the three exceed the stage bound and the checks that ran
+# last were never confirmed. Every figure below is simulated (a fake ssh with
+# fixed sleeps, a bound scaled down to match), so this proves the scheduling
+# and the reporting, not the latency of real hosts.
+test_two_remote_mates_leave_no_check_unconfirmed() {
+  local dir home primary fakebin log started took state report_out lanes
+  dir="$TMP_ROOT/two-remote-lanes"
+  home="$dir/home"
+  primary="$dir/primary"
+  mkdir -p "$home/state" "$home/data/handoff" "$home/config" "$home/projects" "$primary"
+  git init -q -b main "$primary"
+  cp -R "$ROOT/bin" "$primary/bin"
+  printf 'test primary\n' > "$primary/AGENTS.md"
+  git -C "$primary" add AGENTS.md bin
+  git -C "$primary" commit -qm 'seed primary default branch'
+  fakebin=$(fm_fakebin "$dir")
+  fm_fake_exit0 "$fakebin" gh treehouse tmux node
+  log="$dir/probe.log"
+  # The fake ssh holds each slow probe until a clone fetch announces itself;
+  # this scenario has no slow fetch, so announce it up front rather than let
+  # every probe pay that wait.
+  printf 'START fleet-fetch git fetch\n' > "$log"
+  install_fake_ssh "$fakebin"
+  cat > "$fakebin/ps" <<'SH'
+#!/usr/bin/env bash
+pid=
+previous=
+for argument in "$@"; do
+  [ "$previous" = -p ] && pid=$argument
+  previous=$argument
+done
+if [ "$pid" = "${FM_FAKE_HARNESS_PID:-}" ]; then
+  case "$*" in
+    *comm=*) printf '/usr/local/bin/claude\n' ;;
+    *args=*) printf 'claude\n' ;;
+    *ppid=*) /bin/ps -o ppid= -p "$pid" ;;
+  esac
+else
+  /bin/ps "$@"
+fi
+SH
+  chmod +x "$fakebin/ps"
+
+  : > "$home/data/secondmates.md"
+  for id in alpha bravo; do
+    mkdir -p "$dir/remote/$id/root" "$dir/remote/$id/home"
+    write_remote_registry_line "$home/data/secondmates.md" "$id" "host-$id" "$dir/remote/$id/root" "$dir/remote/$id/home"
+    fm_write_secondmate_meta "$home/state/$id.meta" "$dir/remote/$id/home"
+    printf 'remote_host=host-%s\n' "$id" >> "$home/state/$id.meta"
+  done
+  printf '# Backlog\n\n## Queued\n\n- [ ] one\n' > "$home/data/handoff/alpha.outbox.md"
+  printf '%s\n' $$ > "$home/state/.lock"
+
+  started=$(date +%s)
+  PATH="$fakebin:$BASE_PATH" \
+    FM_HOME="$home" FM_ROOT_OVERRIDE="$primary" FM_FAKE_HARNESS_PID=$$ \
+    FM_SSH_BIN="$fakebin/fake-ssh" FM_FAKE_SSH_LOG="$log" \
+    FM_FAKE_SSH_SLEEP=4 FM_FAKE_SSH_HANDOFF_SLEEP=4 \
+    FM_FAKE_SSH_UNREACHABLE_HOST=none FM_FAKE_SSH_FAIL_HOST=none FM_FAKE_SSH_DIRTY_HOST=none \
+    FM_STARTUP_NETWORK_TIMEOUT=22 FM_SESSION_START_TIMEOUT=22 \
+    FM_INHERITABLE_CONFIG='' FM_FAKE_TREEHOUSE_LEASE_HELP=1 \
+    "$primary/bin/fm-startup-network.sh" run --locked 1 >/dev/null 2>&1
+  took=$(( $(date +%s) - started ))
+
+  state=$(sed -n 's/^state=//p' "$home/state/.startup-network.status")
+  report_out=$(cat "$home/state/.startup-network.report" 2>/dev/null || true)
+  [ "$state" = "done" ] \
+    || fail "two remote mates left the stage '$state' after ${took}s (bound 22s), checks unconfirmed:"$'\n'"$report_out"$'\n'"$(cat "$log")"
+  assert_not_contains "$report_out" "bound before finishing" \
+    "the report still says the stage hit its bound"
+  grep -q '^HANDOFF host-alpha ' "$log" \
+    || fail "pending handoff delivery never reached the mate: $(cat "$log")"
+  lanes=$(awk -F'\t' '$2 == "lane" { print $3 }' "$home/state/.startup-network.timings" | sort | tr '\n' ' ')
+  [ "$lanes" = "clones handoff remote scan " ] \
+    || fail "every last check must have its own timed lane, got: $lanes"
+  pass "two remote mates: the last checks reach a definite result inside the bound (${took}s of 22s)"
+}
+
 test_remote_probe_scheduling_keeps_per_mate_lines parallel
 test_remote_probe_scheduling_keeps_per_mate_lines fallback
 test_remote_inheritance_failure_names_its_own_error_not_an_unchanged_item
+test_two_remote_mates_leave_no_check_unconfirmed
 echo "# all fm-bootstrap-network-parallel tests passed"

@@ -65,6 +65,7 @@ if [ -n "${FM_TIMING_LOG:-}" ]; then
     "$(( $(fm_timing_now_ms) - 1500 ))" "${FM_FAKE_TIMING_DETAIL:-}"
 fi
 [ -z "${FM_FAKE_BOOTSTRAP_SLEEP:-}" ] || sleep "$FM_FAKE_BOOTSTRAP_SLEEP"
+[ -z "${FM_FAKE_BOOTSTRAP_SLOW_LANE:-}" ] || [ "${FM_BOOTSTRAP_NETWORK_LANE:-}" != "$FM_FAKE_BOOTSTRAP_SLOW_LANE" ] || sleep 20
 [ -z "${FM_FAKE_BOOTSTRAP_OUT:-}" ] || printf '%s\n' "$FM_FAKE_BOOTSTRAP_OUT"
 exit "${FM_FAKE_BOOTSTRAP_RC:-0}"
 SH
@@ -101,6 +102,28 @@ await_worker_record() {  # <home>
     waited=$((waited + 1))
   done
   [ -s "$home/state/.startup-network.status" ] || fail "the detached worker never recorded itself"
+}
+
+# A lane that outlives the bound must be the only thing the report calls
+# unconfirmed; the lanes that finished stay confirmed.
+test_a_timeout_names_only_the_lane_that_did_not_finish() {
+  local rec home root log report
+  rec=$(new_world lane-bound)
+  IFS='|' read -r home root log <<EOF
+$rec
+EOF
+  printf '%s\n' $$ > "$home/state/.lock"
+
+  FM_FAKE_BOOTSTRAP_LOG="$log" FM_FAKE_BOOTSTRAP_SLOW_LANE=remote FM_STARTUP_NETWORK_TIMEOUT=3 \
+    run_stage "$home" "$root" run --locked 1 >/dev/null
+  report=$(run_stage "$home" "$root" report | grep '^NETWORK_CHECKS:')
+  assert_contains "$report" "so dead-secondmate relaunch and secondmate convergence may be incomplete" \
+    "the timeout did not name the lane that outlived the bound: $report"
+  assert_not_contains "$report" "pending handoff delivery" \
+    "a lane that finished was reported as unconfirmed: $report"
+  assert_not_contains "$report" "clone refresh" \
+    "a lane that finished was reported as unconfirmed: $report"
+  pass "fm-startup-network: a timeout names only the lane that did not finish"
 }
 
 test_wait_fails_without_a_published_stage() {
@@ -554,7 +577,9 @@ EOF
   run_stage "$home" "$root" wait 40 >/dev/null || fail "the worker never published"
 
   runs=$(grep -c 'network=only' "$log" || true)
-  [ "$runs" -eq 1 ] || fail "a second start launched a competing worker ($runs runs): $(cat "$log")"
+  # One worker is one set of three bootstrap lanes (clones, remote, handoff); a
+  # competing worker would double that.
+  [ "$runs" -eq 3 ] || fail "a second start launched a competing worker ($runs runs): $(cat "$log")"
   pass "fm-startup-network: a second start never launches a competing worker"
 }
 
@@ -778,9 +803,11 @@ GITHUB_TOKEN=ghp_supersecretvalue" \
     "the timing artifact carried a command line through"
   assert_grep 'unrecordable' "$home/state/.startup-network.timings" \
     "free text was silently dropped instead of being marked unrecordable"
-  lines=$(grep -c . "$home/state/.startup-network.timings")
-  [ "$lines" -eq 2 ] \
-    || fail "one sweep record plus the stage total should be 2 lines, got $lines"
+  # Every line must be a well-formed six-field record: a forged extra record
+  # would show up as a line that is not, whatever number of lanes ran.
+  lines=$(awk -F'\t' '$1 != "v1" || NF != 6' "$home/state/.startup-network.timings" | grep -c . || true)
+  [ "$lines" -eq 0 ] \
+    || fail "the timing artifact holds $lines malformed records"
 
   # The step itself is still measured - only its untrustworthy label is refused,
   # so a sweep that mislabels itself still shows up as time spent.
@@ -880,4 +907,5 @@ test_timings_are_published_and_only_the_on_demand_report_prints_them
 test_a_bounded_run_still_publishes_the_timings_it_managed_to_record
 test_the_timing_artifact_cannot_carry_a_command_line_or_forge_records
 test_a_held_publish_lock_cannot_keep_the_worker_alive_past_its_budget
+test_a_timeout_names_only_the_lane_that_did_not_finish
 echo "# fm-startup-network.test.sh: all assertions passed"

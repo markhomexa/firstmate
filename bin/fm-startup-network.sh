@@ -106,8 +106,20 @@
 #                             and the wake decision; every wait on it is bounded.
 #
 # The whole stage is bounded by FM_STARTUP_NETWORK_TIMEOUT (default 120s), one
-# aggregate deadline covering both the inactive-outcome scan and network sweeps
-# plus every lock the worker waits on before them.
+# aggregate deadline covering every lane below plus every lock the worker waits on
+# before them. A locked run executes four independent lanes side by side, each with
+# its own bound (the time left in that deadline), output, exit code, and timing
+# record: clones (GitHub authentication and project clone refresh), remote
+# (secondmate liveness then convergence, one process because convergence consumes
+# the ids liveness respawned), handoff (pending handoff delivery), and scan
+# (inactive terminal-outcome reconciliation). They used to run one after another
+# under a single kill, so with two remote secondmates the slow remote probes
+# consumed the budget and the checks behind them were never confirmed. The slowest
+# lane is now the whole critical path, and a timeout names only the lanes that did
+# not finish. The default stays 120s: the measured remote lane alone was 73.6s to
+# 92.8s, and a longer block is a startup people interrupt, which leaves the same
+# checks unconfirmed. `report` prints one `lane` timing record per lane, with
+# `timeout` as its detail when the bound killed it.
 # Publication and delivery are bounded the same way by FM_SESSION_START_TIMEOUT.
 # A lock that a live process still holds at either deadline ends the worker with
 # a failed record naming that holder and the rerun command, never a wait that
@@ -227,6 +239,50 @@ phase_label() {  # <phases>
     probe,sweeps) printf 'GitHub authentication, dead-secondmate relaunch, secondmate convergence, pending handoff delivery, project clone refresh with its drift reporting, and inactive terminal-outcome reconciliation' ;;
     *) printf 'the deferred network checks' ;;
   esac
+}
+
+# Labels for the lanes of a locked run, so a timeout names exactly the checks
+# that did not finish instead of the whole stage.
+lane_label() {  # <lane>
+  case "$1" in
+    clones) printf 'GitHub authentication and project clone refresh with its drift reporting' ;;
+    remote) printf 'dead-secondmate relaunch and secondmate convergence' ;;
+    handoff) printf 'pending handoff delivery' ;;
+    scan) printf 'inactive terminal-outcome reconciliation' ;;
+  esac
+}
+
+unfinished_label() {  # <phases> <failed lanes, space separated>
+  local lane label='' sep=''
+  if [ -z "$2" ]; then phase_label "$1"; return 0; fi
+  for lane in $2; do
+    label="$label$sep$(lane_label "$lane")"
+    sep=', '
+  done
+  printf '%s' "$label"
+}
+
+# Run one lane to completion in the foreground of a background job, keeping its
+# output and exit code in the lanes directory, and record how long it took so a
+# slow run is attributable to a lane even when the bound cut a phase short.
+run_lane() {  # <lanes-dir> <lane> <seconds> <command...>
+  local dir=$1 lane_name=$2 seconds=$3 stamp lane_rc=0
+  shift 3
+  stamp=$(fm_timing_now_ms)
+  fm_run_timed "$seconds" "$@" >"$dir/$lane_name.out" 2>&1 || lane_rc=$?
+  if [ "$lane_rc" -eq 124 ]; then
+    fm_timing_record lane "$lane_name" "$stamp" timeout
+  else
+    fm_timing_record lane "$lane_name" "$stamp" "rc$lane_rc"
+  fi
+  printf '%s\n' "$lane_rc" > "$dir/$lane_name.rc"
+}
+
+# The scan's own non-zero exits are not stage failures: it publishes its findings
+# to the wake queue itself, and the stage has always ignored its status. Only the
+# bound firing means it did not finish.
+scan_lane_rc() {  # <rc>
+  [ "$1" -eq 124 ] && printf 124 || printf 0
 }
 
 # --- start -------------------------------------------------------------------
@@ -478,7 +534,7 @@ publish_lock_held() {  # <generation> <phases> <locked> <started> <lockdir> <out
 }
 
 cmd_run() {  # <locked> <lock-pid> <generation>
-  local locked=$1 lock_pid=$2 generation=$3 phases started budget out rc sweep_locked=0 downgraded=0 internal=0 lease_held=0 timings stage_started stage_deadline
+  local locked=$1 lock_pid=$2 generation=$3 phases started budget out rc sweep_locked=0 downgraded=0 internal=0 lease_held=0 timings stage_started stage_deadline lanes_dir lanes_failed='' lane_name lane_rc
   mkdir -p "$STATE" 2>/dev/null || return 1
   started=$(now)
   budget=$(stage_budget)
@@ -564,26 +620,63 @@ EOF
       downgraded=1
     fi
   fi
-  # One aggregate deadline covers both deferred operations. The inactive scan
-  # retains its own tighter per-scan bound inside this outer bound. Findings
-  # need no report translation: the scan writes its ordinary durable
-  # inactive-outcome wakes directly. A child shell composes the two executable
-  # owners only so fm_run_timed can govern them as one process group.
-  # The sweeps get whatever the lock waits above left of the stage budget.
+  # The checks run as independent lanes, each with its own bound, output, and
+  # exit code, all inside the one stage deadline. Serial phases were the defect:
+  # liveness, then convergence, then handoff delivery, with clone refresh and the
+  # inactive-outcome scan sharing the same single kill, so a slow remote host
+  # left every check that ran after it never started or never reported. Lanes
+  # that do not depend on each other now run side by side, so the slowest lane
+  # (remote liveness then convergence, which must stay in one process because
+  # convergence consumes the ids liveness respawned) is the whole critical path
+  # and a timeout names only the lanes that really did not finish. The inactive
+  # scan retains its own tighter per-scan bound and writes its ordinary durable
+  # wakes directly, so it needs no report translation.
   budget=$(seconds_until "$stage_deadline")
-  if [ "$sweep_locked" -eq 1 ]; then
-    # shellcheck disable=SC2016  # Child-shell variables expand inside the bound.
-    fm_run_timed "$budget" env FM_HOME="$FM_HOME" FM_STATE_OVERRIDE="$STATE" \
-      FM_BOOTSTRAP_NETWORK=only FM_BOOTSTRAP_NETWORK_LOCK_PID="$lock_pid" \
-      bash -c '
-        script_dir=$1
-        "$script_dir/fm-inactive-reconcile.sh" scan --startup >/dev/null 2>&1 || true
-        exec "$script_dir/fm-bootstrap.sh"
-      ' _ "$SCRIPT_DIR" >"$out" 2>&1 || rc=$?
+  lanes_dir=$(mktemp -d "${TMPDIR:-/tmp}/fm-startup-network-lanes.XXXXXX" 2>/dev/null) || lanes_dir=
+  if [ "$sweep_locked" -eq 1 ] && [ -n "$lanes_dir" ]; then
+    run_lane "$lanes_dir" clones "$budget" env FM_HOME="$FM_HOME" FM_STATE_OVERRIDE="$STATE" \
+      FM_BOOTSTRAP_NETWORK=only FM_BOOTSTRAP_NETWORK_LANE=clones FM_BOOTSTRAP_NETWORK_LOCK_PID="$lock_pid" \
+      "$SCRIPT_DIR/fm-bootstrap.sh" &
+    run_lane "$lanes_dir" remote "$budget" env FM_HOME="$FM_HOME" FM_STATE_OVERRIDE="$STATE" \
+      FM_BOOTSTRAP_NETWORK=only FM_BOOTSTRAP_NETWORK_LANE=remote FM_BOOTSTRAP_NETWORK_LOCK_PID="$lock_pid" \
+      "$SCRIPT_DIR/fm-bootstrap.sh" &
+    run_lane "$lanes_dir" handoff "$budget" env FM_HOME="$FM_HOME" FM_STATE_OVERRIDE="$STATE" \
+      FM_BOOTSTRAP_NETWORK=only FM_BOOTSTRAP_NETWORK_LANE=handoff FM_BOOTSTRAP_NETWORK_LOCK_PID="$lock_pid" \
+      "$SCRIPT_DIR/fm-bootstrap.sh" &
+    run_lane "$lanes_dir" scan "$budget" env FM_HOME="$FM_HOME" FM_STATE_OVERRIDE="$STATE" \
+      "$SCRIPT_DIR/fm-inactive-reconcile.sh" scan --startup &
+    wait
+    rc=0
+    # Report order is the order the checks have always printed in.
+    for lane_name in clones remote handoff scan; do
+      # The scan reports through the wake queue, never through this report.
+      [ "$lane_name" = scan ] || cat "$lanes_dir/$lane_name.out" 2>/dev/null >> "$out" || true
+      lane_rc=$(cat "$lanes_dir/$lane_name.rc" 2>/dev/null || echo 1)
+      [ "$lane_rc" -eq 0 ] 2>/dev/null && continue
+      [ "$lane_name" = scan ] && lane_rc=$(scan_lane_rc "$lane_rc")
+      [ "$lane_rc" -eq 0 ] && continue
+      lanes_failed="$lanes_failed $lane_name"
+      if [ "$lane_rc" -eq 124 ]; then rc=124; elif [ "$rc" -ne 124 ]; then rc=$lane_rc; fi
+    done
+    lanes_failed=${lanes_failed# }
   else
-    fm_run_timed "$budget" env FM_BOOTSTRAP_NETWORK=only FM_BOOTSTRAP_DETECT_ONLY=1 \
-      "$SCRIPT_DIR/fm-bootstrap.sh" >"$out" 2>&1 || rc=$?
+    if [ "$sweep_locked" -eq 1 ]; then
+      # No private directory for lane records: fall back to the one bounded run
+      # that composes the same owners, losing only the per-lane attribution.
+      # shellcheck disable=SC2016  # Child-shell variables expand inside the bound.
+      fm_run_timed "$budget" env FM_HOME="$FM_HOME" FM_STATE_OVERRIDE="$STATE" \
+        FM_BOOTSTRAP_NETWORK=only FM_BOOTSTRAP_NETWORK_LOCK_PID="$lock_pid" \
+        bash -c '
+          script_dir=$1
+          "$script_dir/fm-inactive-reconcile.sh" scan --startup >/dev/null 2>&1 || true
+          exec "$script_dir/fm-bootstrap.sh"
+        ' _ "$SCRIPT_DIR" >"$out" 2>&1 || rc=$?
+    else
+      fm_run_timed "$budget" env FM_BOOTSTRAP_NETWORK=only FM_BOOTSTRAP_DETECT_ONLY=1 \
+        "$SCRIPT_DIR/fm-bootstrap.sh" >"$out" 2>&1 || rc=$?
+    fi
   fi
+  [ -z "$lanes_dir" ] || rm -rf "$lanes_dir" 2>/dev/null || true
   [ "$lease_held" -eq 0 ] || fm_lock_release "$STATE/.lock.acquire"
   # The bounded run as a whole, so the per-phase records can be read against the
   # total even when the bound cut some of them off.
@@ -596,12 +689,12 @@ EOF
     0) publish "$generation" 'done' "$phases" "$sweep_locked" "$started" "$rc" "$out" "$timings" ;;
     124)
       printf 'NETWORK_CHECKS: hit the %ss bound before finishing, so %s may be incomplete; rerun %s/bin/fm-startup-network.sh run --locked %s\n' \
-        "$(stage_budget)" "$(phase_label "$phases")" "$FM_ROOT" "$sweep_locked" >> "$out"
+        "$(stage_budget)" "$(unfinished_label "$phases" "$lanes_failed")" "$FM_ROOT" "$sweep_locked" >> "$out"
       publish "$generation" timeout "$phases" "$sweep_locked" "$started" "$rc" "$out" "$timings"
       ;;
     *)
       printf 'NETWORK_CHECKS: the deferred check worker exited %s, so %s may be incomplete; rerun %s/bin/fm-startup-network.sh run --locked %s\n' \
-        "$rc" "$(phase_label "$phases")" "$FM_ROOT" "$sweep_locked" >> "$out"
+        "$rc" "$(unfinished_label "$phases" "$lanes_failed")" "$FM_ROOT" "$sweep_locked" >> "$out"
       publish "$generation" failed "$phases" "$sweep_locked" "$started" "$rc" "$out" "$timings"
       ;;
   esac

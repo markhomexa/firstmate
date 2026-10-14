@@ -133,7 +133,13 @@
 #          in a detached bounded worker and publishes the result. This file stays
 #          the single owner of every sweep, and the split changes only WHEN each
 #          runs, never WHETHER. During the network phase, project clone refresh
-#          overlaps the independent secondmate work. Per-secondmate remote
+#          overlaps the independent secondmate work. FM_BOOTSTRAP_NETWORK_LANE
+#          (remote, handoff, or clones; unset or unrecognized runs every lane)
+#          restricts an `only` run to one lane so bin/fm-startup-network.sh can
+#          bound and report them independently: remote is liveness then
+#          convergence, handoff is pending handoff delivery, and clones is
+#          `gh auth status` plus clone refresh.
+#          Per-secondmate remote
 #          liveness workers run concurrently and finish before per-secondmate
 #          remote convergence workers run concurrently, because convergence
 #          consumes respawned ids. Worker output is captured separately and
@@ -220,6 +226,13 @@ case "${FM_BOOTSTRAP_NETWORK:-all}" in
 esac
 local_phase() { [ "$FM_BOOTSTRAP_NETWORK_PHASE" != only ]; }
 network_phase() { [ "$FM_BOOTSTRAP_NETWORK_PHASE" != skip ]; }
+# Which network lane this run owns. Unrecognized values fall back to every lane
+# for the same reason an unrecognized phase does.
+case "${FM_BOOTSTRAP_NETWORK_LANE:-all}" in
+  remote|handoff|clones) FM_BOOTSTRAP_LANE=$FM_BOOTSTRAP_NETWORK_LANE ;;
+  *) FM_BOOTSTRAP_LANE=all ;;
+esac
+lane() { [ "$FM_BOOTSTRAP_LANE" = all ] || [ "$FM_BOOTSTRAP_LANE" = "$1" ]; }
 
 network_mutation_authorized() {
   local expected=${FM_BOOTSTRAP_NETWORK_LOCK_PID:-} current
@@ -1556,7 +1569,7 @@ detect_home_summary_publication() {
 # fleet_sync and others assign plain names like `start` without `local`, and
 # bash's dynamic scoping would let them overwrite a stamp held by a caller.
 local_phase && detect_local_tools
-if network_phase; then
+if network_phase && lane clones; then
   __fm_timing_stamp=$(fm_timing_now_ms)
   gh auth status >/dev/null 2>&1 || echo "NEEDS_GH_AUTH"
   fm_timing_record phase gh-auth "$__fm_timing_stamp"
@@ -1569,7 +1582,7 @@ if [ "${FM_BOOTSTRAP_DETECT_ONLY:-0}" != 1 ]; then
   # depend on them, so it starts in the background and overlaps their wall clock.
   fleet_sync_pid=
   fleet_sync_out=
-  if network_phase && network_sweep_authorized 'project clone refresh'; then
+  if network_phase && lane clones && network_sweep_authorized 'project clone refresh'; then
     fleet_sync_out=$(mktemp "${TMPDIR:-/tmp}/fm-bootstrap-fleet.XXXXXX") || fleet_sync_out=
     if [ -n "$fleet_sync_out" ]; then
       (
@@ -1584,7 +1597,7 @@ if [ "${FM_BOOTSTRAP_DETECT_ONLY:-0}" != 1 ]; then
       fm_timing_record phase fleet-sync "$__fm_timing_stamp"
     fi
   fi
-  if network_phase; then
+  if network_phase && lane remote; then
     if network_sweep_authorized 'dead-secondmate relaunch'; then
       __fm_timing_stamp=$(fm_timing_now_ms)
       secondmate_liveness_sweep
@@ -1595,11 +1608,11 @@ if [ "${FM_BOOTSTRAP_DETECT_ONLY:-0}" != 1 ]; then
       secondmate_sync
       fm_timing_record phase secondmate-sync "$__fm_timing_stamp"
     fi
-    if network_sweep_authorized 'pending handoff delivery'; then
-      __fm_timing_stamp=$(fm_timing_now_ms)
-      secondmate_handoff_resume
-      fm_timing_record phase handoff-delivery "$__fm_timing_stamp"
-    fi
+  fi
+  if network_phase && lane handoff && network_sweep_authorized 'pending handoff delivery'; then
+    __fm_timing_stamp=$(fm_timing_now_ms)
+    secondmate_handoff_resume
+    fm_timing_record phase handoff-delivery "$__fm_timing_stamp"
   fi
   # x_mode_setup writes local Relay artifacts only and never leaves the machine.
   local_phase && x_mode_setup
