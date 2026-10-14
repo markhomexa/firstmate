@@ -985,6 +985,16 @@ test_unidentified_retirement_slot_claim_and_ledger() {
     expect_code 1 "$rc" "slot-$unlistable: retirement over an unlistable pool must refuse"
     printf '%s' "$out" | grep -F "could not be listed" >/dev/null \
       || fail "slot-$unlistable: refusal does not say the slot claims could not be listed: $out"
+    printf '%s' "$out" | grep -F "No slot search could run, so unlanded work in a pool slot claimed by this task cannot be ruled out" >/dev/null \
+      || fail "slot-$unlistable: refusal does not say unlanded work cannot be ruled out: $out"
+    printf '%s' "$out" | grep -F "restore the project path $case_dir/project so its pool can be searched" >/dev/null \
+      || fail "slot-$unlistable: refusal does not name the project path to restore: $out"
+    printf '%s' "$out" | grep -F "have the captain explicitly authorise discarding this task's work, through firstmate" >/dev/null \
+      || fail "slot-$unlistable: refusal does not name the captain's authorisation as the other way forward: $out"
+    if [ "$unlistable" = no-project ]; then
+      printf '%s' "$out" | grep -F "its project path $case_dir/project does not exist" >/dev/null \
+        || fail "slot-no-project: refusal does not name the missing project path: $out"
+    fi
     assert_present "$case_dir/state/tx-unid.meta" "slot-$unlistable: the refused retirement removed the record"
     assert_absent "$case_dir/herdr.log" "slot-$unlistable: the endpoint was touched before the refusal"
   done
@@ -999,6 +1009,24 @@ test_unidentified_retirement_slot_claim_and_ledger() {
   printf '%s' "$claim" | jq -e 'has("verified") | not' >/dev/null \
     || fail "ledger-ordinary: an ordinary close carries a verified member: $claim"
   pass "teardown: an unverified retirement only reads slot claims, names a still-claimed slot and its home, refuses over unpushed, unreadable, or unlistable slots, and marks its ledger close unverified"
+}
+
+test_unidentified_retirement_of_a_legacy_record_reports_unverified() {
+  local case_dir out
+  case_dir=$(make_case unidentified-legacy)
+  seed_backlog_in_flight "$case_dir"
+  sed -i 's/task-x1/tx-unid/' "$case_dir/data/backlog.md"
+  setup_unidentified_slot_case "$case_dir"
+  sed -i '/^spawn_gen=/d' "$case_dir/state/tx-unid.meta"
+  : > "$case_dir/herdr.closed"
+  out=$(run_teardown_id "$case_dir" tx-unid --retire-unidentified-worktree --legacy-record 2>&1) \
+    || fail "legacy: retirement failed: $out"
+  printf '%s' "$out" | grep -F "RETIRED UNVERIFIED tx-unid" >/dev/null \
+    || fail "legacy: a legacy record's retirement is not reported as unverified: $out"
+  printf '%s' "$out" | grep -F "teardown tx-unid complete" >/dev/null \
+    && fail "legacy: a legacy record's retirement reported an ordinary clean close: $out"
+  assert_absent "$case_dir/state/tx-unid.meta" "legacy: record not released"
+  pass "teardown: retiring a legacy record with no worktree identity still reports RETIRED UNVERIFIED, never a clean close"
 }
 
 test_unidentified_retirement_keeps_a_done_item_done() {
@@ -5437,6 +5465,7 @@ test_unidentified_worktree_retirement
 test_unidentified_retirement_leaves_valid_records_alone
 test_unidentified_retirement_slot_claim_and_ledger
 test_unidentified_retirement_keeps_a_done_item_done
+test_unidentified_retirement_of_a_legacy_record_reports_unverified
 test_parked_own_run_concludes_on_passed_with_skips_after_abort
 test_parked_run_advanced_past_unfetched_head_is_still_aborted
 test_parked_run_with_mismatched_ledger_head_is_never_aborted

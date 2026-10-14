@@ -1176,12 +1176,19 @@ RETIRE_BACKLOG_NOTE="cleanup NOT verified - worktree identity unknown so landed 
 # Sets RETIRE_SLOT_NOTE to what was found.
 RETIRE_SLOT_NOTE=
 retire_read_claimed_slot() {
-  local status_json slot_paths path head remote_refs unreadable=0 claimed=''
+  local status_json slot_paths path head remote_refs unreadable=0 claimed='' unlisted=''
   RETIRE_SLOT_NOTE="the pool was searched and no durable pool-slot claim naming this task was found, so a pool slot may still be held without a claim"
-  if ! { [ -n "$PROJ" ] && [ -d "$PROJ" ]; } \
-     || ! status_json=$(cd "$PROJ" && treehouse status --json 2>/dev/null) \
-     || ! slot_paths=$(printf '%s\n' "$status_json" | jq -r '.[]?.path? // empty' 2>/dev/null); then
-    echo "REFUSED: the pool slot claims for project ${PROJ:-(none recorded)} could not be listed, so whether a slot still holds task $ID's work cannot be told; fix the listing and retry. Nothing was changed." >&2
+  if [ -z "$PROJ" ]; then
+    unlisted="task $ID's record names no project path"
+  elif [ ! -d "$PROJ" ]; then
+    unlisted="its project path $PROJ does not exist"
+  elif ! status_json=$(cd "$PROJ" && treehouse status --json 2>/dev/null); then
+    unlisted="treehouse status failed in its project path $PROJ"
+  elif ! slot_paths=$(printf '%s\n' "$status_json" | jq -r '.[]?.path? // empty' 2>/dev/null); then
+    unlisted="treehouse status in its project path $PROJ returned an unreadable pool listing"
+  fi
+  if [ -n "$unlisted" ]; then
+    echo "REFUSED: task $ID's pool slot claims could not be listed because $unlisted. No slot search could run, so unlanded work in a pool slot claimed by this task cannot be ruled out. The only ways forward: restore the project path ${PROJ:-this record should name} so its pool can be searched, then retry; or have the captain explicitly authorise discarding this task's work, through firstmate. Nothing was changed." >&2
     return 1
   fi
   while IFS= read -r path; do
@@ -4071,10 +4078,10 @@ if [ -d "$STATE" ]; then
 fi
 if [ "$TEARDOWN_POOL_SLOT_LOST" = 1 ]; then
   echo "teardown $ID finished its cleanup and removed its task record, but a returned pool slot did not come back clean (see the warning above); clear those paths so the pool can reuse the slot" >&2
+elif [ "$RETIRE_UNIDENTIFIED" = 1 ]; then
+  echo "RETIRED UNVERIFIED $ID: record released and endpoint ${T:-none} closed${TEARDOWN_LEGACY_ACCEPTED:+ (legacy record without spawn_gen, endpoint $TEARDOWN_LEGACY_ENDPOINT)}, but its worktree could not be identified, so landed work was NOT checked and no worktree was touched; $RETIRE_SLOT_NOTE; this is not an ordinary clean close"
 elif [ "$TEARDOWN_LEGACY_ACCEPTED" = 1 ]; then
   echo "teardown $ID complete (window ${T:-none}, worktree $WT, legacy record accepted without spawn_gen: endpoint $TEARDOWN_LEGACY_ENDPOINT, incarnation $TEARDOWN_META_SPAWN_GEN)"
-elif [ "$RETIRE_UNIDENTIFIED" = 1 ]; then
-  echo "RETIRED UNVERIFIED $ID: record released and endpoint ${T:-none} closed, but its worktree could not be identified, so landed work was NOT checked and no worktree was touched; $RETIRE_SLOT_NOTE; this is not an ordinary clean close"
 elif teardown_owns_worktree; then
   echo "teardown $ID complete (window ${T:-none}, worktree $WT)"
 else
