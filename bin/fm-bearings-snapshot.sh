@@ -245,7 +245,7 @@ HOME_LABEL=$(printf '%s' "$SNAP" | jq -er '.fm_home | strings | split("/") | (.[
 
 # --- optional live GitHub PR enrichment -------------------------------------
 PR_STATUS='not_requested (run: /bearings include PRs)'
-CANDIDATE_PRS='[]'
+CANDIDATE_PRS_FILE=
 PR_REPOS_TOTAL=0
 PR_REPOS_SHOWN=0
 PR_ROWS_CAPPED=0
@@ -287,14 +287,22 @@ $(printf '%s' "$SNAP" | jq -r '.tasks[] | select(.kind != "secondmate") | .paths
 EOF
 
     for repo in $repos; do PR_REPOS_TOTAL=$((PR_REPOS_TOTAL + 1)); done
-    nrepos=0; npr=0; nwarn=0; ncapped=0; rows='[]'
+    nrepos=0; npr=0; nwarn=0; ncapped=0
     pr_fetch_limit=$((FM_BEARINGS_PR_LIMIT + 1))
-    # The task side of the mapping rides a temp file, not an argv element: a
-    # fleet snapshot exceeds the ~128KB per-argument exec cap on large fleets,
-    # and an E2BIG there would drop the repo's PR rows into the warning count.
-    tasks_file=$(mktemp "${TMPDIR:-/tmp}/fm-bearings-tasks.XXXXXX") \
-      || { echo "fm-bearings-snapshot: cannot create a temporary tasks file" >&2; exit 1; }
-    printf '%s' "$SNAP" | jq '.tasks // []' > "$tasks_file"
+    # The task side of the mapping and the accumulated PR rows ride temp files,
+    # not argv elements: a fleet snapshot or an all-repositories row set exceeds
+    # the ~128KB per-argument exec cap, and an E2BIG there would drop the repo's
+    # PR rows into the warning count or kill the report outright.
+    pr_tmp=$(mktemp -d "${TMPDIR:-/tmp}/fm-bearings-prs.XXXXXX") \
+      || { echo "fm-bearings-snapshot: cannot create a temporary PR directory" >&2; exit 1; }
+    # shellcheck disable=SC2064  # The trap resolves this invocation's directory at exit.
+    trap "rm -rf -- '$pr_tmp'" EXIT
+    tasks_file=$pr_tmp/tasks.json
+    rows_file=$pr_tmp/rows.json
+    repo_rows_file=$pr_tmp/repo-rows.json
+    printf '%s' "$SNAP" | jq '.tasks // []' > "$tasks_file" \
+      || { echo "fm-bearings-snapshot: cannot stage the task list" >&2; exit 1; }
+    printf '[]' > "$rows_file"
     for repo in $repos; do
       if [ "$ALL_PR_REPOS" != 1 ] && [ "$nrepos" -ge "$FM_BEARINGS_PR_REPOS" ]; then break; fi
       nrepos=$((nrepos + 1))
@@ -322,17 +330,20 @@ EOF
               else "passing" end)
         } ] as $rows | {returned:($rows | length), rows:$rows[:$limit]}') || { nwarn=$((nwarn + 1)); continue; }
       returned=$(printf '%s' "$repo_result" | jq '.returned')
-      repo_rows=$(printf '%s' "$repo_result" | jq '.rows')
-      cnt=$(printf '%s' "$repo_rows" | jq 'length')
+      printf '%s' "$repo_result" | jq '.rows' > "$repo_rows_file" || { nwarn=$((nwarn + 1)); continue; }
+      cnt=$(jq 'length' "$repo_rows_file") || { nwarn=$((nwarn + 1)); continue; }
+      if jq -s '.[0] + .[1]' "$rows_file" "$repo_rows_file" > "$rows_file.next"; then
+        mv -f "$rows_file.next" "$rows_file"
+      else
+        nwarn=$((nwarn + 1)); continue
+      fi
       [ "$returned" -gt "$FM_BEARINGS_PR_LIMIT" ] && ncapped=$((ncapped + 1))
       npr=$((npr + cnt))
-      rows=$(jq -n --argjson a "$rows" --argjson b "$repo_rows" '$a + $b')
     done
-    rm -f "$tasks_file"
     PR_REPOS_SHOWN=$nrepos
     PR_ROWS_CAPPED=$ncapped
     PR_ROWS_MIN_TOTAL=$((npr + ncapped))
-    CANDIDATE_PRS=$rows
+    CANDIDATE_PRS_FILE=$rows_file
     warnnote=""
     [ "$nwarn" -gt 0 ] && warnnote="; ${nwarn} repo(s) unavailable"
     cappednote=""
@@ -380,7 +391,7 @@ MODEL=$(printf '%s' "$SNAP" | jq \
   --argjson pr_rows_capped "$PR_ROWS_CAPPED" \
   --argjson pr_rows_min_total "$PR_ROWS_MIN_TOTAL" \
   --argjson return_catchup "$RETURN_CATCHUP" \
-  --argjson candidate_prs "$CANDIDATE_PRS" "$FM_LANDED_JQ_DEFS"'
+  --slurpfile candidate_prs "${CANDIDATE_PRS_FILE:-/dev/null}" "$FM_LANDED_JQ_DEFS"'
   def trunc($n): if . == null then null else
     (tostring | gsub("\\s+"; " ") | if (length > $n) then (.[:$n] + "…") else . end) end;
   def fit($n):
@@ -652,7 +663,7 @@ MODEL=$(printf '%s' "$SNAP" | jq \
   | . + (if ($unhealthy_all | length) > 0 then
            {unhealthy_endpoints:(if $all_unhealthy == 1 then $unhealthy_all else $unhealthy_all[:$unhealthy_n] end)}
          else {} end)
-  | . + (if $include_prs == 1 then {candidate_prs:$candidate_prs} else {} end)
+  | . + (if $include_prs == 1 then {candidate_prs:($candidate_prs[0] // [])} else {} end)
   | . + (if $f_bodies then {bodies:[ $snap.backlog.records[] | select(.structured and (.state == "queued" or .state == "done")) | {id, body:((.body_excerpt // .raw // "-") | trunc(200))} ]} else {} end)
   | . + (if $f_paths then {paths:[ $snap.tasks[] | {id, worktree:(.paths.worktree.path // "-"), home:(.paths.home.path // "-"), status:.paths.status_log.path, report:.paths.report.path} ]} else {} end)
   | . + (if $f_actions then {actions:[ $snap.tasks[] | {id, watch:(.actions.watch // .actions.send // "-"), steer:(.actions.steer // .actions.send // "-")} ]} else {} end)
@@ -692,7 +703,7 @@ MODEL=$(printf '%s' "$SNAP" | jq \
         (if $all_recorded_prs == 0 and ($recorded_prs_all | length) > $recorded_prs_n then {surface:("recorded_prs showing \($recorded_prs_n) of \($recorded_prs_all | length)"), reveal:"--all-recorded-prs"} else empty end),
         (if $all_unhealthy == 0 and ($unhealthy_all | length) > $unhealthy_n then {surface:("unhealthy_endpoints showing \($unhealthy_n) of \($unhealthy_all | length)"), reveal:"--all-unhealthy"} else empty end),
         (if $include_prs == 1 and $pr_repos_total > $pr_repos_shown then {surface:("PR repositories showing \($pr_repos_shown) of \($pr_repos_total)"), reveal:"--all-pr-repos"} else empty end),
-        (if $include_prs == 1 and $pr_rows_capped > 0 then {surface:("candidate_prs showing \($candidate_prs | length) of at least \($pr_rows_min_total); capped in \($pr_rows_capped) repo(s)"), reveal:"raise FM_BEARINGS_PR_LIMIT"} else empty end),
+        (if $include_prs == 1 and $pr_rows_capped > 0 then {surface:("candidate_prs showing \(($candidate_prs[0] // []) | length) of at least \($pr_rows_min_total); capped in \($pr_rows_capped) repo(s)"), reveal:"raise FM_BEARINGS_PR_LIMIT"} else empty end),
         (if $include_prs == 1 then empty else {surface:"live PR discovery + checks", reveal:"--include-prs"} end) ]) }
 ') || { echo "fm-bearings-snapshot: projection failed" >&2; exit 1; }
 
