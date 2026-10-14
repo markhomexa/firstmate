@@ -1,0 +1,60 @@
+=== S1 incident: three lanes pushed to fork by URL (no fetch), torn down concurrently
+  lane-a: local HEAD=ee5e694 fork head=ee5e694 tracking ref=absent
+  lane-a: pre-refresh 'git log HEAD --not --remotes' => ee5e694 work lane-a 
+  lane-b: local HEAD=3196863 fork head=3196863 tracking ref=absent
+  lane-b: pre-refresh 'git log HEAD --not --remotes' => 3196863 work lane-b 
+  lane-c: local HEAD=7f295d4 fork head=7f295d4 tracking ref=absent
+  lane-c: pre-refresh 'git log HEAD --not --remotes' => 7f295d4 work lane-c 
+--- lane-a: exit=0
+    fm-gate-refuse: gate agent lifecycle permitted only against lab home /tmp/fm-lab.W0zunZ
+    stdout: proj: already current teardown lane-a complete (window fm-lab:fm-lane-a, worktree /tmp/fm-lab.W0zunZ/wt-lane-a) Backlog: lane-a just finished (this home keeps no markdown backlog at /tmp/fm-lab.W0zunZ/data/backlog.md). Update /tmp/fm-lab.W0zunZ/data/backlog.md - move lane-a to Done, keep Done to the
+    meta removed: yes
+--- lane-b: exit=0
+    fm-gate-refuse: gate agent lifecycle permitted only against lab home /tmp/fm-lab.W0zunZ
+    stdout: proj: already current teardown lane-b complete (window fm-lab:fm-lane-b, worktree /tmp/fm-lab.W0zunZ/wt-lane-b) Backlog: lane-b just finished (this home keeps no markdown backlog at /tmp/fm-lab.W0zunZ/data/backlog.md). Update /tmp/fm-lab.W0zunZ/data/backlog.md - move lane-b to Done, keep Done to the
+    meta removed: yes
+--- lane-c: exit=0
+    fm-gate-refuse: gate agent lifecycle permitted only against lab home /tmp/fm-lab.W0zunZ
+    stdout: proj: already current teardown lane-c complete (window fm-lab:fm-lane-c, worktree /tmp/fm-lab.W0zunZ/wt-lane-c) Backlog: lane-c just finished (this home keeps no markdown backlog at /tmp/fm-lab.W0zunZ/data/backlog.md). Update /tmp/fm-lab.W0zunZ/data/backlog.md - move lane-c to Done, keep Done to the
+    meta removed: yes
+=== S2 stale tracking ref (older push fetched, newer commits pushed by URL)
+  tracking=a5aca54 local=97a19d2 fork=97a19d2
+--- lane-d: exit=0
+    fm-gate-refuse: gate agent lifecycle permitted only against lab home /tmp/fm-lab.W0zunZ
+=== S3 adversarial: commit only on this disk (pushed one, then another local-only)
+--- lane-e: exit=1
+    fm-gate-refuse: gate agent lifecycle permitted only against lab home /tmp/fm-lab.W0zunZ
+    REFUSED: worktree /tmp/fm-lab.W0zunZ/wt-lane-e has work not on any remote and not landed.
+    unpushed commits:
+    e5d2f1c local-only-e
+    Push the branch, land its PR, or get the captain's explicit OK to discard, then --force.
+    worktree still exists: yes; meta kept: yes
+=== S4 adversarial: pushed work but uncommitted edit
+--- lane-f: exit=1
+    fm-gate-refuse: gate agent lifecycle permitted only against lab home /tmp/fm-lab.W0zunZ
+    REFUSED: worktree /tmp/fm-lab.W0zunZ/wt-lane-f has uncommitted changes.
+    uncommitted changes present (includes tracked edits)
+    Commit them (or get the captain's explicit OK to discard, then --force).
+=== S5 adversarial: fork remote unreachable (cannot tell) -> must refuse, with note
+--- lane-g: exit=1
+    fm-gate-refuse: gate agent lifecycle permitted only against lab home /tmp/fm-lab.W0zunZ
+    REFUSED: worktree /tmp/fm-lab.W0zunZ/wt-lane-g has work not on any remote and not landed.
+    unpushed commits:
+    bdb3473 pushed-g
+    note: a remote could not be refreshed (possibly timed out; see FM_TEARDOWN_FETCH_TIMEOUT), so these commits may already be on it.
+    Push the branch, land its PR, or get the captain's explicit OK to discard, then --force.
+=== S6 adversarial: hanging remote bounded by FM_TEARDOWN_FETCH_TIMEOUT=3
+--- lane-h: exit=1
+    fm-gate-refuse: gate agent lifecycle permitted only against lab home /tmp/fm-lab.W0zunZ
+    REFUSED: worktree /tmp/fm-lab.W0zunZ/wt-lane-h has work not on any remote and not landed.
+    unpushed commits:
+    2af3868 pushed-h
+    note: a remote could not be refreshed (possibly timed out; see FM_TEARDOWN_FETCH_TIMEOUT), so these commits may already be on it.
+    Push the branch, land its PR, or get the captain's explicit OK to discard, then --force.
+    elapsed: 1s
+=== S7 failed fetch that still wrote the task ref (lock on unrelated ref, origin broken)
+--- lane-i: exit=0
+    fm-gate-refuse: gate agent lifecycle permitted only against lab home /tmp/fm-lab.W0zunZ
+    fork tracking ref now: present
+=== cleanup
+lab removed: yes

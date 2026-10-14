@@ -1,0 +1,43 @@
+##### tree: base 187e543 (before fix)
+=== S1 incident repro: lane pushed to fork by URL, no tracking ref
+--- lane-a: exit=1
+    fm-gate-refuse: gate agent lifecycle permitted only against lab home /tmp/fm-lab.Vi26Ma
+    REFUSED: worktree /tmp/fm-lab.Vi26Ma/wt-lane-a has work not on any remote and not landed.
+    unpushed commits:
+    15e0895 work lane-a
+    Push the branch, land its PR, or get the captain's explicit OK to discard, then --force.
+=== S6 hanging remote (ext::sleep 120), FM_TEARDOWN_FETCH_TIMEOUT=3, fork also unreachable
+--- lane-h: exit=1
+    fm-gate-refuse: gate agent lifecycle permitted only against lab home /tmp/fm-lab.Vi26Ma
+    REFUSED: worktree /tmp/fm-lab.Vi26Ma/wt-lane-h has work not on any remote and not landed.
+    unpushed commits:
+    67215b8 work lane-h
+    Push the branch, land its PR, or get the captain's explicit OK to discard, then --force.
+    elapsed: 1s
+=== S6b hanging remote present but fork reachable -> closes after timeout
+--- lane-h: exit=1
+    fm-gate-refuse: gate agent lifecycle permitted only against lab home /tmp/fm-lab.Vi26Ma
+    REFUSED: worktree /tmp/fm-lab.Vi26Ma/wt-lane-h has work not on any remote and not landed.
+    unpushed commits:
+    67215b8 work lane-h
+    Push the branch, land its PR, or get the captain's explicit OK to discard, then --force.
+    elapsed: 1s
+lab removed
+##### tree: target b53b931 (with fix)
+=== S1 incident repro: lane pushed to fork by URL, no tracking ref
+--- lane-a: exit=0
+    fm-gate-refuse: gate agent lifecycle permitted only against lab home /tmp/fm-lab.Eq7Yif
+=== S6 hanging remote (ext::sleep 120), FM_TEARDOWN_FETCH_TIMEOUT=3, fork also unreachable
+--- lane-h: exit=1
+    fm-gate-refuse: gate agent lifecycle permitted only against lab home /tmp/fm-lab.Eq7Yif
+    REFUSED: worktree /tmp/fm-lab.Eq7Yif/wt-lane-h has work not on any remote and not landed.
+    unpushed commits:
+    774ac6c work lane-h
+    note: a remote could not be refreshed (possibly timed out; see FM_TEARDOWN_FETCH_TIMEOUT), so these commits may already be on it.
+    Push the branch, land its PR, or get the captain's explicit OK to discard, then --force.
+    elapsed: 4s
+=== S6b hanging remote present but fork reachable -> closes after timeout
+--- lane-h: exit=0
+    fm-gate-refuse: gate agent lifecycle permitted only against lab home /tmp/fm-lab.Eq7Yif
+    elapsed: 5s
+lab removed
