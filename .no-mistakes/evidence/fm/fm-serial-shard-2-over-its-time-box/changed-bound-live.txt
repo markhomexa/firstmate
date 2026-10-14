@@ -1,0 +1,46 @@
+== A: automatic --changed, both scripts sleep 4s (scaled: general bound 2s, host hint 3s -> 5s)
+$ bin/fm-test-run.sh --changed --base HEAD
+FM_TEST_BEGIN 2026-10-14T18:05:49Z tests/fm-supervision-host.test.sh family=afk expected_gate_skip=none
+ok - finished after 4s
+FM_TEST_END 2026-10-14T18:05:53Z tests/fm-supervision-host.test.sh exit=0 duration_ms=4137 gate_skip=false
+FM_TEST_BEGIN 2026-10-14T18:05:53Z tests/fm-watch-triage.test.sh family=watcher-wake-lock expected_gate_skip=none
+not ok - tests/fm-watch-triage.test.sh exceeded the per-script bound of 2s and was terminated
+FM_TEST_END 2026-10-14T18:05:55Z tests/fm-watch-triage.test.sh exit=124 duration_ms=2141 gate_skip=false
+FM_TEST_SUMMARY total=2 failed=1 skipped_gate=0 duration_ms=6407
+FM_TEST_SUMMARY_FAMILY family=afk count=1 duration_ms=4137 failed=0
+FM_TEST_SUMMARY_FAMILY family=watcher-wake-lock count=1 duration_ms=2141 failed=1
+FM_TEST_SLOWEST rank=1 script=tests/fm-supervision-host.test.sh duration_ms=4137
+FM_TEST_SLOWEST rank=2 script=tests/fm-watch-triage.test.sh duration_ms=2141
+exit=1
+
+== B: host suite hangs (sleep 30): widened bound still terminates it
+$ bin/fm-test-run.sh --changed --base HEAD
+FM_TEST_BEGIN 2026-10-14T18:05:55Z tests/fm-supervision-host.test.sh family=afk expected_gate_skip=none
+not ok - tests/fm-supervision-host.test.sh exceeded the per-script bound of 5s and was terminated
+FM_TEST_END 2026-10-14T18:06:01Z tests/fm-supervision-host.test.sh exit=124 duration_ms=5148 gate_skip=false
+FM_TEST_BEGIN 2026-10-14T18:06:01Z tests/fm-watch-triage.test.sh family=watcher-wake-lock expected_gate_skip=none
+not ok - tests/fm-watch-triage.test.sh exceeded the per-script bound of 2s and was terminated
+FM_TEST_END 2026-10-14T18:06:03Z tests/fm-watch-triage.test.sh exit=124 duration_ms=2140 gate_skip=false
+FM_TEST_SUMMARY total=2 failed=2 skipped_gate=0 duration_ms=7427
+FM_TEST_SUMMARY_FAMILY family=afk count=1 duration_ms=5148 failed=1
+FM_TEST_SUMMARY_FAMILY family=watcher-wake-lock count=1 duration_ms=2140 failed=1
+FM_TEST_SLOWEST rank=1 script=tests/fm-supervision-host.test.sh duration_ms=5148
+FM_TEST_SLOWEST rank=2 script=tests/fm-watch-triage.test.sh duration_ms=2140
+exit=1
+
+elapsed=8s
+== C: explicit --per-script-timeout-secs 2 is never widened
+$ bin/fm-test-run.sh --changed --base HEAD --per-script-timeout-secs 2
+FM_TEST_BEGIN 2026-10-14T18:06:03Z tests/fm-supervision-host.test.sh family=afk expected_gate_skip=none
+not ok - tests/fm-supervision-host.test.sh exceeded the per-script bound of 2s and was terminated
+FM_TEST_END 2026-10-14T18:06:05Z tests/fm-supervision-host.test.sh exit=124 duration_ms=2133 gate_skip=false
+FM_TEST_BEGIN 2026-10-14T18:06:05Z tests/fm-watch-triage.test.sh family=watcher-wake-lock expected_gate_skip=none
+not ok - tests/fm-watch-triage.test.sh exceeded the per-script bound of 2s and was terminated
+FM_TEST_END 2026-10-14T18:06:07Z tests/fm-watch-triage.test.sh exit=124 duration_ms=2132 gate_skip=false
+FM_TEST_SUMMARY total=2 failed=2 skipped_gate=0 duration_ms=4387
+FM_TEST_SUMMARY_FAMILY family=afk count=1 duration_ms=2133 failed=1
+FM_TEST_SUMMARY_FAMILY family=watcher-wake-lock count=1 duration_ms=2132 failed=1
+FM_TEST_SLOWEST rank=1 script=tests/fm-supervision-host.test.sh duration_ms=2133
+FM_TEST_SLOWEST rank=2 script=tests/fm-watch-triage.test.sh duration_ms=2132
+exit=1
+

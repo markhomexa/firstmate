@@ -1,0 +1,4 @@
+ok - coverage guard bounds the unmeasured share and serial packing within the packing target
+ok - serial packing accepts the exact budget and refuses one millisecond above it
+ok - the automatic --changed bound gives the slow watcher suite at least 1500s
+ok - the automatic --changed bound widens only for a script hinted past it

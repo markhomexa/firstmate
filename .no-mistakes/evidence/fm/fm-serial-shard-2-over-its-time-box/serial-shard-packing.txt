@@ -1,0 +1,10 @@
+FM_TEST_COVERAGE ok total=253 parallel=24 parallel_max_ms=665545 parallel_imbalance_ms=2 parallel_unhinted=0 serial=213 serial_shards=9 serial_unhinted=0 serial_max_ms=1706607 serial_budget_ms=1710000 herdr=16
+portable-serial-1of9 scripts=1 modeled_ms=1706607 modeled_min=28 host_suite=1
+portable-serial-2of9 scripts=1 modeled_ms=1257926 modeled_min=20 host_suite=0
+portable-serial-3of9 scripts=29 modeled_ms=1156665 modeled_min=19 host_suite=0
+portable-serial-4of9 scripts=30 modeled_ms=1156671 modeled_min=19 host_suite=0
+portable-serial-5of9 scripts=31 modeled_ms=1156690 modeled_min=19 host_suite=0
+portable-serial-6of9 scripts=31 modeled_ms=1156675 modeled_min=19 host_suite=0
+portable-serial-7of9 scripts=30 modeled_ms=1156670 modeled_min=19 host_suite=0
+portable-serial-8of9 scripts=30 modeled_ms=1156652 modeled_min=19 host_suite=0
+portable-serial-9of9 scripts=30 modeled_ms=1156653 modeled_min=19 host_suite=0
