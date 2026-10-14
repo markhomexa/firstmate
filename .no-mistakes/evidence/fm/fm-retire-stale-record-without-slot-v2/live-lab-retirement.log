@@ -1,0 +1,113 @@
+pool slot leased by real treehouse: /tmp/fm-lab.0bMz3b/projects/demo/.treehouse/demo-02024a/1/demo (claim: task=tx-templates-owner)
+
+===== BEFORE: live records (lanes) = 2; tmux windows: =====
+fm-tx-templates-owner
+fm-task-ok
+
+===== S1 ordinary teardown (no flag) =====
+fm-gate-refuse: gate agent lifecycle permitted only against lab home /tmp/fm-lab.0bMz3b
+REFUSED: task tx-templates-owner has a missing, empty, or ambiguous worktree identity; preserving task state.
+exit=1
+
+===== S1 ordinary teardown --force =====
+fm-gate-refuse: gate agent lifecycle permitted only against lab home /tmp/fm-lab.0bMz3b
+REFUSED: task tx-templates-owner has a missing, empty, or ambiguous worktree identity; preserving task state.
+exit=1
+lanes=2  record present: yes
+
+===== S2 --retire-unidentified-worktree --force =====
+error: --retire-unidentified-worktree cannot be combined with --force: forcing is authority to discard work, and this path discards nothing and guesses no worktree
+exit=2
+
+===== S5 retirement of a record that NAMES a worktree (task-ok) =====
+fm-gate-refuse: gate agent lifecycle permitted only against lab home /tmp/fm-lab.0bMz3b
+REFUSED: task task-ok's record names a worktree, so it is not an unidentified-worktree record; use ordinary teardown and its landed-work checks. Nothing was changed.
+exit=1
+task-ok record present: yes
+
+===== S3 claimed pool slot holds UNCOMMITTED work -> retire =====
+fm-gate-refuse: gate agent lifecycle permitted only against lab home /tmp/fm-lab.0bMz3b
+●━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+●  WATCHER DOWN - SUPERVISION IS OFF
+●  2 task(s) in flight, but no watcher has a fresh beacon (last beat: never, grace 300s).
+●  Trust the emitted supervision protocol for this harness; do not use shell & for watcher repair.
+●  This is a supervision warning only; the guarded operation WILL still run.
+●  watcher supervision needs Stop-owned automatic recovery; inspect the hook registration and startup status before ending the turn.
+●━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+REFUSED: worktree /tmp/fm-lab.0bMz3b/projects/demo/.treehouse/demo-02024a/1/demo has uncommitted changes.
+uncommitted changes present (untracked-only leftovers)
+untracked paths (up to 10):
+  wip.txt
+Commit them (or get the captain's explicit OK to discard, then --force).
+REFUSED: pool slot /tmp/fm-lab.0bMz3b/projects/demo/.treehouse/demo-02024a/1/demo is claimed by task tx-templates-owner (claim recorded by home /tmp/fm-lab.0bMz3b). --retire-unidentified-worktree accepts no --force: commit and land the slot's work, or have the captain explicitly authorise discarding it, through firstmate. Nothing was changed.
+exit=1
+lanes=2  record present: yes  wip kept: wip
+fm-tx-templates-owner
+fm-task-ok
+
+===== S3b claimed slot has a COMMIT on no remote -> retire =====
+fm-gate-refuse: gate agent lifecycle permitted only against lab home /tmp/fm-lab.0bMz3b
+WARNING: watcher still down (same stale episode; last beat: never, grace 300s) - full banner already printed this episode.
+REFUSED: worktree /tmp/fm-lab.0bMz3b/projects/demo/.treehouse/demo-02024a/1/demo has work not on any remote and not landed.
+unpushed commits:
+0182449 wip
+Push the branch, land its PR, or get the captain's explicit OK to discard, then --force.
+REFUSED: pool slot /tmp/fm-lab.0bMz3b/projects/demo/.treehouse/demo-02024a/1/demo is claimed by task tx-templates-owner (claim recorded by home /tmp/fm-lab.0bMz3b). --retire-unidentified-worktree accepts no --force: commit and land the slot's work, or have the captain explicitly authorise discarding it, through firstmate. Nothing was changed.
+exit=1
+
+===== S6 project path missing -> retire =====
+fm-gate-refuse: gate agent lifecycle permitted only against lab home /tmp/fm-lab.0bMz3b
+WARNING: watcher still down (same stale episode; last beat: never, grace 300s) - full banner already printed this episode.
+REFUSED: task tx-templates-owner's pool slot claims could not be listed because its project path /tmp/fm-lab.0bMz3b/projects/demo does not exist. No slot search could run, so unlanded work in a pool slot claimed by this task cannot be ruled out. The only ways forward: restore the project path /tmp/fm-lab.0bMz3b/projects/demo so its pool can be searched, then retry; or have the captain explicitly authorise discarding this task's work, through firstmate. Nothing was changed.
+exit=1
+
+===== S4 slot work landed (pushed) -> retire =====
+fm-gate-refuse: gate agent lifecycle permitted only against lab home /tmp/fm-lab.0bMz3b
+WARNING: watcher still down (same stale episode; last beat: never, grace 300s) - full banner already printed this episode.
+WARNING: watcher still down (same stale episode; last beat: never, grace 300s) - full banner already printed this episode.
+demo: already current
+RETIRED UNVERIFIED tx-templates-owner: record released and endpoint firstmate:fm-tx-templates-owner closed, but its worktree could not be identified, so landed work was NOT checked and no worktree was touched; the pool slot at /tmp/fm-lab.0bMz3b/projects/demo/.treehouse/demo-02024a/1/demo (claim recorded by home /tmp/fm-lab.0bMz3b) may still be claimed by this task; its claim and checkout were left untouched; this is not an ordinary clean close
+Backlog: tx-templates-owner stays open in /tmp/fm-lab.0bMz3b/data/backlog.md, back in Queued with a note that cleanup was NOT verified; its worktree was never identified. Check whether its work landed before re-dispatching or closing it.
+exit=0
+
+===== AFTER: lanes = 1; tmux windows: =====
+fm-task-ok
+record present: no; task-ok present: yes
+
+===== data/tx-templates-owner/retired-unverified.txt =====
+Retired without a verified close: 2026-10-14T19:49:57Z.
+The task record named no worktree, so landed work was NOT checked and no worktree was touched.
+The endpoint firstmate:fm-tx-templates-owner was closed and the task record was released.
+Pool slot: the pool slot at /tmp/fm-lab.0bMz3b/projects/demo/.treehouse/demo-02024a/1/demo (claim recorded by home /tmp/fm-lab.0bMz3b) may still be claimed by this task; its claim and checkout were left untouched.
+Any worktree this task used was never identified here; reconcile it by hand if one survives.
+
+===== backlog item =====
+task:
+  id: tx-templates-owner
+  title: templates owner
+  state: queued
+  blocked: no
+  blocked_by: none
+  held: no
+  hold_reason: "-"
+  hold_kind: "-"
+  hold_until: "-"
+  kind: ship
+  repo: "-"
+  priority: "-"
+  created: 2026-10-14
+  closed: "-"
+  deps: none
+  links: none
+  body: "cleanup NOT verified - worktree identity unknown so landed work was not checked; pool slot: the pool slot at /tmp/fm-lab.0bMz3b/projects/demo/.treehouse/demo-02024a/1/demo (claim recorded by home /tmp/fm-lab.0bMz3b) may still be claimed by this task; its claim and checkout were left untouched"
+
+===== fleet ledger close =====
+{"v":1,"ts":1792007396,"event":"task.cleaned_up","task":"tx-templates-owner","verified":false}
+
+===== slot claim + checkout untouched =====
+task=tx-templates-owner
+home=/tmp/fm-lab.0bMz3b
+0182449 wip
+treehouse.toml
+wip.txt
+[{"name":"1","path":"/tmp/fm-lab.0bMz3b/projects/demo/.treehouse/demo-02024a/1/demo","status":"leased","flavor":"git","lease_id":"7e61cb228255b81e1fa90e0cc31ef8e4","lease_holder":"","leased_at":"2026-10-14T12:49:45.137209085-07:00","processes":[]}]

@@ -1,0 +1,5 @@
+ok - teardown: a record with no worktree identity retires only through --retire-unidentified-worktree, loudly unverified, touching no worktree
+ok - teardown: --retire-unidentified-worktree refuses a record that names a worktree
+ok - teardown: an unverified retirement only reads slot claims, names a still-claimed slot and its home, refuses over unpushed, unreadable, or unlistable slots, and marks its ledger close unverified
+ok - teardown: an unverified retirement leaves an already-Done item Done and only adds the unverified note
+ok - teardown: retiring a legacy record with no worktree identity still reports RETIRED UNVERIFIED, never a clean close
