@@ -476,6 +476,10 @@ test_no_mistakes_dod_wording() {
     "no-mistakes DOD must name the cap-death signature"
   assert_grep "Hand-edit nothing before custody returns" "$brief" \
     "no-mistakes DOD must forbid hand-editing before custody recovery"
+  assert_grep "\`sync --recover\` may be a no-op; that is expected, not a broken recovery" "$brief" \
+    "no-mistakes DOD must not assume a cap death left fix commits to recover"
+  assert_grep "That is applying a decision, not making one" "$brief" \
+    "no-mistakes DOD must limit a hand-written fix after a repeat cap death to the decided fix"
 
   # The --yes ban is a fleet-wide prohibition, not a preference, and it must not
   # claim an enforcement the tool does not provide: this is instruction only.
