@@ -1,0 +1,54 @@
+=== 1. owner raises five captain calls and completes its inventory
+$ fm-captain-hold.sh complete feedback-sheet fs-call-1 fs-call-2 fs-call-3 fs-call-4 fs-call-5
+complete: feedback-sheet captain-call inventory reviewed (fs-call-1,fs-call-2,fs-call-3,fs-call-4,fs-call-5)
+[exit 0]
+=== 2. captain answers all five
+$ fm-captain-hold.sh verify feedback-sheet
+fm-captain-hold: no captain-held task fs-call-1 and no migrated hold for it in this home's configured backlog (data directory /tmp/fm-lab.2PjiTg/data); the nearest legacy identity feedback-sheet-decision-fs-call-1 also resolves to nothing
+[exit 1]
+=== 3. retention prunes closed rows over time (done_keep=2)
+fs-call-1: gone from live backlog
+fs-call-2: gone from live backlog
+fs-call-3: gone from live backlog
+fs-call-4: gone from live backlog
+fs-call-5: gone from live backlog
+--- archive rows:
+- [x] fs-call-1 - Decide fs-call-1 (repo: sample) (kind: captain) (done 2026-10-14) (hold: fm-hold-v1:Y2hvaWNlIHBlbmRpbmc=) (hold-kind: captain)
+- [x] fs-call-2 - Decide fs-call-2 (repo: sample) (kind: captain) (done 2026-10-14) (hold: fm-hold-v1:Y2hvaWNlIHBlbmRpbmc=) (hold-kind: captain)
+- [x] fs-call-3 - Decide fs-call-3 (repo: sample) (kind: captain) (done 2026-10-14) (hold: fm-hold-v1:Y2hvaWNlIHBlbmRpbmc=) (hold-kind: captain)
+- [x] fs-call-4 - Decide fs-call-4 (repo: sample) (kind: captain) (done 2026-10-14) (hold: fm-hold-v1:Y2hvaWNlIHBlbmRpbmc=) (hold-kind: captain)
+- [x] fs-call-5 - Decide fs-call-5 (repo: sample) (kind: captain) (done 2026-10-14) (hold: fm-hold-v1:Y2hvaWNlIHBlbmRpbmc=) (hold-kind: captain)
+=== 4. gate after pruning: verify + complete
+$ fm-captain-hold.sh verify feedback-sheet
+fm-captain-hold: no captain-held task fs-call-1 and no migrated hold for it in this home's configured backlog (data directory /tmp/fm-lab.2PjiTg/data); the nearest legacy identity feedback-sheet-decision-fs-call-1 also resolves to nothing
+[exit 1]
+$ fm-captain-hold.sh complete feedback-sheet fs-call-1 fs-call-2 fs-call-3 fs-call-4 fs-call-5
+fm-captain-hold: no captain-held task fs-call-1 and no migrated hold for it in this home's configured backlog (data directory /tmp/fm-lab.2PjiTg/data); the nearest legacy identity feedback-sheet-decision-fs-call-1 also resolves to nothing
+[exit 1]
+=== 5. adversarial: call recorded nowhere
+$ fm-captain-hold.sh complete feedback-sheet fs-call-nowhere
+fm-captain-hold: no captain-held task fs-call-1 and no migrated hold for it in this home's configured backlog (data directory /tmp/fm-lab.2PjiTg/data); the nearest legacy identity feedback-sheet-decision-fs-call-1 also resolves to nothing
+[exit 1]
+=== 6. adversarial: archived captain row closed with no recorded answer
+- [x] fs-bare - Closed without answer (repo: sample) (kind: captain) (done 2026-10-14)
+$ fm-captain-hold.sh complete feedback-sheet fs-bare
+fm-captain-hold: no captain-held task fs-bare and no migrated hold for it in this home's configured backlog (data directory /tmp/fm-lab.2PjiTg/data); the nearest legacy identity feedback-sheet-decision-fs-bare also resolves to nothing
+[exit 1]
+=== 7. adversarial: forged resolution text on an archived non-captain row
+$ fm-captain-hold.sh complete feedback-sheet fs-forged
+fm-captain-hold: no captain-held task fs-call-1 and no migrated hold for it in this home's configured backlog (data directory /tmp/fm-lab.2PjiTg/data); the nearest legacy identity feedback-sheet-decision-fs-call-1 also resolves to nothing
+[exit 1]
+=== 8. keyed answer intake must not resolve to an archived (already-closed) call
+$ fm-captain-hold.sh answers --any-origin --source lab-drive
+skipped: fs-call-1 (no captain-held task with that id)
+answers: closed=0 skipped=1
+[exit 1]
+=== 9. clean up the finished lane: fm-teardown.sh (runs the gate)
+$ fm-teardown.sh feedback-sheet
+●━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+fm-captain-hold: no captain-held task fs-call-1 and no migrated hold for it in this home's configured backlog (data directory /tmp/fm-lab.2PjiTg/data); the nearest legacy identity feedback-sheet-decision-fs-call-1 also resolves to nothing
+REFUSED: scout task feedback-sheet has not passed the captain-call completion gate.
+Inventory its report and any visual review through bin/fm-captain-hold.sh before teardown.
+[exit 1]
+/tmp/fm-lab.2PjiTg/state/feedback-sheet.meta
+SUMMARY teardown=1  verify=1 complete=1 nowhere=1 bare=1 forged=1 answers_on_archived=1
