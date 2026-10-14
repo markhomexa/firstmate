@@ -1,0 +1,62 @@
+$ FM_HOME=/tmp/fm-lab.8OxBge bin/fm-resident-agents.sh   # 5 real claude sessions on lab tmux socket fm-lab
+Resident agent sessions in this home, largest memory first (report only; nothing is stopped).
+active  kind=ship  memory=305 MB  running=2m
+    state: working · source: pane · harness busy (claude-hook)
+unpushed-done  kind=ship  memory=290 MB  running=0m
+    state: done · source: status-log · PR open, waiting on captain
+    >> SAFE TO RELEASE: work delivered, its pull request or ready branch is waiting on a human; releasing keeps every local copy and commit
+run-failed  kind=ship  memory=281 MB  running=2m
+    state: failed · source: status-log · no-mistakes run failed; not retrying
+    >> run failed - confirm no retry is planned before releasing; releasing keeps every local copy and commit
+pr-open  kind=ship  memory=280 MB  running=2m
+    state: done · source: status-log · branch fm/pr-open pushed, PR open and waiting on the captain
+    >> SAFE TO RELEASE: work delivered, its pull request or ready branch is waiting on a human; releasing keeps every local copy and commit
+gone  kind=ship  memory=not found  running=-
+    state: unknown · source: pane · harness state unavailable (unknown missing)
+    >> unknown: state could not be read, so this is not flagged safe to release
+remote-mate  kind=secondmate  memory=remote  running=-
+    state: remote secondmate: no local process
+exit=0
+
+# cross-check: per-task fm-crew-state.sh and ps for lab claude processes
+pr-open: state: done · source: status-log · branch fm/pr-open pushed, PR open and waiting on the captain
+run-failed: state: failed · source: status-log · no-mistakes run failed; not retrying
+active: state: working · source: pane · harness busy (claude-hook)
+unpushed-done: state: done · source: status-log · PR open, waiting on captain
+gone: state: unknown · source: pane · harness state unavailable (unknown missing)
+remote-mate: state: unknown · source: remote-endpoint · unknown-remote: box2 unreachable or endpoint unreadable (not proof of death)
+pid=1514207 rss_kb=287368 cwd=/tmp/fm-lab.8OxBge/work/pr-open
+pid=1514209 rss_kb=288760 cwd=/tmp/fm-lab.8OxBge/work/run-failed
+pid=1514211 rss_kb=312312 cwd=/tmp/fm-lab.8OxBge/work/active
+pid=1580282 rss_kb=297812 cwd=/tmp/fm-lab.8OxBge/work/unpushed-done
+lab home byte-identical after report
+pr-open claude dead=0
+run-failed claude dead=0
+active claude dead=0
+unpushed-done claude dead=0
+
+# adversarial: unpushed-done re-recorded as mode=direct-PR (DoD reachability gate applies); head is local-only
+$ FM_HOME=/tmp/fm-lab.8OxBge bin/fm-resident-agents.sh
+Resident agent sessions in this home, largest memory first (report only; nothing is stopped).
+active  kind=ship  memory=310 MB  running=2m
+    state: working · source: pane · harness busy (claude-hook)
+unpushed-done  kind=ship  memory=283 MB  running=0m
+    state: blocked · source: status-log · named head 0217969dc97df46566f05d52eb8b71828c1ca518 is unreachable outside the worker copy
+run-failed  kind=ship  memory=273 MB  running=2m
+    state: failed · source: status-log · no-mistakes run failed; not retrying
+    >> run failed - confirm no retry is planned before releasing; releasing keeps every local copy and commit
+pr-open  kind=ship  memory=273 MB  running=2m
+    state: done · source: status-log · branch fm/pr-open pushed, PR open and waiting on the captain
+    >> SAFE TO RELEASE: work delivered, its pull request or ready branch is waiting on a human; releasing keeps every local copy and commit
+gone  kind=ship  memory=not found  running=-
+    state: unknown · source: pane · harness state unavailable (unknown missing)
+    >> unknown: state could not be read, so this is not flagged safe to release
+remote-mate  kind=secondmate  memory=remote  running=-
+    state: remote secondmate: no local process
+exit=0
+$ bin/fm-resident-agents.sh --bogus
+usage: fm-resident-agents.sh
+exit=2
+$ FM_HOME=<empty lab> bin/fm-resident-agents.sh
+no recorded direct reports in this home
+exit=0
