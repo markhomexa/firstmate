@@ -159,6 +159,9 @@ test_never_pushed_branch_is_refused_and_each_mode_states_where_work_is() {
   case "$block" in *"ready in branch fm/t (local only, not pushed, not landed)"*) ;; *) fail "local-only done does not say the work is local and unlanded" ;; esac
   block=$(fm_dod_block no-mistakes t fm/t)
   case "$block" in *"committed on fm/t, local and unpublished until the pipeline pushes"*) ;; *) fail "no-mistakes first done does not say the work is unpublished" ;; esac
+  block=$(fm_dod_block no-mistakes t fm/t gerrit)
+  case "$block" in *"committed on fm/t, local and unpublished until you publish the change"*) ;; *) fail "no-mistakes Gerrit first done does not name the worker as publisher" ;; esac
+  case "$block" in *"until the pipeline pushes"*) fail "no-mistakes Gerrit first done names the pipeline as publisher" ;; esac
   block=$(fm_dod_block direct-PR t fm/t)
   case "$block" in *"reachable from a remote reference"*) ;; *) fail "direct-PR done does not state the remote-reachability test" ;; esac
   pass "never-pushed branch is refused and each mode's done states where the work is"

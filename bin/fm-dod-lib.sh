@@ -72,7 +72,7 @@
 # watch is armed, because the merge poll watches one change. No contract here
 # lets a worker submit, vote on, or abandon a change.
 # What each mode's done states about where the work is: no-mistakes' first done
-# says it is committed locally and unpublished until the pipeline pushes (ungated
+# says it is committed locally and unpublished until the pipeline pushes, or on Gerrit until the worker publishes (ungated
 # handoff), its CI-ready done and direct-PR's done name a PR and are refused unless
 # the named head is reachable from a remote reference (never a tracking-ref or
 # branch-moved test, which reads a never-pushed branch as safe), and local-only's
@@ -464,7 +464,7 @@ This project's review server is Gerrit: it has no pull requests and no forge CI 
 Pass \`--skip push,pr,ci\` on every \`no-mistakes axi run\` for this task, and skip nothing else: \`review\`, \`test\`, \`document\`, and \`lint\` are the whole point of the run.
 Those three are the only steps that reach a forge, and skipping them is a supported outcome, not a degraded one.
 The task is complete only when committed on your branch.
-When you believe it is complete, append \`done [at=<epoch>]: committed on $branch, local and unpublished until the pipeline pushes: {summary}\` to the status file and stop.
+When you believe it is complete, append \`done [at=<epoch>]: committed on $branch, local and unpublished until you publish the change: {summary}\` to the status file and stop.
 That first \`done:\` says the work exists only on this machine's branch; it is not a shipped report.
 Firstmate will then instruct you to run /no-mistakes to validate.
 That first \`done:\` is the handoff that starts the pipeline; it is not a request to publish.
