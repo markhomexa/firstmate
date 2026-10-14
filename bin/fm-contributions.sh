@@ -78,8 +78,9 @@
 # never re-read, stays fresh, and every owner's saved row converges on that
 # observation, with a stale error beside it cleared.
 # A failed observation says which of its causes it was, from the read that
-# failed: the forge answered with an error, gh was killed or could not start
-# (this machine, busy or broken, which it cannot tell apart), the head moved
+# failed: the forge answered with an HTTP error, gh failed without any forge
+# answer (DNS, TLS, connection), gh was killed or could not start (this
+# machine, busy or broken, which it cannot tell apart), the head moved
 # between reads, or the response was malformed. A read that merely ran out of
 # time is never one of them. Measured on a 10-core host with the CPU
 # oversubscribed twofold, six parallel reads took 1.1-1.5s against the 5s cap,
@@ -227,7 +228,8 @@ write_record() { # task record-json-file
 }
 
 forge() {
-  local remaining rc=0 forge_err=${FORGE_ERR:-$TMP/forge.err}
+  local remaining rc=0 forge_err=${FORGE_ERR:-$TMP/forge.err} what=$2 detail
+  [ "$1" = api ] || what="$1 $2 $3"
   remaining=$((DEADLINE - $(date +%s)))
   # The budget, not the forge, refused this read.
   [ "$remaining" -gt 0 ] || { BUDGET_EXHAUSTED=1; : > "$TMP/budget-exhausted"; return 1; }
@@ -243,10 +245,17 @@ forge() {
     # gh was killed by a signal or could not start: the forge never answered,
     # and this machine cannot say whether it was busy or gh is broken.
     : > "$TMP/forge-unavailable"
-    [ -e "$TMP/cause" ] || printf 'local read failure: gh was killed or could not start (exit %s) reading %s; the forge gave no answer, so this is this machine (busy or broken gh), not a forge verdict\n' "$rc" "$2" > "$TMP/cause"
+    printf 'local read failure: gh was killed or could not start (exit %s) reading %s; the forge gave no answer, so this is this machine (busy or broken gh), not a forge verdict\n' "$rc" "$what" > "$forge_err.cause"
+    mv -n -- "$forge_err.cause" "$TMP/cause" 2>/dev/null || true
   elif [ "$rc" -ne 0 ]; then
     : > "$TMP/forge-unavailable"
-    [ -e "$TMP/cause" ] || printf 'forge failed the read of %s (gh exit %s): %s\n' "$2" "$rc" "$(head -n 1 "$forge_err" 2>/dev/null | cut -c1-160)" > "$TMP/cause"
+    detail=$(head -n 1 "$forge_err" 2>/dev/null | cut -c1-160)
+    if printf '%s\n' "$detail" | grep -Eq 'HTTP [0-9]{3}'; then
+      printf 'forge failed the read of %s (gh exit %s): %s\n' "$what" "$rc" "$detail" > "$forge_err.cause"
+    else
+      printf 'gh read of %s failed before any forge answer (gh exit %s): %s\n' "$what" "$rc" "$detail" > "$forge_err.cause"
+    fi
+    mv -n -- "$forge_err.cause" "$TMP/cause" 2>/dev/null || true
   fi
   return "$rc"
 }
