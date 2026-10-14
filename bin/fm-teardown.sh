@@ -1219,6 +1219,7 @@ if [ "$RETIRE_UNIDENTIFIED" = 1 ]; then
     exit 1
   fi
   WT=
+  retire_read_claimed_slot || exit 1
 fi
 if [ "$TEARDOWN_WINDOWLESS" = 1 ]; then
   BACKEND=tmux
@@ -1241,7 +1242,6 @@ elif [ "$RETIRE_UNIDENTIFIED" = 1 ]; then
     echo "REFUSED: an Orca record cannot be retired without its worktree identity, because releasing it needs that identity; nothing was changed" >&2
     exit 1
   fi
-  retire_read_claimed_slot || exit 1
 else
   fm_backend_validate_task_endpoint "$META" "$ID" || exit 1
   BACKEND=$FM_BACKEND_VALIDATED_BACKEND
