@@ -1,0 +1,24 @@
+== AFTER (11d1e90): 5 repos x 600 PR rows, --include-prs --all-pr-repos --json
+exit=0
+stderr:
+
+gh calls: 5
+{"rows":3000,"candidate_prs_bytes":448381,"prs":"checked (5 repos, 3000 open)","first":{"num":"1","repo":"acme/repo-1","task":"big-1","url":"https://github.com/acme/repo/pull/1","review":"","mergeable":"MERGEABLE","checks":"none"},"last":{"num":"600","repo":"acme/repo-5","task":"big-600","url":"https://github.com/acme/repo/pull/600","review":"","mergeable":"MERGEABLE","checks":"none"}}
+leftover temp dirs: 0
+
+== BEFORE (f8a452b): same input
+exit=1
+stderr:
+/tmp/fmbs-drv.3mY71n/old/bin/fm-bearings-snapshot.sh: line 329: /home/homexa/bin/jq: Argument list too long
+jq: invalid JSON text passed to --argjson
+Use jq --help for help with command-line options,
+or see the jq manpage, or online docs at https://jqlang.org
+jq: invalid JSON text passed to --argjson
+Use jq --help for help with command-line options,
+or see the jq manpage, or online docs at https://jqlang.org
+jq: invalid JSON text passed to --argjson
+Use jq --help for help with command-line options,
+or see the jq manpage, or online docs at https://jqlang.org
+fm-bearings-snapshot: projection fai
+gh calls: 5
+leftover temp dirs: 0

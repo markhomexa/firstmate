@@ -1,0 +1,6 @@
+ok - PR rows beyond the exec argument cap still reach the report
+ok - --include-prs maps a custom branch-prefix PR back to its recorded task
+ok - --include-prs is the only path that fetches, and it enriches correctly
+ok - a partial GitHub failure degrades gracefully
+ok - live PR enrichment caps repositories with counted expansion
+ok - per-repository open-PR caps are disclosed with an expansion knob

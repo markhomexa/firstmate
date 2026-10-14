@@ -1,0 +1,59 @@
+== AFTER: 20 repos x 1500 rows (30000 rows), --json
+exit=0
+stderr:
+
+gh calls: 20
+{"rows":30000,"candidate_prs_bytes":4540081,"prs":"checked (20 repos, 30000 open)","first":{"num":"1","repo":"acme/repo-1","task":"big-1","url":"https://github.com/acme/repo/pull/1","review":"","mergeable":"MERGEABLE","checks":"none"},"last":{"num":"1500","repo":"acme/repo-9","task":"big-1500","url":"https://github.com/acme/repo/pull/1500","review":"","mergeable":"MERGEABLE","checks":"none"}}
+leftover temp dirs: 0
+
+real	0m9.629s
+user	0m7.965s
+sys	0m3.389s
+
+== AFTER: 5 repos x 600 rows, default TOON output
+exit=0
+stderr:
+
+gh calls: 5
+4:prs: "checked (5 repos, 3000 open)"
+50:recorded_prs[5]{id,url}:
+62:candidate_prs[3000]{num,repo,task,url,review,mergeable,checks}:
+toon bytes: 259266
+toon lines mentioning acme/repo-: 3005
+leftover temp dirs: 0
+
+== BEFORE: 5 repos x 600 rows, default TOON output
+exit=1
+stderr:
+/tmp/fmbs-drv.3mY71n/old/bin/fm-bearings-snapshot.sh: line 329: /home/homexa/bin/jq: Argument list too long
+jq: invalid JSON text passed to --argjson
+Use jq --help for help with command-line options,
+or see the jq manpage, or online docs at https://jqlang.org
+jq: invalid JSON text passed to --argjson
+Use jq --help for help with command-line options,
+or see the jq manpage, or online docs at https://jqlang.org
+jq: invalid JSON text passed to --argjson
+Use jq --help for help with command-line options,
+or see the jq manpage, or online docs at https://jqlang.org
+fm-bearings-snapshot: projection fai
+gh calls: 5
+toon bytes: 0
+toon lines mentioning acme/repo-: 0
+leftover temp dirs: 0
+
+== AFTER: default (no --include-prs)
+exit=0
+{"has_candidate_prs":false,"prs":"not_requested (run: /bearings include PRs)"}
+net.log lines: 0
+
+== AFTER: every gh call fails
+exit=0
+{"candidate_prs":[],"prs":"checked (3 repos, 0 open; 3 repo(s) unavailable)"}
+
+== AFTER: per-repo cap disclosure (limit 2, 3 PRs/repo)
+exit=0
+{"n":4,"prs":"checked (2 repos; 4 shown, at least 6 open; capped in 2 repo(s))","omitted":[{"surface":"candidate_prs showing 4 of at least 6; capped in 2 repo(s)","reveal":"raise FM_BEARINGS_PR_LIMIT"}]}
+
+== BEFORE: per-repo cap disclosure (limit 2, 3 PRs/repo)
+exit=0
+{"n":4,"prs":"checked (2 repos; 4 shown, at least 6 open; capped in 2 repo(s))","omitted":[{"surface":"candidate_prs showing 4 of at least 6; capped in 2 repo(s)","reveal":"raise FM_BEARINGS_PR_LIMIT"}]}
