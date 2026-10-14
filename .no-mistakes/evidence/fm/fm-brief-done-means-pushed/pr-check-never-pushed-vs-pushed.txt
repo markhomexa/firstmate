@@ -1,0 +1,29 @@
+## direct-PR worker: commit exists only in its copy (upstream configured, never pushed)
+$ git -C wt-t-dpr status -sb
+## fm/t-dpr...origin/fm/t-dpr [gone]
+$ git -C wt-t-dpr rev-parse HEAD
+f2a13c119cb082c214c3ba58555a65b5cee1e50e
+$ fm-pr-check.sh t-dpr https://github.com/fm-lab-nonexistent-owner/r/pull/3
+●━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+●  WATCHER DOWN - SUPERVISION IS OFF
+●  3 task(s) in flight, but no watcher has a fresh beacon (last beat: never, grace 300s).
+●  Trust the emitted supervision protocol for this harness; do not use shell & for watcher repair.
+●  This is a supervision warning only; the guarded operation WILL still run.
+●  watcher supervision needs Stop-owned automatic recovery; inspect the hook registration and startup status before ending the turn.
+●━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+error: named head f2a13c119cb082c214c3ba58555a65b5cee1e50e is unreachable outside the worker copy
+exit=1
+
+## no-mistakes worker reports CI-ready done, never pushed
+$ fm-pr-check.sh t-nm https://github.com/fm-lab-nonexistent-owner/r/pull/3
+WARNING: watcher still down (same stale episode; last beat: never, grace 300s) - full banner already printed this episode.
+error: named head f185f673cd3ac81c3531b1e135341aeb7b631d87 is unreachable outside the worker copy
+exit=1
+
+## direct-PR worker pushes its branch, then reports again
+pushed fm/t-dpr
+$ fm-pr-check.sh t-dpr https://github.com/fm-lab-nonexistent-owner/r/pull/3
+WARNING: watcher still down (same stale episode; last beat: never, grace 300s) - full banner already printed this episode.
+armed: state/t-dpr.check.sh
+exit=0
+pr=https://github.com/fm-lab-nonexistent-owner/r/pull/3

@@ -1,0 +1,18 @@
+===== t-nm (Delivery contract: mode=no-mistakes)
+97:When you believe it is complete, append `done [at=<epoch>]: committed on fm/t-nm, local and unpublished until the pipeline pushes: {summary}` to the status file and stop.
+98:That first `done:` says the work exists only on this machine's branch; it is not a shipped report.
+100:That first `done:` is the handoff that starts the pipeline, which owns the push; it is not a request to push from this copy.
+132:Then append `done [at=<epoch>]: PR {url} checks green` and stop. You are finished.
+133:That CI-ready `done:` is accepted only when this copy's HEAD - your latest commit - is one the /no-mistakes run pushed and is reachable from a remote reference, so commit nothing after the run; the check tests that commit, not merely that a branch moved.
+===== t-nmgerrit (Delivery contract: mode=no-mistakes forge=gerrit shape=squash)
+100:When you believe it is complete, append `done [at=<epoch>]: committed on fm/t-nmgerrit, local and unpublished until you publish the change: {summary}` to the status file and stop.
+101:That first `done:` says the work exists only on this machine's branch; it is not a shipped report.
+103:That first `done:` is the handoff that starts the pipeline; it is not a request to publish.
+153:Then append `done [at=<epoch>]: PR {change url} published for review` to the status file and stop. You are finished.
+154:That `done:` is accepted only when the change's current patch set on the server carries this copy's HEAD tree, so commit nothing after publishing; if you must change the work, commit it and publish again before reporting done.
+===== t-dpr (Delivery contract: mode=direct-PR)
+98:Then append `done [at=<epoch>]: PR {url}` to the status file and stop.
+99:That `done:` is accepted only when this copy's HEAD - your latest commit - is reachable from a remote reference, which is the same question cleanup asks; an unpushed commit is refused, so push before you report. The check tests that commit, not merely that a branch moved.
+===== t-lo (Delivery contract: mode=local-only)
+97:When it is implemented and committed, append `done [at=<epoch>]: ready in branch fm/t-lo (local only, not pushed, not landed)` to the status file and stop.
+98:That line says where the work is: only on this machine's local branch `fm/t-lo`, unpublished and unlanded, so never read as shipped; keep that parenthetical in the report.
