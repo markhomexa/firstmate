@@ -3228,6 +3228,122 @@ test_inject_msg_defers_on_unrecognized_composer_state() {
   pass "inject_msg: unrecognized composer states defer by default"
 }
 
+# --- unknown composer verdict: second proof, fallback, and the success line ----
+# The 2026-09 outage: a Claude composer whose top rule carried a window title
+# read `unknown`, and `unknown` was treated as "occupied" forever (2549 of 2551
+# deferrals), so no escalation was ever delivered. These drive the real
+# inject_msg/escalate_flush with only the backend I/O stubbed, and read the
+# daemon's own log for the delivery line.
+unknown_fixture_screen() {  # <window-title> <prompt-row> -> a claude screen on stdout
+  local title=$1 prompt=$2 nbsp=$'\xc2\xa0' rule bottom top
+  bottom=$(printf '─%.0s' $(seq 104))
+  rule=$(printf '─%.0s' $(seq 70))
+  top="${rule}─── ${title} ─"
+  printf 'recap: earlier work\n%s\n%s\n%s\n  ⏵⏵ bypass permissions on (shift+tab to cycle)\n' "$top" "${prompt//@NBSP@/$nbsp}" "$bottom"
+}
+
+unknown_case() {  # <name> -> prints state dir; afk entered, one escalation buffered
+  local dir state
+  dir=$(make_supercase "$1"); state="$dir/state"
+  afk_enter "$state"
+  escalate_add "$state" "needs-decision: pick A for the test lane"
+  printf '%s' "$dir"
+}
+
+uflush() {  # <case-dir> <state> <quiet-secs>
+  LOG="$1/daemon.log" FM_SUPERVISOR_BACKEND=herdr FM_SUPERVISOR_TARGET=default:w1:p2 \
+    FM_UNKNOWN_QUIET_SECS=$3 FM_ESCALATE_BATCH_SECS=0 escalate_flush "$2"
+}
+
+unknown_stubs() {  # <screen-file> <identity> -- stub backend I/O for herdr target default:w1:p2
+  SCREEN_FILE=$1; IDENTITY=$2
+  fm_backend_target_exists() { return 0; }
+  pane_is_busy() { return 1; }
+  fm_backend_composer_state() { printf 'unknown'; }
+  fm_backend_source() { return 0; }
+  fm_backend_herdr_parse_target() { FM_BACKEND_HERDR_SESSION=default; FM_BACKEND_HERDR_PANE=w1:p2; }
+  fm_backend_herdr_agent_identity_raw() { printf '%b' "$IDENTITY"; }
+  fm_backend_herdr_visible_capture_ansi() { cat "$SCREEN_FILE"; }
+  SENT=$(mktemp "${TMPDIR:-/tmp}/fm-unknown-sent.XXXXXX")
+  fm_backend_send_text_submit() { printf '%s\n' "$3" >> "$SENT"; printf 'empty'; }
+}
+
+test_unknown_composer_delivers_after_second_proof_and_logs_it() {
+  local dir state title
+  for title in "Handoff update (3)" "Café handoff — update ✳"; do
+    dir=$(unknown_case "unknown-deliver"); state="$dir/state"
+    (
+      unknown_fixture_screen "$title" '❯@NBSP@' > "$dir/screen"
+      unknown_stubs "$dir/screen" 'claude\tidle'
+      uflush "$dir" "$state" 60 && fail "first unknown read must start the stability window, not deliver ($title)"
+      [ ! -s "$SENT" ] || fail "typed on the first unknown read ($title)"
+      # Age the witness so the screen has been unchanged for the whole window.
+      sed -i "s/^[0-9]*/$(( $(date +%s) - 120 ))/" "$state/.subsuper-unknown-witness"
+      uflush "$dir" "$state" 60 || fail "an idle claude with an empty prompt row and a stable screen must be delivered to ($title)"
+      delivered_digest "$SENT" | grep -q 'pick A for the test lane' || fail "digest never reached the supervisor ($title)"
+      grep -q 'inject delivered: 1 event(s).*proof=second-proof' "$dir/daemon.log" || fail "daemon log has no positive delivery line ($title): $(cat "$dir/daemon.log")"
+      [ ! -s "$state/.subsuper-escalations" ] || fail "buffer not cleared after delivery ($title)"
+    ) || fail "unknown second-proof delivery failed for title: $title"
+  done
+  pass "inject_msg: an unknown composer (incl. non-ASCII window title) is delivered to after a second proof, and the daemon log records it"
+}
+
+test_unknown_composer_never_types_over_a_draft_dead_shell_dialog_or_moving_screen() {
+  local dir state
+  # typed draft under a titled rule
+  dir=$(unknown_case unknown-draft); state="$dir/state"
+  (
+    unknown_fixture_screen "Café handoff — update ✳" '❯ half a sentence the captain was typing' > "$dir/screen"
+    unknown_stubs "$dir/screen" 'claude\tidle'
+    uflush "$dir" "$state" 0 && fail "typed over a draft"
+    uflush "$dir" "$state" 0 && fail "typed over a draft on retry"
+    [ ! -s "$SENT" ] || fail "draft was typed into"
+    [ -s "$state/.subsuper-escalations" ] || fail "buffer lost while deferring"
+  ) || fail "draft case failed"
+  # dead shell: agent identity is not an idle claude
+  dir=$(unknown_case unknown-shell); state="$dir/state"
+  (
+    unknown_fixture_screen "Handoff update (3)" '❯@NBSP@' > "$dir/screen"
+    unknown_stubs "$dir/screen" ''
+    uflush "$dir" "$state" 0 && fail "typed into a pane with no agent identity"
+    [ ! -s "$SENT" ] || fail "typed into a dead shell"
+  ) || fail "dead-shell case failed"
+  # blocking dialog on an otherwise glyph-shaped screen
+  dir=$(unknown_case unknown-dialog); state="$dir/state"
+  (
+    { printf 'Background work is running\n❯ 1. Exit and stop tasks\n  2. Cancel\nEnter to confirm · Esc to cancel\n'; } > "$dir/screen"
+    unknown_stubs "$dir/screen" 'claude\tidle'
+    uflush "$dir" "$state" 0 && fail "typed into a dialog"
+    [ ! -s "$SENT" ] || fail "dialog was typed into"
+  ) || fail "dialog case failed"
+  # a screen that keeps changing never completes the stability window
+  dir=$(unknown_case unknown-moving); state="$dir/state"
+  (
+    unknown_fixture_screen "Handoff update (3)" '❯@NBSP@' > "$dir/screen"
+    unknown_stubs "$dir/screen" 'claude\tidle'
+    uflush "$dir" "$state" 60 && fail "delivered on a first read"
+    sed -i "s/^[0-9]*/$(( $(date +%s) - 120 ))/" "$state/.subsuper-unknown-witness"
+    printf '  ⏵⏵ something changed\n' >> "$dir/screen"
+    uflush "$dir" "$state" 60 && fail "delivered although the screen changed inside the window"
+    [ ! -s "$SENT" ] || fail "typed while the screen was moving"
+  ) || fail "moving-screen case failed"
+  pass "inject_msg: unknown never types over a draft, a shell, a dialog, or a moving screen"
+}
+
+test_undelivered_alarm_carries_the_digest_text() {
+  local dir state log
+  dir=$(make_wedge_case wedge-carries-content); state="$dir/state"; log="$dir/alert.log"
+  escalate_add "$state" "needs-decision: hand the test lane to the idle machine"
+  WEDGE_ALARM_LAST_EPOCH=0
+  INJECT_LAST_FAILURE="deferred: composer unknown"
+  FM_WEDGE_ALARM_LOG="$log" FM_STATE_OVERRIDE="$state" \
+    FM_WEDGE_ALARM_CHANNEL=osascript FM_SUPERVISOR_BACKEND=herdr \
+    inject_wedge_alarm "$state" 900
+  grep -F 'hand the test lane to the idle machine' "$log" >/dev/null \
+    || fail "the active alert names the failure but not the escalation: $(cat "$log" 2>/dev/null)"
+  pass "inject_wedge_alarm: the alert carries the undelivered escalation text, not just a marker path"
+}
+
 test_afk_start_refuses_when_flag_cannot_be_written
 test_afk_start_ignores_stale_pidfile_without_lock
 test_afk_start_reclaims_stale_daemon_lock_reused_pid
@@ -3372,3 +3488,6 @@ test_inject_msg_herdr_pane_gone_defers
 test_inject_msg_herdr_submits_through_backend_dispatch
 test_inject_msg_defers_on_dead_shell_unknown
 test_inject_msg_defers_on_unrecognized_composer_state
+test_unknown_composer_delivers_after_second_proof_and_logs_it
+test_unknown_composer_never_types_over_a_draft_dead_shell_dialog_or_moving_screen
+test_undelivered_alarm_carries_the_digest_text

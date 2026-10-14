@@ -726,6 +726,64 @@ fm_composer_classify_content() {  # <bordered> <content> [idle_re] [idle_case] [
   printf 'pending'; return 0
 }
 
+# fm_composer_claude_glyph_row_proof: a SECOND, deliberately narrow reader for
+# the one question the away-mode injector must answer when the shape selector
+# above says `unknown`: is the agent prompt row empty? It does not replace
+# fm_composer_classify_screen and no sender consults it; only the away daemon's
+# unknown-verdict path does (bin/fm-supervise-daemon.sh inject_msg).
+# It never measures a rule's width, so a window title with any character in it
+# (an em dash, an accent, an emoji) cannot blind it the way it blinds the
+# selector, whose width proof refuses non-ASCII titles on purpose (#1988).
+# It proves only this exact picture, read from the plain screen: the LAST row
+# that opens with an agent prompt glyph, directly under a row that opens with an
+# 8-column `─` run (a plain or titled top rule), directly over a row of nothing
+# but `─` at least 8 wide, with at most 3 non-blank furniture rows below and no
+# other glyph or rule row among them. Anything else, or a blocking dialog, is
+# `unknown`. Typed text after the glyph (ghost text stripped on a styled
+# capture) is `pending`; only an empty glyph row is `empty`.
+fm_composer_claude_glyph_row_proof() {  # <caps> <screen> -> empty|pending|unknown
+  local caps=$1 screen=$2 styled=0 kv plain row last=-1 n i rest glyph content
+  local -a prows=() rrows=()
+  while IFS= read -r kv; do
+    [ "$kv" = styled=1 ] && styled=1
+  done <<EOF
+$caps
+EOF
+  if fm_composer_blocking_dialog "$screen" >/dev/null; then printf 'unknown'; return 0; fi
+  plain=$(printf '%s\n' "$screen" | fm_composer_strip_ansi)
+  mapfile -t prows <<<"$plain"
+  mapfile -t rrows <<<"$screen"
+  n=${#prows[@]}
+  [ "$n" -eq "${#rrows[@]}" ] || { printf 'unknown'; return 0; }
+  for ((i = 0; i < n; i++)); do
+    row=${prows[i]}
+    fm_composer_normalize_trim_var row
+    if fm_composer_leading_agent_glyph_var glyph "$row"; then last=$i; fi
+  done
+  if [ "$last" -lt 1 ] || [ $((last + 1)) -ge "$n" ]; then printf 'unknown'; return 0; fi
+  row=${prows[last - 1]}
+  fm_composer_normalize_trim_var row
+  case "$row" in ────────*) ;; *) printf 'unknown'; return 0 ;; esac
+  row=${prows[last + 1]}
+  fm_composer_normalize_trim_var row
+  if [ -n "${row//─/}" ]; then printf 'unknown'; return 0; fi
+  case "$row" in *────────*) ;; *) printf 'unknown'; return 0 ;; esac
+  rest=0
+  for ((i = last + 2; i < n; i++)); do
+    row=${prows[i]}
+    fm_composer_normalize_trim_var row
+    [ -n "$row" ] || continue
+    rest=$((rest + 1))
+    if fm_composer_leading_agent_glyph_var glyph "$row"; then printf 'unknown'; return 0; fi
+    case "$row" in ────────*) printf 'unknown'; return 0 ;; esac
+  done
+  if [ "$rest" -gt 3 ]; then printf 'unknown'; return 0; fi
+  content=$(_fm_composer_row_content "${rrows[last]}" "$styled")
+  if fm_composer_leading_agent_glyph_var glyph "$content"; then content=${content#*"$glyph"}; fi
+  fm_composer_normalize_trim_var content
+  if [ -z "$content" ]; then printf 'empty'; else printf 'pending'; fi
+}
+
 # --- The screen classifier ---------------------------------------------------
 #
 # fm_composer_classify_screen <caps> <screen> [cursor_row] [identity]

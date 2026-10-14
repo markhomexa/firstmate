@@ -1235,3 +1235,29 @@ test_background_exit_picker_stays_pending_and_blocks_retry
 test_dialog_heading_and_footer_must_be_the_recorded_lines
 test_dialog_note_skips_the_match_when_no_sink_is_set
 test_quoted_exit_picker_text_is_not_a_dialog
+
+test_claude_glyph_row_proof_reads_titled_rules_of_any_title() {
+  # The away daemon's second reader (not wired into any sender). The selector
+  # refuses a non-ASCII window title on purpose; this reader must still prove
+  # an empty prompt row and must never prove a draft, a shell, or a lookalike.
+  local bottom top foot caps title got
+  bottom=$(printf '─%.0s' $(seq 104))
+  foot='  ⏵⏵ bypass permissions on (shift+tab to cycle)'
+  caps=$(printf 'styled=0')
+  for title in "Handoff update (3)" "Café handoff — update ✳"; do
+    top="$(printf '─%.0s' $(seq 70))─── $title ─"
+    got=$(fm_composer_claude_glyph_row_proof "$caps" "recap"$'\n'"$top"$'\n❯'"$NBSP"$'\n'"$bottom"$'\n'"$foot")
+    [ "$got" = empty ] || fail "empty prompt under titled rule [$title] read $got"
+    got=$(fm_composer_claude_glyph_row_proof "$caps" "$top"$'\n❯ half a sentence\n'"$bottom"$'\n'"$foot")
+    [ "$got" = pending ] || fail "draft under titled rule [$title] read $got"
+  done
+  got=$(fm_composer_claude_glyph_row_proof "$caps" "recap"$'\n'"user@host:~\$ ")
+  [ "$got" = unknown ] || fail "dead shell read $got"
+  got=$(fm_composer_claude_glyph_row_proof "$caps" "recap"$'\n❯'"$NBSP"$'\n'"$bottom"$'\n'"$foot")
+  [ "$got" = unknown ] || fail "glyph row with no top rule read $got"
+  got=$(fm_composer_claude_glyph_row_proof "$caps" "$top"$'\n❯'"$NBSP"$'\nWorking on request...\n'"$foot")
+  [ "$got" = unknown ] || fail "glyph row with no closing rule read $got"
+  pass "claude glyph-row proof: empty for any titled rule, pending for a draft, unknown for shells and lookalikes"
+}
+
+test_claude_glyph_row_proof_reads_titled_rules_of_any_title
