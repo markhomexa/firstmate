@@ -1,0 +1,24 @@
+[33mA new version of no-mistakes is available: v1.72.0 -> v1.84.0
+Run "no-mistakes update" to update[0m
+Verifies the registered invoking worktree, clean exact branch, persisted
+pipeline push binding, configured fork or upstream target, live remote equality,
+and either strict ancestry or content-equivalent divergence. The default applies
+an eligible plan without a prompt: strict fast-forward for behind branches, or an
+equivalent advance that anchors the old head before moving the branch to the
+verified pipeline head with reset semantics.
+--check performs the same fresh read-only plan. Blocked states change nothing.
+--recover performs the guarded custody return offered by
+next_action.code: recover_custody; --keep-local keeps the current local head.
+--bind-archive-ref binds one exact existing refs/heads/archive/* commit to
+the selected terminal run; it never creates or moves a Git ref.
+
+Usage:
+  no-mistakes axi sync [flags]
+
+Flags:
+      --bind-archive-ref string   bind one existing refs/heads/archive/* commit as exact keep-local recovery evidence without changing Git refs
+      --check                     freshly verify and return the plan without changing HEAD
+  -h, --help                      help for sync
+      --keep-local                with --recover: keep the current local head; anchor available preserved commits, discard genuinely missing ones, and make the gate follow the kept head
+      --recover                   return custody of a branch stranded by a terminal run with unpublished pipeline commits (a no-op when cancellation already released the branch)
+21:      --instructions string   guidance applied to the selected findings (with --action fix)

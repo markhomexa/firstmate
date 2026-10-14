@@ -1,0 +1,9 @@
+last_status_line: note [at=1792011416]: hand-wrote decided fix for review-3 after two cap deaths
+verb: note
+prefix: recognized
+terminal: no
+at_epoch: 1792011416
+note: hand-wrote decided fix for review-3 after two cap deaths
+open decisions: []
+after blocked -> verb: blocked
+captain-relevant: yes

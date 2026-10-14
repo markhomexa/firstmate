@@ -1,0 +1,7 @@
+absolute wall-clock limit: 1
+timed out after: 3
+not a descendant of the pipeline's recorded head: 1
+recover_custody: 4
+custody_returned: 7
+next_action: 10
+branch_sync: 13
