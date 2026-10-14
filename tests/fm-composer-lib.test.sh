@@ -1237,9 +1237,10 @@ test_dialog_note_skips_the_match_when_no_sink_is_set
 test_quoted_exit_picker_text_is_not_a_dialog
 
 test_claude_glyph_row_proof_reads_titled_rules_of_any_title() {
-  # The away daemon's second reader (not wired into any sender). The selector
-  # refuses a non-ASCII window title on purpose; this reader must still prove
-  # an empty prompt row and must never prove a draft, a shell, or a lookalike.
+  # The away daemon's second reader, used by a sender only behind the
+  # FM_HERDR_COMPOSER_PREPROVED opt-in. The selector refuses a non-ASCII window
+  # title on purpose; this reader must still prove an empty prompt row, read a
+  # wrapped payload whole, and never prove a draft, a shell, or a lookalike.
   local bottom top foot caps title got
   bottom=$(printf '─%.0s' $(seq 104))
   foot='  ⏵⏵ bypass permissions on (shift+tab to cycle)'
@@ -1250,6 +1251,9 @@ test_claude_glyph_row_proof_reads_titled_rules_of_any_title() {
     [ "$got" = empty ] || fail "empty prompt under titled rule [$title] read $got"
     got=$(fm_composer_claude_glyph_row_proof "$caps" "$top"$'\n❯ half a sentence\n'"$bottom"$'\n'"$foot")
     [ "$got" = pending ] || fail "draft under titled rule [$title] read $got"
+    got=$(fm_composer_claude_glyph_row_content "$caps" "$top"$'\n❯ first wrapped half\n  second half\n'"$bottom"$'\n'"$foot") \
+      || fail "wrapped payload under titled rule [$title] not recognized"
+    [ "$got" = $'first wrapped half\nsecond half' ] || fail "wrapped payload under titled rule [$title] read [$got]"
   done
   got=$(fm_composer_claude_glyph_row_proof "$caps" "recap"$'\n'"user@host:~\$ ")
   [ "$got" = unknown ] || fail "dead shell read $got"

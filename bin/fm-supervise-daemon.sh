@@ -1443,7 +1443,10 @@ window_for_task() {  # <task-key> [state]
 #   - the bottom of the screen has not changed for FM_UNKNOWN_QUIET_SECS, so
 #     nobody is typing: a human mid-sentence changes the screen.
 # The send itself still runs the Claude-on-Herdr payload proof (empty before,
-# payload shown before Enter), so a wrong guess here types nothing.
+# payload shown before Enter), so a wrong guess here types nothing. That proof's
+# own reader fails on the same titled composers (non-ASCII titles included),
+# which is the root cause of the outage, so inject_msg arms it with
+# FM_HERDR_COMPOSER_PREPROVED=1 to read them through the same glyph-row reader.
 UNKNOWN_QUIET_SECS_DEFAULT=60
 INJECT_PROOF=
 INJECT_UNPROVEN_REASON=
@@ -1574,7 +1577,12 @@ inject_msg() {  # <message> [state]
   bytes=$(LC_ALL=C; printf '%s' "${#msg}")
   errf=$(mktemp "$state/.subsuper-inject-err.XXXXXX" 2>/dev/null) || errf=
   INJECT_SUBMIT_ATTEMPTED=1
-  verdict=$(fm_backend_send_text_submit "$backend" "$target" "$msg" "$retries" "$sleep_s" "$sleep_s" 2>"${errf:-/dev/null}")
+  # FM_HERDR_COMPOSER_PREPROVED arms the herdr Claude payload proof's titled-
+  # composer reader for the second-proof send only; it is unset otherwise.
+  verdict=$(
+    if [ "$INJECT_PROOF" = second-proof ]; then export FM_HERDR_COMPOSER_PREPROVED=1; else unset FM_HERDR_COMPOSER_PREPROVED; fi
+    fm_backend_send_text_submit "$backend" "$target" "$msg" "$retries" "$sleep_s" "$sleep_s" 2>"${errf:-/dev/null}"
+  )
   if [ -n "$errf" ]; then
     err=$(cat "$errf" 2>/dev/null)
     rm -f "$errf"
