@@ -77,7 +77,14 @@
 # A supported URL whose last good observation is merged or closed is final: it is
 # never re-read, stays fresh, and every owner's saved row converges on that
 # observation, with a stale error beside it cleared.
-# A genuine failure prints its unavailable line only when it starts an episode
+# A failed observation says which of its causes it was, from the read that
+# failed: the forge answered with an error, gh was killed or could not start
+# (this machine, busy or broken, which it cannot tell apart), the head moved
+# between reads, or the response was malformed. A read that merely ran out of
+# time is never one of them. Measured on a 10-core host with the CPU
+# oversubscribed twofold, six parallel reads took 1.1-1.5s against the 5s cap,
+# so CPU load alone does not time reads out and the bounds are unchanged.
+# A genuine failure prints its failure line only when it starts an episode
 # (no prior owner has an error); a successful read ends the episode.
 # FM_CONTRIBUTIONS_NOW supplies an ISO UTC clock for tests, otherwise UTC now.
 # FM_CONTRIBUTIONS_READY_LABEL selects the equivalent triage label, default
@@ -232,8 +239,14 @@ forge() {
   if [ "$rc" -eq 124 ]; then
     BUDGET_EXHAUSTED=1
     : > "$TMP/budget-exhausted"
+  elif [ "$rc" -eq 126 ] || [ "$rc" -eq 127 ] || [ "$rc" -gt 128 ]; then
+    # gh was killed by a signal or could not start: the forge never answered,
+    # and this machine cannot say whether it was busy or gh is broken.
+    : > "$TMP/forge-unavailable"
+    [ -e "$TMP/cause" ] || printf 'local read failure: gh was killed or could not start (exit %s) reading %s; the forge gave no answer, so this is this machine (busy or broken gh), not a forge verdict\n' "$rc" "$2" > "$TMP/cause"
   elif [ "$rc" -ne 0 ]; then
     : > "$TMP/forge-unavailable"
+    [ -e "$TMP/cause" ] || printf 'forge failed the read of %s (gh exit %s): %s\n' "$2" "$rc" "$(head -n 1 "$forge_err" 2>/dev/null | cut -c1-160)" > "$TMP/cause"
   fi
   return "$rc"
 }
@@ -254,7 +267,7 @@ observe() { # canonical GitHub URL -> normalized JSON
   case "$url" in https://github.com/*) ;; *) return 1 ;; esac
   part=${url#https://github.com/}; number=${part##*/}; part=${part%/*}; kind=${part##*/}; part=${part%/*}
   case "$kind" in pull) endpoint="repos/$part/pulls/$number" ;; issues) endpoint="repos/$part/issues/$number" ;; *) return 1 ;; esac
-  rm -f -- "$TMP/budget-exhausted" "$TMP/forge-unavailable"
+  rm -f -- "$TMP/budget-exhausted" "$TMP/forge-unavailable" "$TMP/cause"
   BUDGET_EXHAUSTED=0
   forge api "$endpoint" > "$TMP/core.json" || return 1
   jq -e '(.state == "open" or .state == "closed") and (.user.login | type == "string")' "$TMP/core.json" >/dev/null || return 1
@@ -276,7 +289,7 @@ observe() { # canonical GitHub URL -> normalized JSON
     jq -e 'type == "array" and all(.[]; type == "array")' "$TMP/comments.json" >/dev/null || return 1
     forge pr view "$url" --json headRefOid,reviewDecision > "$TMP/after.json" || return 1
     after=$(jq -er .headRefOid "$TMP/after.json")
-    [ "$head" = "$after" ] || { printf 'head changed during observation\n' > "$TMP/forge.err"; return 1; }
+    [ "$head" = "$after" ] || { printf 'pull request head moved from %s to %s while it was being read, so the reads disagree; not a forge failure\n' "$head" "$after" > "$TMP/cause"; return 1; }
     jq -n --slurpfile core "$TMP/core.json" --slurpfile comments "$TMP/comments.json" \
       --slurpfile reviews "$TMP/reviews.json" --slurpfile inline "$TMP/inline.json" --slurpfile after "$TMP/after.json" --slurpfile checks "$TMP/checks.json" \
       --slurpfile statuses "$TMP/statuses.json" --slurpfile repo "$TMP/repo.json" '
@@ -380,7 +393,7 @@ clear_unsupported_errors() {
 }
 
 poll() {
-  local task url old kind error observed
+  local task url old kind error observed cause
   local -a row
   acquire
   get_input
@@ -417,11 +430,16 @@ poll() {
     observed=0
     observe "$url" || observed=$?
     [ "$BUDGET_EXHAUSTED" -eq 0 ] || continue
+    cause=
+    if [ "$observed" -ne 0 ]; then
+      cause=$(head -n 1 "$TMP/cause" 2>/dev/null) || cause=
+      [ -n "$cause" ] || cause='forge response was missing or malformed; the reads finished, so this is not a timeout'
+    fi
     # Wake once per failure episode: only when no owner has a prior error.
     if [ "$observed" -ne 0 ] && jq -ne --slurpfile saved "$TMP/saved.json" --arg url "$url" --args \
       'all($ARGS.positional[] as $task | [$saved[0][] | select(.task == $task) | .records[] | select(.url == $url)] | first;
         .error == null)' "${row[@]:1}" >/dev/null; then
-      printf 'contributions: observation unavailable for %s\n' "$url"
+      printf 'contributions: observation failed for %s: %s\n' "$url" "$cause"
     fi
     case "$url" in */issues/*) kind=issue ;; *) kind="pr" ;; esac
     for task in "${row[@]:1}"; do
@@ -441,7 +459,7 @@ poll() {
             seen:($events | map(.token)),
             pending:(($old.pending // []) + [$events[] | select(.token as $t | ($old.seen // [] | index($t)) == null)] | unique_by(.token))}' > "$TMP/row.json"
       else
-        error='forge observation unavailable or changed during read'
+        error="observation failed: $cause"
         jq --arg now "$NOW" --arg error "$error" '.checked_at=$now | .error=$error' "$old" > "$TMP/row.json"
       fi
       write_record "$task" "$TMP/row.json"
