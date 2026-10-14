@@ -1,0 +1,2 @@
+stale: fm-lab:fm-wedge
+exit 0

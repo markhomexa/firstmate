@@ -1,0 +1,17 @@
+== live process table (drive calls) ==
+Wed Oct 14 14:39:33 PDT 2026
+pid 435948 etime       02:20 cwd /home/homexa/.treehouse/firstmate-768c00/4/firstmate
+pid 451582 etime       02:01 cwd /home/homexa/.treehouse/firstmate-768c00/5/firstmate
+pid 459742 etime       01:27 cwd /home/homexa/.treehouse/firstmate-768c00/2/firstmate
+pid 475156 etime       00:47 cwd /home/homexa/.treehouse/Yapii-9609e6/2/Yapii
+pid 476241 etime       00:39 cwd /home/homexa/.treehouse/firstmate-768c00/3/firstmate
+== real fm-crew-state.sh live ==
+state: working · source: run-step · validating (running) · run: 01M4Y5JR9BNJJCDZ94S94CSNCR
+== crew_blocking_call_evidence live ==
+blocking|inside a no-mistakes drive call (pid 451582, blocked 122s) with the run active rc=0
+== same, FM_BLOCKING_CALL_MAX_SECS=30 ==
+unresolved|the drive call (pid 451582) has blocked 123s, past the 30s bound for one call rc=1
+== worker with no drive call (wedge shape) ==
+none|no no-mistakes drive call is running in this worker's worktree rc=1
+== task with no worktree record ==
+unresolved|no recorded worktree to attribute a drive call to rc=1

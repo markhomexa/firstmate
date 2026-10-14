@@ -1,0 +1,2 @@
+stale: fm-lab:fm-live (idle 21s, possible wedge, escalation 1, could not tell whether it is a blocking call: the drive call (pid 451582) has blocked 260s, past the 30s bound for one call)
+exit 0

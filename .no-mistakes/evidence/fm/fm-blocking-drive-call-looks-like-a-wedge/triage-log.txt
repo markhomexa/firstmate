@@ -1,0 +1,5 @@
+[2026-10-14T14:40:01-0700] absorbed non-terminal stale (provably working): fm-lab:fm-live
+[2026-10-14T14:40:24-0700] absorbed non-terminal stale (verified blocking call, inside a no-mistakes drive call (pid 451582, blocked 171s) with the run active, idle 22s): fm-lab:fm-live
+[2026-10-14T14:40:46-0700] absorbed non-terminal stale (verified blocking call, inside a no-mistakes drive call (pid 451582, blocked 194s) with the run active, idle 21s): fm-lab:fm-live
+[2026-10-14T14:41:09-0700] absorbed non-terminal stale (verified blocking call, inside a no-mistakes drive call (pid 451582, blocked 216s) with the run active, idle 22s): fm-lab:fm-live
+[2026-10-14T14:41:31-0700] absorbed non-terminal stale (verified blocking call, inside a no-mistakes drive call (pid 451582, blocked 238s) with the run active, idle 21s): fm-lab:fm-live
