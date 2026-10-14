@@ -1,0 +1,6 @@
+✻ Sautéed for 12s · done 2:44 PM
+─────────────────────────────────────────────────────────────────────────────────────────────── Café handoff — update ─
+❯ half a sentence the captain was typing
+───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  ⚠ Transcript saving is off — inherited CLAUDE_CODE_CHILD_SESSION marker · restart with CLAUDE_CODE_FORCE_SESSION_P…
+  ⏵⏵ bypass permissions on (shift+tab to cycle)

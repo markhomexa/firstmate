@@ -1,0 +1,2 @@
+[2026-10-14T14:45:12-0700] inject deferred: supervisor composer not confirmed-empty (state=unknown) and no second proof: screen stability window started
+[2026-10-14T14:45:14-0700] inject delivered: 1 event(s), 1792014314 proof=second-proof

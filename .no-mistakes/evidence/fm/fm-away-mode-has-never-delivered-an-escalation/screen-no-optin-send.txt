@@ -1,0 +1,6 @@
+                                                                                         Ctrl+Y to paste deleted text
+─────────────────────────────────────────────────────────────────────────────────────────────── Café handoff — update ─
+❯
+───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  ⚠ Transcript saving is off — inherited CLAUDE_CODE_CHILD_SESSION marker · restart with CLAUDE_CODE_FORCE_SESSION_P…
+  ⏵⏵ bypass permissions on (shift+tab to cycle)

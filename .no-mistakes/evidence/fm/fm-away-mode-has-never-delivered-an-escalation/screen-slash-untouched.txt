@@ -1,0 +1,10 @@
+✻ Sautéed for 12s · done 2:44 PM
+  ❯ /compact                                    Free up context by summarizing the conversation so far
+    /autocompact                                Set how full the context gets before auto-summarizing
+    /computer-use                               Read this skill before the first step of any request to do something
+                                                in an app on the person's own computer (Notes, Finder, System Settin…
+─────────────────────────────────────────────────────────────────────────────────────────────── Café handoff — update ─
+❯ /compact
+───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  ⚠ Transcript saving is off — inherited CLAUDE_CODE_CHILD_SESSION marker · restart with CLAUDE_CODE_FORCE_SESSION_P…
+  ⏵⏵ bypass permissions on (shift+tab to cycle)

@@ -1,0 +1,6 @@
+[2026-10-14T14:45:46-0700] inject deferred: supervisor pane busy (agent mid-turn)
+[2026-10-14T14:45:47-0700] inject deferred: supervisor pane busy (agent mid-turn)
+[2026-10-14T14:45:48-0700] inject deferred: supervisor pane busy (agent mid-turn)
+[2026-10-14T14:45:50-0700] inject deferred: supervisor pane busy (agent mid-turn)
+[2026-10-14T14:46:04-0700] inject deferred: supervisor composer not confirmed-empty (state=unknown) and no second proof: screen stability window started
+[2026-10-14T14:46:11-0700] inject delivered: 1 event(s), 1792014371 proof=second-proof
