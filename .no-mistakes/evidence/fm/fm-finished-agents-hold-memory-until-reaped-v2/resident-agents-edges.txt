@@ -1,0 +1,10 @@
+$ fm-resident-agents.sh bogus
+usage: fm-resident-agents.sh
+exit=2
+$ FM_HOME=<empty home> fm-resident-agents.sh
+no recorded direct reports in this home
+exit=0
+$ fm-resident-agents.sh --help | head -3
+fm-resident-agents.sh - report which of this home's direct-report agent
+sessions are resident, how much memory each holds, and which are safe to
+release.
