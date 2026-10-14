@@ -1,0 +1,14 @@
+##### scenario: transport
+proxy on 127.0.0.1:18767 accepts and immediately resets every connection (no forge ever reached)
+rc=0
+--- poll stdout (wake line):
+contributions: observation failed for https://github.com/markhomexa/firstmate/pull/11: gh read of repos/markhomexa/firstmate/pulls/11 failed (gh exit 1): Get "https://api.github.com/repos/markhomexa/firstmate/pulls/11": read tcp 127.0.0.1:47978->127.0.0.1:18767: read: connection reset by peer
+--- persisted record (data/delivery/contributions.json):
+{"url":"https://github.com/markhomexa/firstmate/pull/11","checked_at":"2026-10-14T23:34:31Z","error":"observation failed: gh read of repos/markhomexa/firstmate/pulls/11 failed (gh exit 1): Get \"https://api.github.com/repos/markhomexa/firstmate/pulls/11\": read tcp 127.0.0.1:47978->127.0.0.1:18767: read: connection reset by peer","observed_head":null}
+##### scenario: timeout
+proxy on 127.0.0.1:18766 accepts and never answers, so gh hangs past the 5s per-read cap
+rc=0 elapsed=5.33s
+--- poll stdout (wake line):
+
+--- persisted record (data/delivery/contributions.json):
+(no record written)

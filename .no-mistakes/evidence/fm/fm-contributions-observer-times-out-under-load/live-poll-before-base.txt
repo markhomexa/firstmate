@@ -1,0 +1,15 @@
+##### BEFORE (base 8df8d53): gh killed by a signal mid-read
+killer: 2692830 gh
+killer: sent SIGKILL to real gh pid 2692830
+rc=0
+--- poll stdout (wake line):
+contributions: observation unavailable for https://github.com/markhomexa/firstmate/pull/11
+--- persisted record (data/delivery/contributions.json):
+{"url":"https://github.com/markhomexa/firstmate/pull/11","checked_at":"2026-10-14T23:34:45Z","error":"forge observation unavailable or changed during read","observed_head":null}
+##### BEFORE (base 8df8d53): proxy resets connection
+proxy on 127.0.0.1:18767 accepts and immediately resets every connection (no forge ever reached)
+rc=0
+--- poll stdout (wake line):
+contributions: observation unavailable for https://github.com/markhomexa/firstmate/pull/11
+--- persisted record (data/delivery/contributions.json):
+{"url":"https://github.com/markhomexa/firstmate/pull/11","checked_at":"2026-10-14T23:34:47Z","error":"forge observation unavailable or changed during read","observed_head":null}

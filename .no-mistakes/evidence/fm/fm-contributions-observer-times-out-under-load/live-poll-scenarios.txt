@@ -1,0 +1,51 @@
+##### scenario: healthy
+rc=0 elapsed=3.03s
+--- poll stdout (wake line):
+
+--- persisted record (data/delivery/contributions.json):
+{"url":"https://github.com/markhomexa/firstmate/pull/11","checked_at":"2026-10-14T23:33:10Z","error":null,"observed_head":"11d1e908bdd29b14190b0185f156cc7e98a9be41"}
+##### scenario: loaded
+nproc=10; starting 20 busy loops (2x CPU oversubscription)
+loadavg before polls: 6.23 4.60 4.51 27/860 2643594
+== loaded poll 1 rc=0 elapsed=4.32s
+--- poll stdout (wake line):
+
+--- persisted record (data/delivery/contributions.json):
+{"url":"https://github.com/markhomexa/firstmate/pull/11","checked_at":"2026-10-14T23:33:17Z","error":null,"observed_head":"11d1e908bdd29b14190b0185f156cc7e98a9be41"}
+== loaded poll 2 rc=0 elapsed=4.69s
+--- poll stdout (wake line):
+
+--- persisted record (data/delivery/contributions.json):
+{"url":"https://github.com/markhomexa/firstmate/pull/11","checked_at":"2026-10-14T23:33:21Z","error":null,"observed_head":"11d1e908bdd29b14190b0185f156cc7e98a9be41"}
+== loaded poll 3 rc=0 elapsed=5.27s
+--- poll stdout (wake line):
+
+--- persisted record (data/delivery/contributions.json):
+{"url":"https://github.com/markhomexa/firstmate/pull/11","checked_at":"2026-10-14T23:33:26Z","error":null,"observed_head":"11d1e908bdd29b14190b0185f156cc7e98a9be41"}
+loadavg after polls: 11.20 5.77 4.89 27/947 2649960
+##### scenario: http404
+rc=0
+--- poll stdout (wake line):
+contributions: observation failed for https://github.com/markhomexa/firstmate/pull/999999: forge failed the read of repos/markhomexa/firstmate/pulls/999999 (gh exit 1): gh: Not Found (HTTP 404)
+--- persisted record (data/delivery/contributions.json):
+{"url":"https://github.com/markhomexa/firstmate/pull/999999","checked_at":"2026-10-14T23:33:31Z","error":"observation failed: forge failed the read of repos/markhomexa/firstmate/pulls/999999 (gh exit 1): gh: Not Found (HTTP 404)","observed_head":null}
+##### scenario: transport
+rc=0
+--- poll stdout (wake line):
+
+--- persisted record (data/delivery/contributions.json):
+(no record written)
+##### scenario: killed
+killer: 2654496 gh
+killer: sent SIGKILL to real gh pid 2654496
+rc=0
+--- poll stdout (wake line):
+contributions: observation failed for https://github.com/markhomexa/firstmate/pull/11: local read failure: gh was killed or could not start (exit 137) reading repos/markhomexa/firstmate/pulls/11; the forge gave no answer, so this is this machine (busy or broken gh), not a forge verdict
+--- persisted record (data/delivery/contributions.json):
+{"url":"https://github.com/markhomexa/firstmate/pull/11","checked_at":"2026-10-14T23:33:38Z","error":"observation failed: local read failure: gh was killed or could not start (exit 137) reading repos/markhomexa/firstmate/pulls/11; the forge gave no answer, so this is this machine (busy or broken gh), not a forge verdict","observed_head":null}
+##### scenario: timeout
+rc=0 elapsed=5.31s
+--- poll stdout (wake line):
+
+--- persisted record (data/delivery/contributions.json):
+(no record written)
