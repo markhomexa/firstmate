@@ -1,0 +1,180 @@
+slots: mine=/tmp/fm-retire-live.CnmYxO/pool/.treehouse/proj-cad98e/1/proj other=/tmp/fm-retire-live.CnmYxO/pool/.treehouse/proj-cad98e/2/proj dirty=/tmp/fm-retire-live.CnmYxO/pool/.treehouse/proj-cad98e/3/proj foreign=/tmp/fm-retire-live.CnmYxO/pool/.treehouse/proj-cad98e/4/proj
+treehouse status before:
+A new version of treehouse is available: v2.3.0 → v3.1.3
+Run "treehouse update" to update
+
+{"path":"/tmp/fm-retire-live.CnmYxO/pool/.treehouse/proj-cad98e/1/proj","name":"1"}
+{"path":"/tmp/fm-retire-live.CnmYxO/pool/.treehouse/proj-cad98e/2/proj","name":"2"}
+{"path":"/tmp/fm-retire-live.CnmYxO/pool/.treehouse/proj-cad98e/3/proj","name":"3"}
+{"path":"/tmp/fm-retire-live.CnmYxO/pool/.treehouse/proj-cad98e/4/proj","name":"4"}
+
+===== live records before: 5 =====
+tx-dirty.meta
+tx-foreign.meta
+tx-noclaim.meta
+tx-scout.meta
+tx-templates-owner.meta
+
+===== A1 ordinary teardown of tx-templates-owner (no worktree=) must still refuse =====
+fm-gate-refuse: gate agent lifecycle permitted only against lab home /tmp/fm-lab.9ea8HL
+REFUSED: task tx-templates-owner has a missing, empty, or ambiguous worktree identity; preserving task state.
+exit=1
+record: present; pane: alive
+
+===== A2 --force must still refuse and must not guess a worktree =====
+fm-gate-refuse: gate agent lifecycle permitted only against lab home /tmp/fm-lab.9ea8HL
+REFUSED: task tx-templates-owner has a missing, empty, or ambiguous worktree identity; preserving task state.
+exit=1
+record: present; pane: alive
+
+===== A3 --retire-unidentified-worktree --force is an invalid request =====
+error: --retire-unidentified-worktree cannot be combined with --force: forcing is authority to discard work, and this path discards nothing and guesses no worktree
+exit=2
+record: present
+
+===== A4 --retire-unidentified-worktree on a record that names a worktree is refused =====
+fm-gate-refuse: gate agent lifecycle permitted only against lab home /tmp/fm-lab.9ea8HL
+REFUSED: task tx-noclaim's record names a worktree, so it is not an unidentified-worktree record; use ordinary teardown and its landed-work checks. Nothing was changed.
+exit=1
+record: present; pane: alive; slot sentinel intact: 0 changes
+
+===== S1 retire tx-templates-owner (clean slot claimed by it, another task's claim beside it) =====
+fm-gate-refuse: gate agent lifecycle permitted only against lab home /tmp/fm-lab.9ea8HL
+●━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+●  WATCHER DOWN - SUPERVISION IS OFF
+●  5 task(s) in flight, but no watcher has a fresh beacon (last beat: never, grace 300s).
+●  Trust the emitted supervision protocol for this harness; do not use shell & for watcher repair.
+●  This is a supervision warning only; the guarded operation WILL still run.
+●  watcher supervision needs Stop-owned automatic recovery; inspect the hook registration and startup status before ending the turn.
+●━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+WARNING: watcher still down (same stale episode; last beat: never, grace 300s) - full banner already printed this episode.
+proj: already current
+RETIRED UNVERIFIED tx-templates-owner: record released and endpoint fm-lab-retire-unid-1530696-29108:w2:p1 closed, but its worktree could not be identified, so landed work was NOT checked and no worktree was touched; released the pool-slot claim that named this task; the slot's checkout was not returned or touched; this is not an ordinary clean close
+Backlog: tx-templates-owner is closed in /tmp/fm-lab.9ea8HL/data/backlog.md with a note that cleanup was NOT verified; its worktree was never identified. Check whether landed work survives elsewhere before relying on it.
+exit=0
+live records 5 -> 4; record: gone; pane: gone
+own claim: <released>
+other task's claim: task=someone-else home=/tmp/fm-lab.9ea8HL 
+slot checkout still present: yes
+--- data/tx-templates-owner/retired-unverified.txt
+Retired without a verified close: 2026-10-14T13:41:08Z.
+The task record named no worktree, so landed work was NOT checked and no worktree was touched.
+The endpoint fm-lab-retire-unid-1530696-29108:w2:p1 was closed and the task record was released.
+Pool slot: released the pool-slot claim that named this task; the slot's checkout was not returned or touched.
+Any worktree this task used was never identified here; reconcile it by hand if one survives.
+--- backlog row
+task:
+  id: tx-templates-owner
+  title: live fixture tx-templates-owner
+  state: done
+  blocked: no
+  blocked_by: none
+  held: no
+  hold_reason: "-"
+  hold_kind: "-"
+  hold_until: "-"
+  kind: ship
+  repo: "-"
+  priority: "-"
+  created: "-"
+  closed: 2026-10-14
+  deps: none
+  links: none
+  body: cleanup NOT verified - worktree identity unknown so landed work was not checked
+--- ledger close
+{"v":1,"ts":1791985268,"event":"task.cleaned_up","task":"tx-templates-owner","verified":false}
+
+===== S2 retire tx-dirty (its claimed slot is dirty) =====
+fm-gate-refuse: gate agent lifecycle permitted only against lab home /tmp/fm-lab.9ea8HL
+WARNING: watcher still down (same stale episode; last beat: never, grace 300s) - full banner already printed this episode.
+WARNING: watcher still down (same stale episode; last beat: never, grace 300s) - full banner already printed this episode.
+proj: already current
+RETIRED UNVERIFIED tx-dirty: record released and endpoint fm-lab-retire-unid-1530696-29108:w3:p1 closed, but its worktree could not be identified, so landed work was NOT checked and no worktree was touched; the pool slot claimed by this task at /tmp/fm-retire-live.CnmYxO/pool/.treehouse/proj-cad98e/3/proj is dirty or could not be read, so its claim and checkout were left untouched; look at it before the pool can reuse it; this is not an ordinary clean close
+Backlog: tx-dirty is closed in /tmp/fm-lab.9ea8HL/data/backlog.md with a note that cleanup was NOT verified; its worktree was never identified. Check whether landed work survives elsewhere before relying on it.
+exit=0
+record: gone; pane: gone
+dirty slot claim: task=tx-dirty home=/tmp/fm-lab.9ea8HL 
+dirty slot WIP: unlanded work
+--- retired-unverified.txt
+Retired without a verified close: 2026-10-14T13:41:12Z.
+The task record named no worktree, so landed work was NOT checked and no worktree was touched.
+The endpoint fm-lab-retire-unid-1530696-29108:w3:p1 was closed and the task record was released.
+Pool slot: the pool slot claimed by this task at /tmp/fm-retire-live.CnmYxO/pool/.treehouse/proj-cad98e/3/proj is dirty or could not be read, so its claim and checkout were left untouched; look at it before the pool can reuse it.
+Any worktree this task used was never identified here; reconcile it by hand if one survives.
+
+===== S3 retire tx-noclaim (no claim names it) =====
+fm-gate-refuse: gate agent lifecycle permitted only against lab home /tmp/fm-lab.9ea8HL
+WARNING: watcher still down (same stale episode; last beat: never, grace 300s) - full banner already printed this episode.
+WARNING: watcher still down (same stale episode; last beat: never, grace 300s) - full banner already printed this episode.
+proj: already current
+RETIRED UNVERIFIED tx-noclaim: record released and endpoint fm-lab-retire-unid-1530696-29108:w4:p1 closed, but its worktree could not be identified, so landed work was NOT checked and no worktree was touched; no durable pool-slot claim naming this task was found, so a pool slot may still be claimed; this is not an ordinary clean close
+Backlog: tx-noclaim is closed in /tmp/fm-lab.9ea8HL/data/backlog.md with a note that cleanup was NOT verified; its worktree was never identified. Check whether landed work survives elsewhere before relying on it.
+exit=0
+record: gone; pane: gone
+other task's claim still: task=someone-else home=/tmp/fm-lab.9ea8HL 
+
+===== S4 retire tx-foreign (claim with this id but another home) =====
+fm-gate-refuse: gate agent lifecycle permitted only against lab home /tmp/fm-lab.9ea8HL
+WARNING: watcher still down (same stale episode; last beat: never, grace 300s) - full banner already printed this episode.
+WARNING: watcher still down (same stale episode; last beat: never, grace 300s) - full banner already printed this episode.
+proj: already current
+RETIRED UNVERIFIED tx-foreign: record released and endpoint fm-lab-retire-unid-1530696-29108:w5:p1 closed, but its worktree could not be identified, so landed work was NOT checked and no worktree was touched; no durable pool-slot claim naming this task was found, so a pool slot may still be claimed; this is not an ordinary clean close
+Backlog: tx-foreign is closed in /tmp/fm-lab.9ea8HL/data/backlog.md with a note that cleanup was NOT verified; its worktree was never identified. Check whether landed work survives elsewhere before relying on it.
+exit=0
+record: gone; pane: gone
+foreign-home claim: task=tx-foreign home=/tmp/fm-retire-live.CnmYxO/another-home 
+
+===== S5 retire tx-scout (scout keeps its report link plus the unverified note) =====
+fm-gate-refuse: gate agent lifecycle permitted only against lab home /tmp/fm-lab.9ea8HL
+WARNING: watcher still down (same stale episode; last beat: never, grace 300s) - full banner already printed this episode.
+RETIRED UNVERIFIED tx-scout: record released and endpoint fm-lab-retire-unid-1530696-29108:w6:p1 closed, but its worktree could not be identified, so landed work was NOT checked and no worktree was touched; no durable pool-slot claim naming this task was found, so a pool slot may still be claimed; this is not an ordinary clean close
+Backlog: tx-scout is closed in /tmp/fm-lab.9ea8HL/data/backlog.md with a note that cleanup was NOT verified; its worktree was never identified. Check whether landed work survives elsewhere before relying on it.
+exit=0
+record: gone; pane: gone
+--- backlog row
+task:
+  id: tx-scout
+  title: live fixture tx-scout data/tx-scout/report.md
+  state: done
+  blocked: no
+  blocked_by: none
+  held: no
+  hold_reason: "-"
+  hold_kind: "-"
+  hold_until: "-"
+  kind: scout
+  repo: "-"
+  priority: "-"
+  created: "-"
+  closed: 2026-10-14
+  deps: none
+  links: "report:data/tx-scout/report.md"
+  body: cleanup NOT verified - worktree identity unknown so landed work was not checked
+
+===== end state: live records 0 =====
+--- fleet ledger task.cleaned_up events
+{"event":"task.cleaned_up","task":"tx-templates-owner","verified":false}
+{"event":"task.cleaned_up","task":"tx-dirty","verified":false}
+{"event":"task.cleaned_up","task":"tx-noclaim","verified":false}
+{"event":"task.cleaned_up","task":"tx-foreign","verified":false}
+{"event":"task.cleaned_up","task":"tx-scout","verified":false}
+--- treehouse status after
+A new version of treehouse is available: v2.3.0 → v3.1.3
+Run "treehouse update" to update
+
+1     leased       /tmp/fm-retire-live.CnmYxO/pool/.treehouse/proj-cad98e/1/proj  (held by a)
+2     leased       /tmp/fm-retire-live.CnmYxO/pool/.treehouse/proj-cad98e/2/proj  (held by b)
+3     leased       /tmp/fm-retire-live.CnmYxO/pool/.treehouse/proj-cad98e/3/proj  (held by c)
+4     leased       /tmp/fm-retire-live.CnmYxO/pool/.treehouse/proj-cad98e/4/proj  (held by d)
+--- backlog Done section
+## Done
+- [x] tx-scout - live fixture tx-scout data/tx-scout/report.md (kind: scout) (reported 2026-10-14)
+  cleanup NOT verified - worktree identity unknown so landed work was not checked
+- [x] tx-foreign - live fixture tx-foreign (kind: ship) (done 2026-10-14)
+  cleanup NOT verified - worktree identity unknown so landed work was not checked
+- [x] tx-noclaim - live fixture tx-noclaim (kind: ship) (done 2026-10-14)
+  cleanup NOT verified - worktree identity unknown so landed work was not checked
+- [x] tx-dirty - live fixture tx-dirty (kind: ship) (done 2026-10-14)
+  cleanup NOT verified - worktree identity unknown so landed work was not checked
+- [x] tx-templates-owner - live fixture tx-templates-owner (kind: ship) (done 2026-10-14)
+  cleanup NOT verified - worktree identity unknown so landed work was not checked

@@ -1,0 +1,80 @@
+pane get w2:p1 --session fm-lab-retire-unid-1530696-29108
+session list --json --session fm-lab-retire-unid-1530696-29108
+session list --json --session fm-lab-retire-unid-1530696-29108
+workspace list --session fm-lab-retire-unid-1530696-29108
+tab list --workspace w1 --session fm-lab-retire-unid-1530696-29108
+pane get w2:p1 --session fm-lab-retire-unid-1530696-29108
+tab list --workspace w2 --session fm-lab-retire-unid-1530696-29108
+pane list --workspace w2 --session fm-lab-retire-unid-1530696-29108
+workspace list --session fm-lab-retire-unid-1530696-29108
+pane process-info --pane w2:p1 --session fm-lab-retire-unid-1530696-29108
+pane get w2:p1 --session fm-lab-retire-unid-1530696-29108
+workspace list --session fm-lab-retire-unid-1530696-29108
+tab list --workspace w1 --session fm-lab-retire-unid-1530696-29108
+pane get w2:p1 --session fm-lab-retire-unid-1530696-29108
+pane get w3:p1 --session fm-lab-retire-unid-1530696-29108
+pane get w5:p1 --session fm-lab-retire-unid-1530696-29108
+pane get w6:p1 --session fm-lab-retire-unid-1530696-29108
+pane get w4:p1 --session fm-lab-retire-unid-1530696-29108
+pane get w3:p1 --session fm-lab-retire-unid-1530696-29108
+session list --json --session fm-lab-retire-unid-1530696-29108
+session list --json --session fm-lab-retire-unid-1530696-29108
+workspace list --session fm-lab-retire-unid-1530696-29108
+tab list --workspace w1 --session fm-lab-retire-unid-1530696-29108
+pane get w3:p1 --session fm-lab-retire-unid-1530696-29108
+tab list --workspace w3 --session fm-lab-retire-unid-1530696-29108
+pane list --workspace w3 --session fm-lab-retire-unid-1530696-29108
+workspace list --session fm-lab-retire-unid-1530696-29108
+pane process-info --pane w3:p1 --session fm-lab-retire-unid-1530696-29108
+pane get w3:p1 --session fm-lab-retire-unid-1530696-29108
+workspace list --session fm-lab-retire-unid-1530696-29108
+tab list --workspace w1 --session fm-lab-retire-unid-1530696-29108
+pane get w3:p1 --session fm-lab-retire-unid-1530696-29108
+pane get w5:p1 --session fm-lab-retire-unid-1530696-29108
+pane get w4:p1 --session fm-lab-retire-unid-1530696-29108
+pane get w6:p1 --session fm-lab-retire-unid-1530696-29108
+pane get w4:p1 --session fm-lab-retire-unid-1530696-29108
+session list --json --session fm-lab-retire-unid-1530696-29108
+session list --json --session fm-lab-retire-unid-1530696-29108
+workspace list --session fm-lab-retire-unid-1530696-29108
+tab list --workspace w1 --session fm-lab-retire-unid-1530696-29108
+pane get w4:p1 --session fm-lab-retire-unid-1530696-29108
+tab list --workspace w4 --session fm-lab-retire-unid-1530696-29108
+pane list --workspace w4 --session fm-lab-retire-unid-1530696-29108
+workspace list --session fm-lab-retire-unid-1530696-29108
+pane process-info --pane w4:p1 --session fm-lab-retire-unid-1530696-29108
+pane get w4:p1 --session fm-lab-retire-unid-1530696-29108
+workspace list --session fm-lab-retire-unid-1530696-29108
+tab list --workspace w1 --session fm-lab-retire-unid-1530696-29108
+pane get w4:p1 --session fm-lab-retire-unid-1530696-29108
+pane get w5:p1 --session fm-lab-retire-unid-1530696-29108
+pane get w6:p1 --session fm-lab-retire-unid-1530696-29108
+pane get w5:p1 --session fm-lab-retire-unid-1530696-29108
+session list --json --session fm-lab-retire-unid-1530696-29108
+session list --json --session fm-lab-retire-unid-1530696-29108
+workspace list --session fm-lab-retire-unid-1530696-29108
+tab list --workspace w1 --session fm-lab-retire-unid-1530696-29108
+pane get w5:p1 --session fm-lab-retire-unid-1530696-29108
+tab list --workspace w5 --session fm-lab-retire-unid-1530696-29108
+pane list --workspace w5 --session fm-lab-retire-unid-1530696-29108
+workspace list --session fm-lab-retire-unid-1530696-29108
+pane process-info --pane w5:p1 --session fm-lab-retire-unid-1530696-29108
+pane get w5:p1 --session fm-lab-retire-unid-1530696-29108
+workspace list --session fm-lab-retire-unid-1530696-29108
+tab list --workspace w1 --session fm-lab-retire-unid-1530696-29108
+pane get w5:p1 --session fm-lab-retire-unid-1530696-29108
+pane get w6:p1 --session fm-lab-retire-unid-1530696-29108
+pane get w6:p1 --session fm-lab-retire-unid-1530696-29108
+session list --json --session fm-lab-retire-unid-1530696-29108
+session list --json --session fm-lab-retire-unid-1530696-29108
+workspace list --session fm-lab-retire-unid-1530696-29108
+tab list --workspace w1 --session fm-lab-retire-unid-1530696-29108
+pane get w6:p1 --session fm-lab-retire-unid-1530696-29108
+tab list --workspace w6 --session fm-lab-retire-unid-1530696-29108
+pane list --workspace w6 --session fm-lab-retire-unid-1530696-29108
+workspace list --session fm-lab-retire-unid-1530696-29108
+pane process-info --pane w6:p1 --session fm-lab-retire-unid-1530696-29108
+pane get w6:p1 --session fm-lab-retire-unid-1530696-29108
+workspace list --session fm-lab-retire-unid-1530696-29108
+tab list --workspace w1 --session fm-lab-retire-unid-1530696-29108
+pane get w6:p1 --session fm-lab-retire-unid-1530696-29108

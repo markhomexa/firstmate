@@ -1,0 +1,5 @@
+Retired without a verified close: 2026-10-14T13:41:12Z.
+The task record named no worktree, so landed work was NOT checked and no worktree was touched.
+The endpoint fm-lab-retire-unid-1530696-29108:w3:p1 was closed and the task record was released.
+Pool slot: the pool slot claimed by this task at /tmp/fm-retire-live.CnmYxO/pool/.treehouse/proj-cad98e/3/proj is dirty or could not be read, so its claim and checkout were left untouched; look at it before the pool can reuse it.
+Any worktree this task used was never identified here; reconcile it by hand if one survives.

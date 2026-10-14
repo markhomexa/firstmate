@@ -1,0 +1,5 @@
+Retired without a verified close: 2026-10-14T13:41:08Z.
+The task record named no worktree, so landed work was NOT checked and no worktree was touched.
+The endpoint fm-lab-retire-unid-1530696-29108:w2:p1 was closed and the task record was released.
+Pool slot: released the pool-slot claim that named this task; the slot's checkout was not returned or touched.
+Any worktree this task used was never identified here; reconcile it by hand if one survives.

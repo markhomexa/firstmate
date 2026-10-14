@@ -1,0 +1,5 @@
+{"v":1,"ts":1791985268,"event":"task.cleaned_up","task":"tx-templates-owner","verified":false}
+{"v":1,"ts":1791985272,"event":"task.cleaned_up","task":"tx-dirty","verified":false}
+{"v":1,"ts":1791985275,"event":"task.cleaned_up","task":"tx-noclaim","verified":false}
+{"v":1,"ts":1791985279,"event":"task.cleaned_up","task":"tx-foreign","verified":false}
+{"v":1,"ts":1791985283,"event":"task.cleaned_up","task":"tx-scout","verified":false}
