@@ -74,8 +74,8 @@
 # What each mode's done states about where the work is: no-mistakes' first done
 # says it is committed locally and unpublished until the pipeline pushes, or on Gerrit until the worker publishes (ungated
 # handoff), its CI-ready done and direct-PR's done name a PR and are refused unless
-# the named head is reachable from a remote reference (never a tracking-ref or
-# branch-moved test, which reads a never-pushed branch as safe), and local-only's
+# the named head is reachable from a remote reference under refs/remotes (never a
+# configured-upstream or branch-moved test, which reads a never-pushed branch as safe), and local-only's
 # done says the branch is local, not pushed, not landed. local-only legitimately
 # ends locally, so it is checked against project heads, not demanded published.
 # The two PR-based blocks require a non-draft pull request before the done
