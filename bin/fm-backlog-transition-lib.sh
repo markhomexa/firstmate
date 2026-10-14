@@ -653,18 +653,35 @@ fm_backlog_retain() {  # <data-dir> <id> [flag...]
   fm_backlog_mutate "$authorized_data" reopen "$id"
 }
 
-# Return a row to Queued with <note> recorded as one line at the end of its
-# task body, for work whose outcome nobody checked: the row stays open rather
-# than closing on a completion that was never verified.
-fm_backlog_reopen_with_note() {  # <data-dir> <id> <note>
+# Record <note> as one line at the end of a row's task body, for work whose
+# outcome nobody checked. An open row returns to Queued rather than closing on
+# a completion that was never verified; a row already Done stays Done, and a
+# missing row is left alone. Sets FM_BACKLOG_NOTE_RESULT to
+# requeued | noted_done | not_found.
+FM_BACKLOG_NOTE_RESULT=
+fm_backlog_note_unverified() {  # <data-dir> <id> <note>
   local data authorized_data=$1 id=$2
+  FM_BACKLOG_NOTE_RESULT=
   if ! data=$(fm_backlog_data_absolute "$1"); then
     FM_BACKLOG_TRANSITION_ERROR="data directory cannot be resolved: $1"
     return 1
   fi
   FM_BACKLOG_TRANSITION_ERROR=
+  if ! fm_backlog_row_probe "$authorized_data" "$id"; then
+    if [ "$FM_BACKLOG_ROW_RESULT" = not_found ]; then
+      FM_BACKLOG_NOTE_RESULT=not_found
+      return 0
+    fi
+    FM_BACKLOG_TRANSITION_ERROR=$FM_BACKLOG_ROW_ERROR
+    return 1
+  fi
   fm_backlog_body_append_line "$data" "$authorized_data" "$id" "$3" || return
-  fm_backlog_mutate "$authorized_data" reopen "$id"
+  if [ "${FM_BACKLOG_ROW_STATE%% *}" = done ]; then
+    FM_BACKLOG_NOTE_RESULT=noted_done
+    return 0
+  fi
+  fm_backlog_mutate "$authorized_data" reopen "$id" || return
+  FM_BACKLOG_NOTE_RESULT=requeued
 }
 
 fm_backlog_canonical_existing() {

@@ -47,13 +47,15 @@
 # slot forever. It closes the endpoint and removes the record like any cleanup,
 # but verifies nothing: it never moves, deletes, or writes inside any worktree
 # or pool slot, never guesses one from the project, window, or pool layout, and
-# never closes the backlog item - the item stays open, back in Queued, with the
-# note RETIRE_BACKLOG_NOTE. It says so everywhere - the "RETIRED UNVERIFIED"
-# success line, that backlog note, and data/<id>/retired-unverified.txt - and
-# each names any pool slot still claimed by this task (see
+# never closes the backlog item - an open item goes back to Queued and an item
+# already Done stays Done, either way with the note RETIRE_BACKLOG_NOTE. It says
+# so everywhere - the "RETIRED UNVERIFIED" success line, that backlog note, and
+# data/<id>/retired-unverified.txt - and each names any pool slot still claimed
+# by this task and the home that recorded the claim (see
 # retire_read_claimed_slot). It refuses a record that names a worktree, a
-# secondmate, an Orca record, a claimed pool slot holding commits on no remote
-# or whose state cannot be read (exit 1), and --force (exit 2).
+# secondmate, an Orca record, a pool whose slot claims cannot be listed, a
+# claimed pool slot holding commits on no remote or whose state cannot be read
+# (exit 1), and --force (exit 2).
 # REFUSES if the worktree holds work that has not LANDED, because cleanup
 # hard-resets/removes the worktree and kills its processes. Work has landed when it is
 # reachable from any remote-tracking branch (a fork counts as a remote, so
@@ -1167,23 +1169,26 @@ RETIRE_BACKLOG_NOTE="cleanup NOT verified - worktree identity unknown so landed 
 # durable claim (<pool>/<slot>/.fm-slot-owner, written by fm-spawn). That claim
 # is recorded evidence, never a guess, and it is only read here: no claim and no
 # checkout is ever changed, so the claim keeps protecting whatever the slot
-# holds. A claimed slot whose HEAD is on no remote ref, or whose state cannot be
-# read, refuses the retirement before anything changes; nothing forces past it.
+# holds. A claim is matched on the task id alone; its recorded home is
+# reported, never matched. A claimed slot whose HEAD is on no remote ref, whose
+# state cannot be read, or a pool that cannot be listed at all, refuses the
+# retirement before anything changes; nothing forces past it.
 # Sets RETIRE_SLOT_NOTE to what was found.
 RETIRE_SLOT_NOTE=
 retire_read_claimed_slot() {
-  local status_json path home_real owner_real head remote_refs unreadable=0 claimed=''
-  RETIRE_SLOT_NOTE="no durable pool-slot claim naming this task was found, so a pool slot may still be claimed"
-  [ -n "$PROJ" ] && [ -d "$PROJ" ] || return 0
-  status_json=$(cd "$PROJ" && treehouse status --json 2>/dev/null) || return 0
-  home_real=$(cd "$FM_HOME" 2>/dev/null && pwd -P) || home_real=$FM_HOME
+  local status_json slot_paths path head remote_refs unreadable=0 claimed=''
+  RETIRE_SLOT_NOTE="the pool was searched and no durable pool-slot claim naming this task was found, so a pool slot may still be held without a claim"
+  if ! { [ -n "$PROJ" ] && [ -d "$PROJ" ]; } \
+     || ! status_json=$(cd "$PROJ" && treehouse status --json 2>/dev/null) \
+     || ! slot_paths=$(printf '%s\n' "$status_json" | jq -r '.[]?.path? // empty' 2>/dev/null); then
+    echo "REFUSED: the pool slot claims for project ${PROJ:-(none recorded)} could not be listed, so whether a slot still holds task $ID's work cannot be told; fix the listing and retry. Nothing was changed." >&2
+    return 1
+  fi
   while IFS= read -r path; do
     [ -n "$path" ] && [ -d "$path" ] || continue
     fm_treehouse_slot_owner_state "$path" "$ID"
     case "$FM_TREEHOUSE_SLOT_OWNER" in
       mine)
-        owner_real=$(cd "$FM_TREEHOUSE_SLOT_OWNER_HOME" 2>/dev/null && pwd -P) || owner_real=$FM_TREEHOUSE_SLOT_OWNER_HOME
-        [ -n "$FM_TREEHOUSE_SLOT_OWNER_HOME" ] && [ "$owner_real" = "$home_real" ] || continue
         if ! head=$(git --no-optional-locks -C "$path" rev-parse --verify -q 'HEAD^{commit}' 2>/dev/null) \
            || ! remote_refs=$(git --no-optional-locks -C "$path" for-each-ref --contains "$head" --format='%(refname)' refs/remotes 2>/dev/null); then
           echo "REFUSED: pool slot $path is claimed by task $ID, but whether it holds unpushed commits cannot be determined; inspect it by hand before retiring this record. Nothing was changed." >&2
@@ -1193,11 +1198,11 @@ retire_read_claimed_slot() {
           echo "REFUSED: pool slot $path is claimed by task $ID and its HEAD is not on any remote ref, so it may hold this task's unlanded work; land or discard it by hand before retiring this record. Nothing was changed." >&2
           return 1
         fi
-        claimed="$claimed${claimed:+, }$path"
+        claimed="$claimed${claimed:+, }$path (claim recorded by home ${FM_TREEHOUSE_SLOT_OWNER_HOME:-unrecorded})"
         ;;
       unsafe) unreadable=1 ;;
     esac
-  done < <(printf '%s\n' "$status_json" | jq -r '.[]?.path? // empty' 2>/dev/null)
+  done <<< "$slot_paths"
   if [ -n "$claimed" ]; then
     RETIRE_SLOT_NOTE="the pool slot at $claimed may still be claimed by this task; its claim and checkout were left untouched"
     [ "$unreadable" = 0 ] || RETIRE_SLOT_NOTE="$RETIRE_SLOT_NOTE, and another slot claim could not be read"
@@ -1787,8 +1792,12 @@ backlog_refresh_reminder() {
   else
     backlog_display="${DATA%/}/backlog.md"
   fi
-  if [ "$RETIRE_UNIDENTIFIED" = 1 ] && [ "$RETIRE_BACKLOG_NOTED" = 1 ]; then
+  if [ "$RETIRE_UNIDENTIFIED" = 1 ] && [ "$RETIRE_BACKLOG_NOTED" = requeued ]; then
     printf '%s\n' "Backlog: $ID stays open in $backlog_display, back in Queued with a note that cleanup was NOT verified; its worktree was never identified. Check whether its work landed before re-dispatching or closing it."
+  elif [ "$RETIRE_UNIDENTIFIED" = 1 ] && [ "$RETIRE_BACKLOG_NOTED" = noted_done ]; then
+    printf '%s\n' "Backlog: $ID was already Done in $backlog_display and stays Done; it now carries a note that this cleanup was NOT verified."
+  elif [ "$RETIRE_UNIDENTIFIED" = 1 ] && [ "$RETIRE_BACKLOG_NOTED" = not_found ]; then
+    printf '%s\n' "Backlog: $ID has no item in $backlog_display, so no backlog note was recorded; this cleanup was NOT verified."
   elif [ "$RETIRE_UNIDENTIFIED" = 1 ]; then
     printf '%s\n' "Backlog: $ID was retired without a verified close (${BACKLOG_SKIP_REASON:-its backlog item could not be updated}). In $backlog_display, keep $ID open in Queued with the note \"$RETIRE_BACKLOG_NOTE; pool slot: $RETIRE_SLOT_NOTE\" - never move it to Done unchecked."
   elif [ "$BACKLOG_CLOSED" = 1 ] && [ "$BACKLOG_TRANSITION" = retain ]; then
@@ -3650,7 +3659,7 @@ BACKLOG_TRANSITION=$TEARDOWN_BACKLOG_TRANSITION
 BACKLOG_TRANSITION_FLAGS=()
 [ "$BACKLOG_TRANSITION" = close ] || BACKLOG_TRANSITION_FLAGS=(--retain)
 BACKLOG_SKIP_REASON=
-RETIRE_BACKLOG_NOTED=0
+RETIRE_BACKLOG_NOTED=
 if [ "$TEARDOWN_BACKLOG_APPLIES" = 1 ] && [ "$RETIRE_UNIDENTIFIED" != 1 ]; then
   backlog_done_args || {
     echo "error: the pending backlog $BACKLOG_TRANSITION for $ID is not replayable; refusing destructive teardown" >&2
@@ -4027,10 +4036,10 @@ else
   fi
   # A retirement never closes the item: nobody checked that its work landed.
   if [ "$RETIRE_UNIDENTIFIED" = 1 ] && [ "$TEARDOWN_BACKLOG_APPLIES" = 1 ]; then
-    if fm_backlog_reopen_with_note "$DATA" "$ID" "$RETIRE_BACKLOG_NOTE; pool slot: $RETIRE_SLOT_NOTE"; then
-      RETIRE_BACKLOG_NOTED=1
+    if fm_backlog_note_unverified "$DATA" "$ID" "$RETIRE_BACKLOG_NOTE; pool slot: $RETIRE_SLOT_NOTE"; then
+      RETIRE_BACKLOG_NOTED=$FM_BACKLOG_NOTE_RESULT
     else
-      BACKLOG_SKIP_REASON="its backlog item could not be returned to Queued with the unverified note: $FM_BACKLOG_TRANSITION_ERROR"
+      BACKLOG_SKIP_REASON="its backlog item could not be given the unverified note: $FM_BACKLOG_TRANSITION_ERROR"
       echo "error: $ID's record was released, but $BACKLOG_SKIP_REASON" >&2
     fi
   fi
@@ -4073,4 +4082,4 @@ else
 fi
 backlog_refresh_reminder
 [ "$TEARDOWN_POOL_SLOT_LOST" = 0 ] || exit "$TEARDOWN_LOST_SLOT_EXIT"
-[ "$RETIRE_UNIDENTIFIED" != 1 ] || [ "$TEARDOWN_BACKLOG_APPLIES" != 1 ] || [ "$RETIRE_BACKLOG_NOTED" = 1 ] || exit 1
+[ "$RETIRE_UNIDENTIFIED" != 1 ] || [ "$TEARDOWN_BACKLOG_APPLIES" != 1 ] || [ -n "$RETIRE_BACKLOG_NOTED" ] || exit 1
