@@ -1,0 +1,34 @@
+## (h1) legacy record: window, no spawn_gen, no worktree
+  meta: window=firstmate:fm-tx-templates-owner
+  meta: endpoint_task_id=tx-templates-owner
+  meta: project=/tmp/fm-lab.7wJg3F/projects/sample
+  meta: harness=claude
+  meta: kind=ship
+  meta: backend=tmux
+  meta: mode=no-mistakes
+$ fm-teardown.sh tx-templates-owner --retire-unidentified-worktree
+error: task tx-templates-owner's record has no spawn_gen that identifies one exact incarnation (task record /tmp/fm-lab.7wJg3F/state/tx-templates-owner.meta has 0 spawn generation fields; exactly one is required); refusing automatic teardown - relaunch the task to publish an unambiguous incarnation, then retry teardown, or pass --legacy-record once its recorded endpoint is confirmed dead or agent-less
+[exit 1]
+$ fm-teardown.sh tx-templates-owner --retire-unidentified-worktree --legacy-record
+RETIRED UNVERIFIED tx-templates-owner: record released and endpoint firstmate:fm-tx-templates-owner closed (legacy record without spawn_gen, endpoint dead), but its worktree could not be identified, so landed work was NOT checked and no worktree was touched; the pool slot at /tmp/fm-lab.7wJg3F/pool/.treehouse/sample-3b9373/1/sample (claim recorded by home /tmp/fm-lab.7wJg3F) may still be claimed by this task; its claim and checkout were left untouched; this is not an ordinary clean close
+Backlog: tx-templates-owner stays open in /tmp/fm-lab.7wJg3F/data/backlog.md, back in Queued with a note that cleanup was NOT verified; its worktree was never identified. Check whether its work landed before re-dispatching or closing it.
+[exit 0]
+  -> record present: no; window present: 0
+
+## (h2) windowless record: no window, no spawn_gen, no worktree
+  meta: endpoint_task_id=tx-templates-owner
+  meta: project=/tmp/fm-lab.7wJg3F/projects/sample
+  meta: harness=claude
+  meta: kind=ship
+  meta: backend=tmux
+  meta: mode=no-mistakes
+error: task tx-templates-owner's record has no spawn_gen that identifies one exact incarnation (task record /tmp/fm-lab.7wJg3F/state/tx-templates-owner.meta has 0 spawn generation fields; exactly one is required); refusing automatic teardown - relaunch the task to publish an unambiguous incarnation, then retry teardown, or pass --legacy-record once its recorded endpoint is confirmed dead or agent-less
+[exit 1]
+  -> record present: yes
+$ fm-teardown.sh tx-templates-owner --retire-unidentified-worktree --legacy-record   (windowless record)
+REFUSED: task tx-templates-owner has a missing, empty, or ambiguous window endpoint; preserving task state.
+[exit 1]
+  -> record present: yes
+
+## windowless + worktree-less record after the refusal: still listed as a live lane
+| tx-templates-owner | unknown / none | ship | /tmp/fm-lab.7wJg3F/projects/sample | tmux | unknown | - | - | bin/fm-peek.sh fm-tx-templates-owner |

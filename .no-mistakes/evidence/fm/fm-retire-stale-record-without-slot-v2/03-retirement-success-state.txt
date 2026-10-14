@@ -1,0 +1,54 @@
+## after retirement of tx-templates-owner
+tmux windows on lab server:
+  firstmate:fm-tx-slot
+state/*.meta:
+  ls: cannot access '/tmp/fm-lab.7wJg3F/state/*.meta': No such file or directory
+
+## fleet view (Under Way)
+## Under Way
+No live task metadata found.
+
+## Queued
+| ID | Title | Repo | Kind | Blocked By | Artifact |
+| --- | --- | --- | --- | --- | --- |
+| tx-templates-owner | templates owner | - | ship | - | - |
+
+## Done
+## data/tx-templates-owner/retired-unverified.txt
+Retired without a verified close: 2026-10-14T17:53:33Z.
+The task record named no worktree, so landed work was NOT checked and no worktree was touched.
+The endpoint firstmate:fm-tx-templates-owner was closed and the task record was released.
+Pool slot: the pool slot at /tmp/fm-lab.7wJg3F/pool/.treehouse/sample-3b9373/1/sample (claim recorded by home /tmp/fm-lab.7wJg3F) may still be claimed by this task; its claim and checkout were left untouched.
+Any worktree this task used was never identified here; reconcile it by hand if one survives.
+
+## backlog item
+task:
+  id: tx-templates-owner
+  title: templates owner
+  state: queued
+  blocked: no
+  blocked_by: none
+  held: no
+  hold_reason: "-"
+  hold_kind: "-"
+  hold_until: "-"
+  kind: ship
+  repo: "-"
+  priority: "-"
+  created: 2026-10-14
+  closed: "-"
+  deps: none
+  links: none
+  body: "cleanup NOT verified - worktree identity unknown so landed work was not checked; pool slot: the pool slot at /tmp/fm-lab.7wJg3F/pool/.treehouse/sample-3b9373/1/sample (claim recorded by home /tmp/fm-lab.7wJg3F) may still be claimed by this task; its claim and checkout were left untouched"
+
+## fleet ledger close event
+/tmp/fm-lab.7wJg3F/config:
+
+/tmp/fm-lab.7wJg3F/state:
+home-summary.json
+terminal-outcomes
+
+## pool slot claim + checkout untouched
+task=tx-templates-owner
+home=/tmp/fm-lab.7wJg3F
+## HEAD (no branch)

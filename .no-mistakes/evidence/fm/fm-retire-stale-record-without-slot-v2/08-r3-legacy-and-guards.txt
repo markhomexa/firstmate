@@ -1,0 +1,76 @@
+## L1 legacy record (window, NO spawn_gen, NO worktree), endpoint live -> refused without --legacy-record
+$ fm-teardown.sh tx-templates-owner --retire-unidentified-worktree
+error: task tx-templates-owner's record has no spawn_gen that identifies one exact incarnation (task record /tmp/fm-lab.Msf1Go/state/tx-templates-owner.meta has 0 spawn generation fields; exactly one is required); refusing automatic teardown - relaunch the task to publish an unambiguous incarnation, then retry teardown, or pass --legacy-record once its recorded endpoint is confirmed dead or agent-less
+[exit 1]
+  -> record present: yes; window present: 1
+## L2 endpoint dead (window killed) + --legacy-record -> RETIRED UNVERIFIED with populated legacy suffix, never 'complete'
+$ fm-teardown.sh tx-templates-owner --retire-unidentified-worktree --legacy-record
+RETIRED UNVERIFIED tx-templates-owner: record released and endpoint firstmate:fm-tx-templates-owner closed (legacy record without spawn_gen, endpoint missing), but its worktree could not be identified, so landed work was NOT checked and no worktree was touched; the pool slot at /tmp/fm-lab.Msf1Go/pool/.treehouse/sample-f36e33/1/sample (claim recorded by home /tmp/fm-lab.Msf1Go) may still be claimed by this task; its claim and checkout were left untouched; this is not an ordinary clean close
+Backlog: tx-templates-owner stays open in /tmp/fm-lab.Msf1Go/data/backlog.md, back in Queued with a note that cleanup was NOT verified; its worktree was never identified. Check whether its work landed before re-dispatching or closing it.
+[exit 0]
+  -> record present: no; window present: 0
+
+## E1 record that DOES name a worktree -> refused, untouched
+$ fm-teardown.sh tx-templates-owner --retire-unidentified-worktree
+REFUSED: task tx-templates-owner's record names a worktree, so it is not an unidentified-worktree record; use ordinary teardown and its landed-work checks. Nothing was changed.
+[exit 1]
+  -> record present: yes; window present: 1
+
+## E2 project path missing -> refused, names path and the one way forward
+$ fm-teardown.sh tx-templates-owner --retire-unidentified-worktree
+REFUSED: task tx-templates-owner's pool slot claims could not be listed because its project path /tmp/fm-lab.9iSIpu/projects/gone does not exist. No slot search could run, so unlanded work in a pool slot claimed by this task cannot be ruled out. The only ways forward: restore the project path /tmp/fm-lab.9iSIpu/projects/gone so its pool can be searched, then retry; or have the captain explicitly authorise discarding this task's work, through firstmate. Nothing was changed.
+[exit 1]
+  -> record present: yes; window present: 1
+
+## S1 claimed slot with uncommitted changes -> refused
+$ fm-teardown.sh tx-templates-owner --retire-unidentified-worktree
+REFUSED: worktree /tmp/fm-lab.FZJYMe/pool/.treehouse/sample-557e5b/1/sample has uncommitted changes.
+uncommitted changes present (includes tracked edits)
+Commit them (or get the captain's explicit OK to discard, then --force).
+REFUSED: pool slot /tmp/fm-lab.FZJYMe/pool/.treehouse/sample-557e5b/1/sample is claimed by task tx-templates-owner (claim recorded by home /tmp/fm-lab.FZJYMe). --retire-unidentified-worktree accepts no --force: commit and land the slot's work, or have the captain explicitly authorise discarding it, through firstmate. Nothing was changed.
+[exit 1]
+  -> record present: yes; window present: 1
+  slot still dirty:  M README
+
+## S2 claimed slot with commits on no remote -> refused
+$ fm-teardown.sh tx-templates-owner --retire-unidentified-worktree
+RETIRED UNVERIFIED tx-templates-owner: record released and endpoint firstmate:fm-tx-templates-owner closed, but its worktree could not be identified, so landed work was NOT checked and no worktree was touched; the pool slot at /tmp/fm-lab.DgDOr4/pool/.treehouse/sample-d03a0b/1/sample (claim recorded by home /tmp/fm-lab.DgDOr4) may still be claimed by this task; its claim and checkout were left untouched; this is not an ordinary clean close
+Backlog: tx-templates-owner stays open in /tmp/fm-lab.DgDOr4/data/backlog.md, back in Queued with a note that cleanup was NOT verified; its worktree was never identified. Check whether its work landed before re-dispatching or closing it.
+[exit 0]
+  -> record present: no; window present: 0
+
+## S3 claimed slot with git index.lock -> refused naming the lock
+$ fm-teardown.sh tx-templates-owner --retire-unidentified-worktree
+RETIRED UNVERIFIED tx-templates-owner: record released and endpoint firstmate:fm-tx-templates-owner closed, but its worktree could not be identified, so landed work was NOT checked and no worktree was touched; the pool slot at /tmp/fm-lab.xko8Z3/pool/.treehouse/sample-c7dfa0/1/sample (claim recorded by home /tmp/fm-lab.xko8Z3) may still be claimed by this task; its claim and checkout were left untouched; this is not an ordinary clean close
+Backlog: tx-templates-owner stays open in /tmp/fm-lab.xko8Z3/data/backlog.md, back in Queued with a note that cleanup was NOT verified; its worktree was never identified. Check whether its work landed before re-dispatching or closing it.
+[exit 0]
+  -> record present: no; window present: 0
+  lock still present: yes
+
+## S4a unreadable claim: claim is a symlink -> refused
+$ fm-teardown.sh tx-templates-owner --retire-unidentified-worktree
+REFUSED: the slot-owner claim /tmp/fm-lab.jFBjr8/pool/.treehouse/sample-2e1897/1/.fm-slot-owner for pool slot /tmp/fm-lab.jFBjr8/pool/.treehouse/sample-2e1897/1/sample cannot be read, so whether it names task tx-templates-owner cannot be told and unlanded work there cannot be ruled out. Inspect or repair that claim file, or have the captain explicitly authorise discarding the work, through firstmate. Nothing was changed - not even with --force.
+[exit 1]
+  -> record present: yes; window present: 1
+
+## S4b unreadable claim: claim is a directory -> refused
+$ fm-teardown.sh tx-templates-owner --retire-unidentified-worktree
+REFUSED: the slot-owner claim /tmp/fm-lab.OPjgvt/pool/.treehouse/sample-631c1e/1/.fm-slot-owner for pool slot /tmp/fm-lab.OPjgvt/pool/.treehouse/sample-631c1e/1/sample cannot be read, so whether it names task tx-templates-owner cannot be told and unlanded work there cannot be ruled out. Inspect or repair that claim file, or have the captain explicitly authorise discarding the work, through firstmate. Nothing was changed - not even with --force.
+[exit 1]
+  -> record present: yes; window present: 1
+
+## S4c unreadable claim: file with no task= line -> refused
+$ fm-teardown.sh tx-templates-owner --retire-unidentified-worktree
+REFUSED: the slot-owner claim /tmp/fm-lab.kxASak/pool/.treehouse/sample-90dd70/1/.fm-slot-owner for pool slot /tmp/fm-lab.kxASak/pool/.treehouse/sample-90dd70/1/sample cannot be read, so whether it names task tx-templates-owner cannot be told and unlanded work there cannot be ruled out. Inspect or repair that claim file, or have the captain explicitly authorise discarding the work, through firstmate. Nothing was changed - not even with --force.
+[exit 1]
+  -> record present: yes; window present: 1
+
+## S5 claim names ANOTHER task -> ignored (reassigned); retirement proceeds and says no claim found
+$ fm-teardown.sh tx-templates-owner --retire-unidentified-worktree
+RETIRED UNVERIFIED tx-templates-owner: record released and endpoint firstmate:fm-tx-templates-owner closed, but its worktree could not be identified, so landed work was NOT checked and no worktree was touched; the pool was searched and no durable pool-slot claim naming this task was found, so a pool slot may still be held without a claim; this is not an ordinary clean close
+Backlog: tx-templates-owner stays open in /tmp/fm-lab.IFDK29/data/backlog.md, back in Queued with a note that cleanup was NOT verified; its worktree was never identified. Check whether its work landed before re-dispatching or closing it.
+[exit 0]
+  -> record present: no; window present: 0
+  other claim: task=other-task home=/tmp/fm-lab.IFDK29 
+
+## NOTE (added after the run): S2 and S3 above were setup errors, not product failures. S2 used an empty commit, which the shared work_is_landed check treats as landed. S3 left the index readable, so git status succeeds and the ordinary path also passes it. Both were re-driven with realistic setups in 09-r3-unpushed-and-lock-blocked.txt, and both refuse there.

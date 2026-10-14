@@ -1,0 +1,27 @@
+## (a) claimed slot HEAD carries a content commit on no remote
+f5e4e63 unlanded feature
+REFUSED: worktree /tmp/fm-lab.7wJg3F/pool/.treehouse/sample-3b9373/1/sample has work not on any remote and not landed.
+unpushed commits:
+f5e4e63 unlanded feature
+Push the branch, land its PR, or get the captain's explicit OK to discard, then --force.
+REFUSED: pool slot /tmp/fm-lab.7wJg3F/pool/.treehouse/sample-3b9373/1/sample is claimed by task tx-templates-owner (claim recorded by home /tmp/fm-lab.7wJg3F). --retire-unidentified-worktree accepts no --force: commit and land the slot's work, or have the captain explicitly authorise discarding it, through firstmate. Nothing was changed.
+[exit 1]
+  -> record present: yes; window present: 1; claim: task=tx-templates-owner
+  -> unlanded commit still at HEAD: unlanded feature
+
+## (b) claimed slot: git index unreadable while index.lock is present
+teardown: cannot inspect worktree /tmp/fm-lab.7wJg3F/pool/.treehouse/sample-3b9373/1/sample for uncommitted changes while git lock /tmp/fm-lab.7wJg3F/projects/sample/.git/worktrees/sample/index.lock is present; checking whether the lock is stale
+REFUSED: pool slot /tmp/fm-lab.7wJg3F/pool/.treehouse/sample-3b9373/1/sample is claimed by task tx-templates-owner (claim recorded by home /tmp/fm-lab.7wJg3F), and its git index is locked (/tmp/fm-lab.7wJg3F/projects/sample/.git/worktrees/sample/index.lock), so its state cannot be determined and unlanded work there cannot be ruled out. This path does not check or remove locks: wait for the lock's holder to finish, or clear the lock once its holder is gone, then retry; or have the captain explicitly authorise discarding the work, through firstmate. Nothing was changed.
+[exit 1]
+  -> record present: yes; window present: 1; claim: task=tx-templates-owner
+  -> lock still present: yes
+
+## (c) slot-owner claim is a directory (unreadable)
+REFUSED: the slot-owner claim /tmp/fm-lab.7wJg3F/pool/.treehouse/sample-3b9373/1/.fm-slot-owner for pool slot /tmp/fm-lab.7wJg3F/pool/.treehouse/sample-3b9373/1/sample cannot be read, so whether it names task tx-templates-owner cannot be told and unlanded work there cannot be ruled out. Inspect or repair that claim file, or have the captain explicitly authorise discarding the work, through firstmate. Nothing was changed - not even with --force.
+[exit 1]
+  -> record present: yes; window present: 1; claim: <unreadable>
+
+## (d) slot-owner claim file with no task= line
+REFUSED: the slot-owner claim /tmp/fm-lab.7wJg3F/pool/.treehouse/sample-3b9373/1/.fm-slot-owner for pool slot /tmp/fm-lab.7wJg3F/pool/.treehouse/sample-3b9373/1/sample cannot be read, so whether it names task tx-templates-owner cannot be told and unlanded work there cannot be ruled out. Inspect or repair that claim file, or have the captain explicitly authorise discarding the work, through firstmate. Nothing was changed - not even with --force.
+[exit 1]
+  -> record present: yes; window present: 1; claim: home=/tmp/fm-lab.7wJg3F

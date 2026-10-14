@@ -1,0 +1,33 @@
+## claimed slot /tmp/fm-lab.7wJg3F/pool/.treehouse/sample-3b9373/1/sample holds uncommitted file wip.txt
+$ bin/fm-teardown.sh tx-templates-owner --retire-unidentified-worktree
+fm-gate-refuse: gate agent lifecycle permitted only against lab home /tmp/fm-lab.7wJg3F
+●━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+●  WATCHER DOWN - SUPERVISION IS OFF
+●  1 task(s) in flight, but no watcher has a fresh beacon (last beat: never, grace 300s).
+●  Trust the emitted supervision protocol for this harness; do not use shell & for watcher repair.
+●  This is a supervision warning only; the guarded operation WILL still run.
+●  watcher supervision needs Stop-owned automatic recovery; inspect the hook registration and startup status before ending the turn.
+●━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+REFUSED: worktree /tmp/fm-lab.7wJg3F/pool/.treehouse/sample-3b9373/1/sample has uncommitted changes.
+uncommitted changes present (untracked-only leftovers)
+untracked paths (up to 10):
+  wip.txt
+Commit them (or get the captain's explicit OK to discard, then --force).
+REFUSED: pool slot /tmp/fm-lab.7wJg3F/pool/.treehouse/sample-3b9373/1/sample is claimed by task tx-templates-owner (claim recorded by home /tmp/fm-lab.7wJg3F). --retire-unidentified-worktree accepts no --force: commit and land the slot's work, or have the captain explicitly authorise discarding it, through firstmate. Nothing was changed.
+[exit 1]
+record present: yes; window present: 1; wip.txt present: yes; claim: task=tx-templates-owner
+
+## claimed slot is clean but its git index is locked (/tmp/fm-lab.7wJg3F/projects/sample/.git/worktrees/sample/index.lock)
+fm-gate-refuse: gate agent lifecycle permitted only against lab home /tmp/fm-lab.7wJg3F
+WARNING: watcher still down (same stale episode; last beat: never, grace 300s) - full banner already printed this episode.
+sample: STUCK: on branch main with uncommitted changes, 0 commits behind origin/main - needs attention
+RETIRED UNVERIFIED tx-templates-owner: record released and endpoint firstmate:fm-tx-templates-owner closed (legacy record without spawn_gen, endpoint ), but its worktree could not be identified, so landed work was NOT checked and no worktree was touched; the pool slot at /tmp/fm-lab.7wJg3F/pool/.treehouse/sample-3b9373/1/sample (claim recorded by home /tmp/fm-lab.7wJg3F) may still be claimed by this task; its claim and checkout were left untouched; this is not an ordinary clean close
+Backlog: tx-templates-owner stays open in /tmp/fm-lab.7wJg3F/data/backlog.md, back in Queued with a note that cleanup was NOT verified; its worktree was never identified. Check whether its work landed before re-dispatching or closing it.
+[exit 0]
+record present: no; lock still present: yes
+
+## claimed slot has a local commit on no remote
+fm-gate-refuse: gate agent lifecycle permitted only against lab home /tmp/fm-lab.7wJg3F
+error: teardown refused: task record is not a regular file at /tmp/fm-lab.7wJg3F/state/tx-templates-owner.meta
+[exit 1]
+record present: no

@@ -1,0 +1,17 @@
+$ bin/fm-teardown.sh tx-templates-owner 
+fm-gate-refuse: gate agent lifecycle permitted only against lab home /tmp/fm-lab.7wJg3F
+REFUSED: task tx-templates-owner has a missing, empty, or ambiguous worktree identity; preserving task state.
+[exit 1]
+record still present: yes; window still present: 1
+
+$ bin/fm-teardown.sh tx-templates-owner --force
+fm-gate-refuse: gate agent lifecycle permitted only against lab home /tmp/fm-lab.7wJg3F
+REFUSED: task tx-templates-owner has a missing, empty, or ambiguous worktree identity; preserving task state.
+[exit 1]
+record still present: yes; window still present: 1
+
+$ bin/fm-teardown.sh tx-templates-owner --retire-unidentified-worktree --force
+error: --retire-unidentified-worktree cannot be combined with --force: forcing is authority to discard work, and this path discards nothing and guesses no worktree
+[exit 2]
+record still present: yes; window still present: 1
+

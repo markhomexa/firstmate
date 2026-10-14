@@ -1,0 +1,24 @@
+## (e) record that DOES name a worktree
+REFUSED: task tx-templates-owner's record names a worktree, so it is not an unidentified-worktree record; use ordinary teardown and its landed-work checks. Nothing was changed.
+[exit 1]
+  -> record present: yes; window present: 1
+
+## (f) record whose project path no longer exists
+REFUSED: task tx-templates-owner's pool slot claims could not be listed because its project path /tmp/fm-lab.7wJg3F/projects/gone does not exist. No slot search could run, so unlanded work in a pool slot claimed by this task cannot be ruled out. The only ways forward: restore the project path /tmp/fm-lab.7wJg3F/projects/gone so its pool can be searched, then retry; or have the captain explicitly authorise discarding this task's work, through firstmate. Nothing was changed.
+[exit 1]
+  -> record present: yes; window present: 1
+
+## (g) clean retirement: claimed slot is clean and on origin/main; fleet ledger enabled
+fleet view before:
+| tx-templates-owner | unknown / none | ship | /tmp/fm-lab.7wJg3F/projects/sample | tmux | present | - | - | bin/fm-peek.sh fm-tx-templates-owner |
+sample: STUCK: on branch main with uncommitted changes, 0 commits behind origin/main - needs attention
+RETIRED UNVERIFIED tx-templates-owner: record released and endpoint firstmate:fm-tx-templates-owner closed (legacy record without spawn_gen, endpoint ), but its worktree could not be identified, so landed work was NOT checked and no worktree was touched; the pool slot at /tmp/fm-lab.7wJg3F/pool/.treehouse/sample-3b9373/1/sample (claim recorded by home /tmp/fm-lab.7wJg3F) may still be claimed by this task; its claim and checkout were left untouched; this is not an ordinary clean close
+Backlog: tx-templates-owner stays open in /tmp/fm-lab.7wJg3F/data/backlog.md, back in Queued with a note that cleanup was NOT verified; its worktree was never identified. Check whether its work landed before re-dispatching or closing it.
+[exit 0]
+  -> record present: no; window present: 0
+fleet view after:
+No live task metadata found.
+ledger cleaned_up event:
+{"event":"task.cleaned_up","task":"tx-templates-owner","verified":false}
+claim: task=tx-templates-owner; slot status: 0 changes
+backlog state: queued

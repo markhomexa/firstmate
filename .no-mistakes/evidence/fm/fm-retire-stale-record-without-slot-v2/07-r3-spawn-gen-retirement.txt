@@ -1,0 +1,72 @@
+## R1 (round-3 re-drive) motivating shape: window + spawn_gen + project/harness/kind/backend, NO worktree=
+  meta: window=firstmate:fm-tx-templates-owner
+  meta: endpoint_task_id=tx-templates-owner
+  meta: project=/tmp/fm-lab.cxDgbO/projects/sample
+  meta: harness=claude
+  meta: kind=ship
+  meta: backend=tmux
+  meta: mode=no-mistakes
+  meta: spawn_gen=lab-gen-1
+## Ordinary path still refuses (with and without --force)
+$ fm-teardown.sh tx-templates-owner
+REFUSED: task tx-templates-owner has a missing, empty, or ambiguous worktree identity; preserving task state.
+[exit 1]
+$ fm-teardown.sh tx-templates-owner --force
+REFUSED: task tx-templates-owner has a missing, empty, or ambiguous worktree identity; preserving task state.
+[exit 1]
+  -> record present: yes; window present: 1
+## --retire + --force is invalid
+$ fm-teardown.sh tx-templates-owner --retire-unidentified-worktree --force
+error: --retire-unidentified-worktree cannot be combined with --force: forcing is authority to discard work, and this path discards nothing and guesses no worktree
+[exit 2]
+  -> record present: yes; window present: 1
+## fleet view BEFORE (lane held)
+## Under Way
+| ID | Current | Kind | Repo/Project | Backend | Endpoint | Artifact | Path | Watch / return channel |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| tx-templates-owner | unknown / none | ship | /tmp/fm-lab.cxDgbO/projects/sample | tmux | present | - | - | bin/fm-peek.sh fm-tx-templates-owner |
+
+## Queued
+No queued backlog records found.
+
+## Done
+## Retire
+$ fm-teardown.sh tx-templates-owner --retire-unidentified-worktree
+●━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+●  WATCHER DOWN - SUPERVISION IS OFF
+●  1 task(s) in flight, but no watcher has a fresh beacon (last beat: never, grace 300s).
+●  Trust the emitted supervision protocol for this harness; do not use shell & for watcher repair.
+●  This is a supervision warning only; the guarded operation WILL still run.
+●  watcher supervision needs Stop-owned automatic recovery; inspect the hook registration and startup status before ending the turn.
+●━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+sample: already current
+RETIRED UNVERIFIED tx-templates-owner: record released and endpoint firstmate:fm-tx-templates-owner closed, but its worktree could not be identified, so landed work was NOT checked and no worktree was touched; the pool slot at /tmp/fm-lab.cxDgbO/pool/.treehouse/sample-bddb7b/1/sample (claim recorded by home /tmp/fm-lab.cxDgbO) may still be claimed by this task; its claim and checkout were left untouched; this is not an ordinary clean close
+Backlog: tx-templates-owner stays open in /tmp/fm-lab.cxDgbO/data/backlog.md, back in Queued with a note that cleanup was NOT verified; its worktree was never identified. Check whether its work landed before re-dispatching or closing it.
+[exit 0]
+  -> record present: no; window present: 0
+## fleet view AFTER
+## Under Way
+No live task metadata found.
+
+## Queued
+| ID | Title | Repo | Kind | Blocked By | Artifact |
+| --- | --- | --- | --- | --- | --- |
+| tx-templates-owner | templates owner | - | ship | - | - |
+
+## Done
+## data/tx-templates-owner/retired-unverified.txt
+Retired without a verified close: 2026-10-14T17:58:46Z.
+The task record named no worktree, so landed work was NOT checked and no worktree was touched.
+The endpoint firstmate:fm-tx-templates-owner was closed and the task record was released.
+Pool slot: the pool slot at /tmp/fm-lab.cxDgbO/pool/.treehouse/sample-bddb7b/1/sample (claim recorded by home /tmp/fm-lab.cxDgbO) may still be claimed by this task; its claim and checkout were left untouched.
+Any worktree this task used was never identified here; reconcile it by hand if one survives.
+## backlog item
+  state: queued
+  body: "cleanup NOT verified - worktree identity unknown so landed work was not checked; pool slot: the pool slot at /tmp/fm-lab.cxDgbO/pool/.treehouse/sample-bddb7b/1/sample (claim recorded by home /tmp/fm-lab.cxDgbO) may still be claimed by this task; its claim and checkout were left untouched"
+## ledger close event
+{"v":1,"ts":1792000725,"event":"task.cleaned_up","task":"tx-templates-owner","verified":false}
+## pool slot claim + checkout untouched
+task=tx-templates-owner
+home=/tmp/fm-lab.cxDgbO
+0
+README

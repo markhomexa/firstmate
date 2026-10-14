@@ -1,0 +1,19 @@
+## S2' claimed slot HEAD carries a CONTENT commit on no remote -> refused, commit kept
+$ fm-teardown.sh tx-templates-owner --retire-unidentified-worktree
+REFUSED: worktree /tmp/fm-lab.bYErwg/pool/.treehouse/sample-262a76/1/sample has work not on any remote and not landed.
+unpushed commits:
+6f71bd4 unlanded feature
+Push the branch, land its PR, or get the captain's explicit OK to discard, then --force.
+REFUSED: pool slot /tmp/fm-lab.bYErwg/pool/.treehouse/sample-262a76/1/sample is claimed by task tx-templates-owner (claim recorded by home /tmp/fm-lab.bYErwg). --retire-unidentified-worktree accepts no --force: commit and land the slot's work, or have the captain explicitly authorise discarding it, through firstmate. Nothing was changed.
+[exit 1]
+  -> record present: yes; window present: 1
+  HEAD still: unlanded feature
+  claim: task=tx-templates-owner home=/tmp/fm-lab.bYErwg 
+
+## S3' claimed slot: index unreadable while index.lock is present -> refused naming the lock
+$ fm-teardown.sh tx-templates-owner --retire-unidentified-worktree
+teardown: cannot inspect worktree /tmp/fm-lab.r3WwjK/pool/.treehouse/sample-7cf452/1/sample for uncommitted changes while git lock /tmp/fm-lab.r3WwjK/projects/sample/.git/worktrees/sample/index.lock is present; checking whether the lock is stale
+REFUSED: pool slot /tmp/fm-lab.r3WwjK/pool/.treehouse/sample-7cf452/1/sample is claimed by task tx-templates-owner (claim recorded by home /tmp/fm-lab.r3WwjK), and its git index is locked (/tmp/fm-lab.r3WwjK/projects/sample/.git/worktrees/sample/index.lock), so its state cannot be determined and unlanded work there cannot be ruled out. This path does not check or remove locks: wait for the lock's holder to finish, or clear the lock once its holder is gone, then retry; or have the captain explicitly authorise discarding the work, through firstmate. Nothing was changed.
+[exit 1]
+  -> record present: yes; window present: 1
+  lock still present: yes
