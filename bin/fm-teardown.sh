@@ -1207,11 +1207,8 @@ retire_read_claimed_slot() {
       mine)
         safety_rc=0
         (
-          WT=$path
-          TEARDOWN_WORKTREE_BRANCH_FOR_SAFETY=
-          GIT_OPTIONAL_LOCKS=0
-          export GIT_OPTIONAL_LOCKS
-          validate_worktree_teardown_safety
+          WT=$path TEARDOWN_WORKTREE_BRANCH_FOR_SAFETY='' GIT_OPTIONAL_LOCKS=0 \
+            validate_worktree_teardown_safety
         ) || safety_rc=$?
         if [ "$safety_rc" -eq "$TEARDOWN_WORKTREE_SAFETY_LOCK_BLOCKED" ]; then
           lock=$(worktree_git_lock_path "$path") || lock="its git index lock"

@@ -676,7 +676,7 @@ fm_backlog_note_unverified() {  # <data-dir> <id> <note>
     return 1
   fi
   fm_backlog_body_append_line "$data" "$authorized_data" "$id" "$3" || return
-  if [ "${FM_BACKLOG_ROW_STATE%% *}" = done ]; then
+  if [ "${FM_BACKLOG_ROW_STATE%% *}" = "done" ]; then
     FM_BACKLOG_NOTE_RESULT=noted_done
     return 0
   fi

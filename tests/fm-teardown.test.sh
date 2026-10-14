@@ -1115,7 +1115,7 @@ test_unidentified_retirement_keeps_a_done_item_done() {
   case_dir=$(make_case unidentified-done-item)
   seed_backlog_in_flight "$case_dir"
   sed -i 's/task-x1/tx-unid/' "$case_dir/data/backlog.md"
-  tasks-axi done tx-unid --file "$case_dir/data/backlog.md" >/dev/null
+  tasks-axi "done" tx-unid --file "$case_dir/data/backlog.md" >/dev/null
   setup_unidentified_slot_case "$case_dir"
   out=$(run_teardown_id "$case_dir" tx-unid --retire-unidentified-worktree 2>&1) \
     || fail "done-item: retirement failed: $out"
