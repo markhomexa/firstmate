@@ -442,13 +442,13 @@ archive_path() {  # prints the markdown done archive; fails when the backend has
 # `show --full` so the durability checks read it unchanged. A non-zero return
 # means no such row. The newest archived row of an id wins.
 archived_task_show() {  # <id>; sets TASK_SHOW_OUTPUT
-  local id=$1 archive row body hold_kind encoded
+  local id=$1 archive row body encoded
   archive=$(archive_path) || return 1
   row=$(LC_ALL=C awk -v prefix="- [x] $id - " '
     function keep() {
       if (!found) return
-      out = "row\t" rowline "\n"
-      for (i = 1; i <= nbody; i++) out = out "body\t" lines[i] "\n"
+      out = rowline "\n"
+      for (i = 1; i <= nbody; i++) out = out lines[i] "\n"
       last = out
     }
     index($0, "- [") == 1 { keep(); found = (index($0, prefix) == 1); rowline = $0; nbody = 0; blanks = 0; next }
@@ -463,16 +463,15 @@ archived_task_show() {  # <id>; sets TASK_SHOW_OUTPUT
     *"(kind: captain)"*) : ;;
     *) return 1 ;;
   esac
-  hold_kind=$(printf '%s\n' "$row" | sed -n '1s/.*(hold-kind: \([a-z-]*\)).*/\1/p')
-  body=$(printf '%s\n' "$row" | sed -n 's/^body\t//p')
+  body=$(printf '%s\n' "$row" | sed 1d)
   encoded=$(printf '%s' "$body" | perl -MJSON::PP -e '
     local $/;
     my $b = <STDIN>;
     binmode STDOUT, ":raw";
     print JSON::PP->new->utf8->allow_nonref->encode($b);
   ') || return 1
-  TASK_SHOW_OUTPUT=$(printf 'task:\n  id: %s\n  state: done\n  hold_kind: %s\n  body: %s\n' \
-    "$id" "${hold_kind:--}" "$encoded")
+  TASK_SHOW_OUTPUT=$(printf 'task:\n  id: %s\n  state: done\n  hold_kind: -\n  body: %s\n' \
+    "$id" "$encoded")
 }
 
 # The live row first, the archive only when the live backlog has none.
