@@ -78,13 +78,14 @@
 # never re-read, stays fresh, and every owner's saved row converges on that
 # observation, with a stale error beside it cleared.
 # A failed observation says which of its causes it was, from the read that
-# failed: the forge answered with an HTTP error, gh failed without any forge
-# answer (DNS, TLS, connection), gh was killed or could not start (this
-# machine, busy or broken, which it cannot tell apart), the head moved
-# between reads, or the response was malformed. A read that merely ran out of
-# time is never one of them. Measured on a 10-core host with the CPU
-# oversubscribed twofold, six parallel reads took 1.1-1.5s against the 5s cap,
-# so CPU load alone does not time reads out and the bounds are unchanged.
+# failed: the forge answered with an HTTP error, gh failed otherwise (its own
+# error line is quoted, since it may or may not be the forge's answer), gh was
+# killed or could not start (this machine, busy or broken, which it cannot
+# tell apart), the head moved between reads, or the response was malformed.
+# A read that merely ran out of time is never one of them. Measured on a
+# 10-core host with the CPU oversubscribed twofold, six parallel reads took
+# 1.1-1.5s against the 5s cap, so CPU load alone does not time reads out and
+# the bounds are unchanged.
 # A genuine failure prints its failure line only when it starts an episode
 # (no prior owner has an error); a successful read ends the episode.
 # FM_CONTRIBUTIONS_NOW supplies an ISO UTC clock for tests, otherwise UTC now.
@@ -253,7 +254,7 @@ forge() {
     if printf '%s\n' "$detail" | grep -Eq 'HTTP [0-9]{3}'; then
       printf 'forge failed the read of %s (gh exit %s): %s\n' "$what" "$rc" "$detail" > "$forge_err.cause"
     else
-      printf 'gh read of %s failed before any forge answer (gh exit %s): %s\n' "$what" "$rc" "$detail" > "$forge_err.cause"
+      printf 'gh read of %s failed (gh exit %s): %s\n' "$what" "$rc" "$detail" > "$forge_err.cause"
     fi
     mv -n -- "$forge_err.cause" "$TMP/cause" 2>/dev/null || true
   fi

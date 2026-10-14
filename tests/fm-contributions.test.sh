@@ -1200,7 +1200,7 @@ test_transport_failure_does_not_blame_the_forge() {
   wrap_forge "$home"
   printf 'dns\n' > "$home/forge/fault"
   out=$(with_home "$home" "$ROOT/bin/fm-contributions.sh" poll) || fail 'poll failed on a transport failure'
-  [[ "$out" == *'gh read of repos/o/r/pulls/8/reviews?per_page=100 failed before any forge answer (gh exit 1): error connecting'* ]] \
+  [[ "$out" == *'gh read of repos/o/r/pulls/8/reviews?per_page=100 failed (gh exit 1): error connecting'* ]] \
     || fail "a transport failure was not reported as one: $out"
   [[ "$out" != *'forge failed'* ]] || fail "a transport failure blamed the forge: $out"
   jq -e '.records[0].error | startswith("observation failed: gh read of ")' \
