@@ -71,9 +71,9 @@
 #   --per-script-timeout-secs N
 #                   terminate a script that runs longer than N seconds and
 #                   record it as exit 124 (0 disables, the default). The
-#                   --changed applies 1500s automatically, above the current
-#                   slowest CI hint with margin; exceeding it becomes a bounded
-#                   failure, not proof of a hang. --max-wall-ms is checked
+#                   --changed applies 1500s automatically, or 1.4x its own
+#                   serial hint to a script whose hint already exceeds 1500s;
+#                   exceeding it becomes a bounded failure, not proof of a hang. --max-wall-ms is checked
 #                   after the run and so cannot catch a hang on its own.
 #                   External interruption cleanup is outside this runner's
 #                   guarantee; configured per-script bounds remain authoritative.
@@ -136,7 +136,8 @@
 # share a machine. This script owns <n>: a lane whose <n> disagrees with the
 # configured shard count is refused, so a CI matrix cannot silently drop a shard.
 # --check-coverage also reports serial_max_ms (largest packed hint sum, including
-# default weights) and serial_budget_ms (the 20-minute packing target), refusing
+# default weights) and serial_budget_ms (the packing target, set to the slowest
+# completed run of the indivisible host suite), refusing
 # a split above that target. Neither figure is an execution timeout or proof of
 # observed headroom: refresh growing files from CI measurements.
 # --changed is conservative: it over-selects related families rather than
@@ -186,16 +187,22 @@ JOBS_MAX=8
 MAX_WALL_MS=
 PER_SCRIPT_TIMEOUT_SECS=0
 # Bound applied automatically on the automatic --changed path, derived from
-# measured healthy runtimes with margin rather than picked: the slowest measured
-# script is tests/fm-watch-triage.test.sh at about 1075s under CI load (the hint
-# table below records that loaded figure). 1500s keeps every measured script
-# under the bound with roughly 1.4x headroom over the slowest loaded measurement,
-# and it stays under the 30-minute normal CI tier so a wedged script fails here,
-# with its output, before the job cap
-# cancels the lane. It is a guard, not a speed control: a HUNG script becomes a
-# bounded failure instead of an unbounded suite, which is the shape that
-# silently outruns a caller's invocation budget.
+# measured healthy runtimes with margin rather than picked. 1500s keeps every
+# measured script except the indivisible tests/fm-supervision-host.test.sh under
+# the bound, with tests/fm-watch-triage.test.sh next at 1258s in the hint table
+# below, and it stays under the 30-minute normal CI tier so a wedged script
+# fails here, with its output, before the job cap cancels the lane. It is a
+# guard, not a speed control: a HUNG script becomes a bounded failure instead of
+# an unbounded suite, which is the shape that silently outruns a caller's
+# invocation budget.
 CHANGED_DEFAULT_TIMEOUT_SECS=1500
+
+# A script whose own serial hint already exceeds CHANGED_DEFAULT_TIMEOUT_SECS
+# gets this percentage of that hint instead on the automatic --changed path, the
+# same 1.4x headroom the general bound keeps. Today that is only the host suite
+# (1706607 ms -> 2390s); an explicit --per-script-timeout-secs is never widened.
+SLOW_SCRIPT_TIMEOUT_PERCENT=140
+CHANGED_AUTO_TIMEOUT=0
 
 # How many separate-runner shards the portable serial remainder splits into.
 # One owner: CI lane names carry this count and are refused when they disagree.
@@ -2288,6 +2295,7 @@ AUTO_CONCURRENCY=0
 if { [ "$MODE" = changed ] || [ "$MODE" = scripts ]; } && [ "$JOBS_EXPLICIT" -eq 0 ]; then
   if [ "$MODE" = changed ] && [ "${#SCRIPTS[@]}" -gt 0 ] && [ "$PER_SCRIPT_TIMEOUT_SECS" -eq 0 ]; then
     PER_SCRIPT_TIMEOUT_SECS=$CHANGED_DEFAULT_TIMEOUT_SECS
+    CHANGED_AUTO_TIMEOUT=1
   fi
   auto_admissible=0
   for s in "${SCRIPTS[@]}"; do
@@ -2480,30 +2488,36 @@ run_script_bounded() {  # <script> <out> <stream> <id>
   local GIT_CONFIG_GLOBAL GIT_CONFIG_NOSYSTEM
   # shellcheck source=tests/git-config-helpers.sh
   . "$ROOT/tests/git-config-helpers.sh" || return
-  local rc
+  local rc bound=$PER_SCRIPT_TIMEOUT_SECS hint_ms
   : "$id"
+  if [ "$CHANGED_AUTO_TIMEOUT" -eq 1 ]; then
+    hint_ms=$(portable_serial_weight_for "$script")
+    if [ "$hint_ms" -gt $((bound * 1000)) ]; then
+      bound=$(((hint_ms * SLOW_SCRIPT_TIMEOUT_PERCENT + 99999) / 100000))
+    fi
+  fi
   set +e
   if [ "$stream" -eq 1 ]; then
-    if [ "$PER_SCRIPT_TIMEOUT_SECS" -gt 0 ]; then
+    if [ "$bound" -gt 0 ]; then
       # Expansion is intentionally deferred to the child bash passed to -c.
       # shellcheck disable=SC2016
-      fm_run_timed "$PER_SCRIPT_TIMEOUT_SECS" bash -c \
+      fm_run_timed "$bound" bash -c \
         'bash "$1" 2>&1 | tee "$2"; exit "${PIPESTATUS[0]}"' _ "$script" "$out"
       rc=$?
     else
       bash "$script" 2>&1 | tee "$out"
       rc=${PIPESTATUS[0]}
     fi
-  elif [ "$PER_SCRIPT_TIMEOUT_SECS" -gt 0 ]; then
-    fm_run_timed "$PER_SCRIPT_TIMEOUT_SECS" bash "$script" >"$out" 2>&1
+  elif [ "$bound" -gt 0 ]; then
+    fm_run_timed "$bound" bash "$script" >"$out" 2>&1
     rc=$?
   else
     bash "$script" >"$out" 2>&1
     rc=$?
   fi
-  if [ "$PER_SCRIPT_TIMEOUT_SECS" -gt 0 ] && [ "$rc" -eq 124 ]; then
+  if [ "$bound" -gt 0 ] && [ "$rc" -eq 124 ]; then
     printf 'not ok - %s exceeded the per-script bound of %ss and was terminated\n' \
-      "$script" "$PER_SCRIPT_TIMEOUT_SECS" >>"$out"
+      "$script" "$bound" >>"$out"
     [ "$stream" -eq 1 ] && tail -1 "$out"
   fi
   return "$rc"

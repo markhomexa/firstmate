@@ -69,7 +69,8 @@ Refresh the hints whenever a serial member grows materially or the lane gains sc
 Its header and `--help` own the modeled-budget check and output fields; read the current estimates from `--check-coverage` instead of retaining copied lane sums here.
 [`tests/fm-test-run.test.sh`](../tests/fm-test-run.test.sh), in `test_portable_serial_packing_budget_boundary`, verifies acceptance exactly at the budget and refusal one millisecond above it through the executable runner.
 The longest script, `tests/fm-supervision-host.test.sh`, is the indivisible floor for this layout, with `tests/fm-watch-triage.test.sh` next.
-The modeled-budget target sits at that floor, so it records the host suite's slowest completed run rather than a twenty-minute allowance, and it leaves that shard only about a minute of headroom under the 30-minute cap on a slow runner.
+The modeled-budget target sits at that floor, so it records the host suite's slowest completed run rather than a twenty-minute allowance.
+At 1707 s on a slow runner, that shard keeps about 16.5 minutes of headroom under the 45-minute serial tier.
 Shortening the host suite is the real remedy for that shard; the serial tier box and packing target already cover that suite as it stands, so do not raise either again for it.
 The estimates use per-file maxima from different runs, not measured rebalanced jobs or an end-to-end latency guarantee.
 The baseline watch-triage samples range from 935441 to 1257926 ms, while each observed completed portable job adds at most 30 seconds beyond its summed scripts in these runs.
@@ -130,6 +131,8 @@ The workflow retains per-PR supersession without cancelling main pushes or chang
 CI job timeouts follow one four-tier policy, so the workflow reads as a policy rather than as a collection of per-job numbers.
 Every tier is a hang tripwire with headroom above the healthy duration, never a packing estimate or a runtime target.
 A lane that reaches its tier bound needs investigation and a distribution or runtime fix, not a larger timeout to fit the same work.
+The serial tier is the sanctioned exception: it exists because its shards hold indivisible suites that no distribution can split.
+On the automatic `--changed` path, `bin/fm-test-run.sh` applies the same reasoning per script: the 1500 s bound stays the hang guard, and only a script whose own serial hint already exceeds it gets 1.4 times that hint, which today is only the host suite at 2390 s.
 
 | Tier | Jobs | Bound | Rationale |
 |---|---|---|---|

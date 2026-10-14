@@ -1556,6 +1556,53 @@ SH
   pass "the automatic --changed bound gives the slow watcher suite at least 1500s"
 }
 
+test_changed_bound_widens_only_for_scripts_hinted_past_it() {
+  local tmp repo script bound rc
+  tmp=$(mktemp -d)
+  repo="$tmp/repo"
+  mkdir -p "$repo/bin" "$repo/tests"
+  cp "$RUNNER" "$repo/bin/fm-test-run.sh"
+  cp "$ROOT/tests/git-config-helpers.sh" "$repo/tests/"
+  cat >"$repo/bin/fm-timeout-lib.sh" <<'SH'
+fm_run_timed() {
+  printf '%s %s\n' "$1" "$*" >>../bound-secs
+  shift
+  "$@"
+}
+SH
+  for script in tests/fm-supervision-host.test.sh tests/fm-watch-triage.test.sh; do
+    printf '#!/usr/bin/env bash\necho "ok - healthy slow suite"\n' >"$repo/$script"
+    chmod +x "$repo/$script"
+  done
+  chmod +x "$repo/bin/fm-test-run.sh"
+  git -C "$repo" init -q
+  git -C "$repo" add .
+  git -C "$repo" -c user.name=test -c user.email=test@example.invalid commit -qm baseline
+  printf '\n' >>"$repo/tests/fm-supervision-host.test.sh"
+  printf '\n' >>"$repo/tests/fm-watch-triage.test.sh"
+  set +e
+  (cd "$repo" && bin/fm-test-run.sh --changed --base HEAD) >"$tmp/out" 2>"$tmp/err"
+  rc=$?
+  set -e
+  [ "$rc" -eq 0 ] || fail "healthy changed slow scripts must pass, got $rc: $(cat "$tmp/out" "$tmp/err")"
+  bound=$(awk '/fm-supervision-host\.test\.sh/ { print $1 }' "$tmp/bound-secs")
+  [ -n "$bound" ] && [ "$bound" -gt 1707 ] \
+    || fail "host suite needs a bound above its 1707s slowest run, got '${bound}': $(cat "$tmp/bound-secs")"
+  bound=$(awk '/fm-watch-triage\.test\.sh/ { print $1 }' "$tmp/bound-secs")
+  [ "$bound" = 1500 ] \
+    || fail "watch-triage must keep the general 1500s bound, got '${bound}': $(cat "$tmp/bound-secs")"
+  set +e
+  (cd "$repo" && bin/fm-test-run.sh --changed --base HEAD --per-script-timeout-secs 1500) >"$tmp/out" 2>"$tmp/err"
+  rc=$?
+  set -e
+  [ "$rc" -eq 0 ] || fail "explicit-bound changed run must pass, got $rc: $(cat "$tmp/out" "$tmp/err")"
+  bound=$(awk '/fm-supervision-host\.test\.sh/ { print $1 }' "$tmp/bound-secs" | tail -1)
+  [ "$bound" = 1500 ] \
+    || fail "an explicit --per-script-timeout-secs must not be widened, got '${bound}'"
+  rm -rf "$tmp"
+  pass "the automatic --changed bound widens only for a script hinted past it"
+}
+
 test_max_wall_ms_is_a_result_not_advice() {
   local tmp repo runner fast rc summary_duration budget_duration
   tmp=$(mktemp -d "${TMPDIR:-/tmp}/fm-test-run-budget.XXXXXX")
@@ -1863,6 +1910,7 @@ test_changed_shared_fixture_selects_its_readers
 test_concurrent_runs_are_ordered_longest_first
 test_per_script_timeout_bounds_a_hang
 test_changed_bound_gives_slow_watcher_suites_headroom
+test_changed_bound_widens_only_for_scripts_hinted_past_it
 test_max_wall_ms_is_a_result_not_advice
 test_jobs_parallel_scheduler_and_failure_propagation
 test_herdr_ci_family_run_has_a_step_timeout
