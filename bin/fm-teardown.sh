@@ -1994,9 +1994,10 @@ validate_worktree_teardown_safety() {
     echo "Restore the git index state, or get the captain's explicit OK to discard, then --force." >&2
     return 1
   fi
-  if [ -n "$unpushed_raw" ] && refresh_remote_tracking_refs; then
+  if [ -n "$unpushed_raw" ]; then
     # Commits looked unpushed against whatever tracking refs are on disk; a
     # fresh read of every remote's branch heads may show them already pushed.
+    refresh_remote_tracking_refs
     if ! unpushed_raw=$(git -C "$WT" log --oneline HEAD --not --remotes -- 2>/dev/null); then
       echo "REFUSED: cannot inspect worktree $WT for commits not on a remote." >&2
       echo "Restore the git index state, or get the captain's explicit OK to discard, then --force." >&2
@@ -2053,22 +2054,17 @@ validate_worktree_teardown_safety() {
 # once commits already look unpushed, so it can clear a false refusal and never
 # turns anything into a pass by itself: a remote that cannot be fetched keeps
 # its old refs, and the refusal stands unless some fetched ref now contains HEAD.
-# Returns non-zero when no remote was refreshed.
 refresh_remote_tracking_refs() {
-  local remote refreshed=1 limit=${FM_TEARDOWN_FETCH_TIMEOUT:-60}
+  local remote limit=${FM_TEARDOWN_FETCH_TIMEOUT:-60}
   local -a fetch=(git -C "$WT" fetch --quiet --no-tags)
   case "$limit" in ''|*[!0-9]*) limit=60 ;; esac
   command -v timeout >/dev/null 2>&1 && fetch=(timeout "$limit" "${fetch[@]}")
   while IFS= read -r remote; do
     [ -n "$remote" ] || continue
-    if GIT_TERMINAL_PROMPT=0 "${fetch[@]}" "$remote" \
-      "+refs/heads/*:refs/remotes/$remote/*" >/dev/null 2>&1; then
-      refreshed=0
-    else
-      TEARDOWN_REMOTE_REFRESH_FAILED=1
-    fi
+    GIT_TERMINAL_PROMPT=0 "${fetch[@]}" "$remote" \
+      "+refs/heads/*:refs/remotes/$remote/*" >/dev/null 2>&1 \
+      || TEARDOWN_REMOTE_REFRESH_FAILED=1
   done < <(git -C "$WT" remote 2>/dev/null)
-  return "$refreshed"
 }
 
 # Fix 1 (see script header): does the active-or-most-recent no-mistakes run in
