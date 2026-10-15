@@ -37,6 +37,7 @@
 set -uo pipefail
 
 HOST=""
+# shellcheck disable=SC2088 # the scanned machine expands the leading tilde
 GLOB='~/.treehouse/*/*/*'
 SNAP=""
 while [ $# -gt 0 ]; do
