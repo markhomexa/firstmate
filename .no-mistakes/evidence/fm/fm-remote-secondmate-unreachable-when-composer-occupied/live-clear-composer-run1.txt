@@ -1,0 +1,4 @@
+$ fm-control.sh mate clear-composer   # composer holds: say only FMPENDING1956477x19784
+fm-gate-refuse: gate agent lifecycle permitted only against lab home /tmp/fm-lab.Mjo5e0
+composer-cleared mate harness=claude backend=herdr endpoint=fm-lab-clrcomp-1956478-9174:w1:p1 presses=1 verified=empty-x13
+exit=0

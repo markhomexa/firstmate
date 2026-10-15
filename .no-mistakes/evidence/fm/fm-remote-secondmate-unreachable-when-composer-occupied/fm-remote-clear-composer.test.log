@@ -1,0 +1,10 @@
+ok - remote clear-composer: a verified clear is reported with its placement and runs one host command
+ok - remote clear-composer: an already-empty composer is reported as such
+ok - remote clear-composer: a host refusal is a refusal here, with the host's reason
+ok - remote clear-composer: a lost transport refuses and says the outcome is unknown
+ok - remote clear-composer: an unverifiable report is refused rather than trusted
+ok - remote clear-composer: a host without the verb names the update to run
+ok - remote clear-composer: interrupt and exit stay refused by placement and reach no host
+ok - remote clear-composer: the host verb runs the ordinary local plane on the mate's own record
+ok - remote clear-composer: the host verb validates the id
+ALL TESTS PASSED

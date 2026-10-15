@@ -1,0 +1,15 @@
+pane=w1:p1 ws=w1 tab=w1:t1
+--- before (composer rows) ---
+37:❯ say only FMPENDING1956477x19784
+$ fm-control.sh mate clear-composer   # composer holds: say only FMPENDING1956477x19784
+fm-gate-refuse: gate agent lifecycle permitted only against lab home /tmp/fm-lab.Mjo5e0
+composer-cleared mate harness=claude backend=herdr endpoint=fm-lab-clrcomp-1956478-9174:w1:p1 presses=1 verified=empty-x13
+exit=0
+--- after: token occurrences in visible pane: 0
+$ fm-control.sh mate clear-composer   # second run, composer already empty
+fm-gate-refuse: gate agent lifecycle permitted only against lab home /tmp/fm-lab.Mjo5e0
+composer-already-empty mate harness=claude backend=herdr endpoint=fm-lab-clrcomp-1956478-9174:w1:p1
+exit=0
+--- token occurrences in recent 200 lines after 5s (0 => never submitted): 0
+agent status: idle
+teardown rc=0

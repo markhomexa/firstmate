@@ -1,0 +1,4 @@
+$ (TERM ignored for the hop, so timeout must escalate to KILL) FM_CONTROL_REMOTE_BUDGET=1 fm-control.sh ios clear-composer
+fm-gate-refuse: gate agent lifecycle permitted only against lab home /tmp/fm-lab.5U6rzS
+error: the transport to remote secondmate ios on remote-mac was lost or timed out (exit 124) before the clear was confirmed; its composer may or may not have been cleared and nothing was submitted by this plane. Re-run clear-composer once the host is reachable, or read the pane on that host
+exit=1 elapsed=2s
