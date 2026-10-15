@@ -1,0 +1,24 @@
+
+● $FM_TASK_INBOX isn't set in my shell. I'll look for the t1.inbox directory.
+
+  Listed 1 directory, ran 1 shell command
+
+● Both messages are harmless. I'll act on them, then move them to handled/.
+
+  Ran 1 shell command
+
+● Hello!
+
+  PONG
+
+  $FM_TASK_INBOX wasn't set in my shell, so I found the inbox at
+  /tmp/fm-lab.NMnf3n/state/t1.inbox. It had two messages: 001.msg ("say hello")
+  and 002.msg ("Reply with just the word PONG."), answered above in that order.
+  I've moved both into handled/, and the inbox is now empty.
+
+✻ Sautéed for 16s · done 6:44 AM
+
+────────────────────────────────────────────────────────────────────────────────
+❯ 
+────────────────────────────────────────────────────────────────────────────────
+  ⏵⏵ auto mode on (shift+tab to cycle) · ← 1 agent

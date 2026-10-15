@@ -1,0 +1,4 @@
+fm-gate-refuse: gate agent lifecycle permitted only against lab home /tmp/fm-lab.NMnf3n
+composer-cleared t1 harness=claude backend=tmux endpoint=primary:fm-t1 presses=1 verified=empty-x13
+rc=0
+elapsed=8.170410212s

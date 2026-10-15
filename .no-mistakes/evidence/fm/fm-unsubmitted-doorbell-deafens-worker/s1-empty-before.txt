@@ -1,0 +1,24 @@
+
+ ▐▛███▛█   Claude Code v2.1.300
+▝▜██████▀  Opus 5.5 · Claude Max
+ ▝▝   ▝▝   /tmp/fm-lab.NMnf3n/wt-t1
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  You've used 76% of your weekly limit · resets Oct 18, 5pm (America/Los_Ange…
+────────────────────────────────────────────────────────────────────────────────
+❯ Try "edit <filepath> to..."
+────────────────────────────────────────────────────────────────────────────────
+  ⏵⏵ auto mode on (shift+tab to cycle) · ← 1 agent
