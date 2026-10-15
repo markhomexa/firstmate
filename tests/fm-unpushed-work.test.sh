@@ -154,6 +154,42 @@ test_unknown_scan_keeps_the_snapshot() {
   pass "a transport failure leaves the dedupe record alone"
 }
 
+test_unreadable_worktree_is_reported_not_skipped() {
+  reset_world
+  local w; w=$(mk_worktree broken)
+  rm -rf "$w/.git"
+  printf 'gitdir: %s\n' "$TMP_ROOT/gone" > "$w/.git"
+  mk_worktree clean >/dev/null
+  run
+  assert_equals 0 "$RC" "unreadable worktree scan exit"
+  assert_contains "$OUT" "$w" "unreadable worktree named"
+  assert_contains "$OUT" "cannot read" "unreadable worktree says why"
+  pass "a worktree git cannot read is reported, never read as clean"
+}
+
+test_detached_head_is_reported_once_as_it_moves() {
+  reset_world
+  local w; w=$(mk_worktree detached)
+  commit "$w" one
+  git -C "$w" checkout -q --detach
+  run --snap "$TMP_ROOT/snap"
+  assert_contains "$OUT" "(detached)" "first sweep reports the detached worktree"
+  commit "$w" two
+  run --snap "$TMP_ROOT/snap"
+  assert_equals "" "$OUT" "a new commit on a detached HEAD does not repeat"
+  pass "a detached worktree is reported once even as HEAD moves"
+}
+
+test_empty_new_worktree_is_silent() {
+  reset_world
+  mkdir -p "$TMP_ROOT/wt/empty/x"
+  git init -q "$TMP_ROOT/wt/empty/x/y"
+  run
+  assert_equals 0 "$RC" "empty worktree scan exit"
+  assert_equals "" "$OUT" "a worktree with no commits has nothing to lose"
+  pass "a worktree with no commits yet is silent"
+}
+
 test_never_pushed_branch_is_detected
 test_commits_ahead_of_pushed_branch_are_detected
 test_clean_worktree_is_silent
@@ -162,3 +198,6 @@ test_unreachable_remote_is_silent_and_unknown
 test_remote_scan_reports_through_the_transport
 test_same_branch_is_reported_once_until_it_clears
 test_unknown_scan_keeps_the_snapshot
+test_unreadable_worktree_is_reported_not_skipped
+test_detached_head_is_reported_once_as_it_moves
+test_empty_new_worktree_is_silent

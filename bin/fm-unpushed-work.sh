@@ -54,7 +54,8 @@ done
 SENTINEL="FM_UNPUSHED_SCAN_COMPLETE"
 
 # The scan body runs under bash on the scanned machine, the glob arriving as $1.
-# One line per hit: path<TAB>branch<TAB>count.
+# One line per hit: path<TAB>branch<TAB>count. A worktree git cannot read is a
+# hit with count "?", never skipped: it may hold the only copy.
 scan_body() {
   cat <<'BODY'
 shopt -s nullglob
@@ -62,10 +63,16 @@ g=$1
 case "$g" in "~"/*) g="$HOME/${g#\~/}" ;; esac
 for w in $g; do
   [ -e "$w/.git" ] || continue
-  b=$(git -C "$w" rev-parse --abbrev-ref HEAD 2>/dev/null) || continue
-  [ "$b" = HEAD ] && b="(detached $(git -C "$w" rev-parse --short HEAD 2>/dev/null))"
-  n=$(git -C "$w" log --oneline HEAD --not --glob='refs/remotes/*' 2>/dev/null | wc -l)
-  if [ "${n:-0}" -gt 0 ]; then printf '%s\t%s\t%s\n' "$w" "$b" "$n"; fi
+  if git -C "$w" rev-parse --git-dir >/dev/null 2>&1 && ! git -C "$w" rev-parse -q --verify HEAD >/dev/null 2>&1; then
+    continue
+  fi
+  if ! b=$(git -C "$w" rev-parse --abbrev-ref HEAD 2>/dev/null) ||
+     ! l=$(git -C "$w" log --oneline HEAD --not --glob='refs/remotes/*' 2>/dev/null); then
+    printf '%s\t%s\t%s\n' "$w" "(unreadable)" "?"; continue
+  fi
+  [ "$b" = HEAD ] && b="(detached)"
+  n=$(printf '%s' "$l" | grep -c .)
+  if [ "$n" -gt 0 ]; then printf '%s\t%s\t%s\n' "$w" "$b" "$n"; fi
 done
 echo FM_UNPUSHED_SCAN_COMPLETE
 BODY
@@ -104,6 +111,7 @@ fi
 
 LIST=$(printf '%s\n' "$HITS" | awk -F'\t' -v new="$NEW" '
   BEGIN { n = split(new, a, "\n"); for (i = 1; i <= n; i++) isnew[a[i]] = 1 }
+  NF>=3 && ($1 " " $2) in isnew && $3 == "?" { printf "\n  %s: git cannot read it, so it may hold unpushed commits", $1; next }
   NF>=3 && ($1 " " $2) in isnew { printf "\n  %s on %s (%s commit(s))", $2, $1, $3 }')
 echo "Work on ${WHERE} exists on that one disk and on no remote:${LIST}
 Nothing has been pushed. Do NOT clean, reset, or reuse these worktrees or slots first, because that destroys the only copy. Have the owning worker push the branch; deciding to push someone else's branch is not this monitor's call."
