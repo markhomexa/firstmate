@@ -115,6 +115,7 @@ test_remote_scan_reports_through_the_transport() {
   commit "$w" one
   local fake="$TMP_ROOT/fakessh"
   # Behaves like ssh: drop the options and host, join the rest and run it through a shell.
+  # shellcheck disable=SC2016 # The fake ssh expands $1 and $* at runtime.
   printf '#!/usr/bin/env bash\nwhile [ "$1" = -o ]; do shift 2; done\nshift\nexec sh -c "$*"\n' > "$fake"; chmod +x "$fake"
   OUT=$(FM_UNPUSHED_SSH="$fake" bash "$TOOL" --host boxy --glob "$GLOB" 2>/dev/null); RC=$?
   assert_equals 0 "$RC" "remote scan exit"
