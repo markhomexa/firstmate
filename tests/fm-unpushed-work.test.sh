@@ -109,12 +109,13 @@ test_unreachable_remote_is_silent_and_unknown() {
 
 test_remote_scan_reports_through_the_transport() {
   reset_world
+  mk_worktree aaa >/dev/null   # sorts first and is clean
   local w; w=$(mk_worktree remote)
   git -C "$w" checkout -q -b fm/remote-only
   commit "$w" one
   local fake="$TMP_ROOT/fakessh"
-  # Behaves like ssh: drop the options and host, run the remaining command locally.
-  printf '#!/usr/bin/env bash\nwhile [ "$1" = -o ]; do shift 2; done\nshift\nexec "$@"\n' > "$fake"; chmod +x "$fake"
+  # Behaves like ssh: drop the options and host, join the rest and run it through a shell.
+  printf '#!/usr/bin/env bash\nwhile [ "$1" = -o ]; do shift 2; done\nshift\nexec sh -c "$*"\n' > "$fake"; chmod +x "$fake"
   OUT=$(FM_UNPUSHED_SSH="$fake" bash "$TOOL" --host boxy --glob "$GLOB" 2>/dev/null); RC=$?
   assert_equals 0 "$RC" "remote scan exit"
   assert_contains "$OUT" "boxy" "report names the host"

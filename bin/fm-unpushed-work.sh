@@ -78,7 +78,7 @@ BODY
 TMO=${FM_UNPUSHED_TIMEOUT:-150}
 if [ -n "$HOST" ]; then
   # shellcheck disable=SC2086 # FM_UNPUSHED_SSH is a command word list
-  OUT=$(scan_body | timeout "$TMO" ${FM_UNPUSHED_SSH:-ssh} -o BatchMode=yes -o ConnectTimeout=15 "$HOST" bash -s -- "$GLOB" 2>/dev/null)
+  OUT=$(scan_body | timeout "$TMO" ${FM_UNPUSHED_SSH:-ssh} -o BatchMode=yes -o ConnectTimeout=15 "$HOST" bash -s -- "$(printf '%q' "$GLOB")" 2>/dev/null)
 else
   OUT=$(scan_body | timeout "$TMO" bash -s -- "$GLOB" 2>/dev/null)
 fi
