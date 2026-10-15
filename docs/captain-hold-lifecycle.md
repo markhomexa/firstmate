@@ -41,7 +41,8 @@ It never reads report bodies, review artifacts, terminal output, or chat.
 | `answers` | Channel-agnostic entry point for keyed answers. | [Answer-time resolution](#answer-time-resolution) |
 | `bind`, `unbind`, `binding` | Record that a captured-answer source feeds the keyed-answer intake. | [Source bindings](#source-bindings) |
 | `reconcile-requests` | Internal intake that records a reconcile request from a board selection. | [Reconcile](#reconcile-re-check-reality-never-a-blind-close) |
-| `reconcile close`, `reconcile note`, `reconcile archived`, `reconcile list` | Retire or list pending reconcile requests. | [Verifying and retiring a request](#verifying-and-retiring-a-request) |
+| `reconcile close`, `reconcile note`, `reconcile list` | Retire or list pending reconcile requests. | [Verifying and retiring a request](#verifying-and-retiring-a-request) |
+| `reconcile archived` | Record evidence for a held call whose row was archived; needs no board request. | [Verifying and retiring a request](#verifying-and-retiring-a-request) |
 | `diverged` | Read-only report of a call whose two records disagree. | [Record divergence](#record-divergence) |
 
 ### Creating a hold (`hold`)
@@ -308,7 +309,8 @@ The first two outcomes each require both the pending board-created request and t
   The hold outlived its row, so there is nothing to answer and no board request to retire, yet the completion gate would refuse forever.
   It requires the id to be absent from the live backlog and present in the done archive with its captain hold still attached and no recorded resolution.
   It writes the supplied EVIDENCE to `data/moot-calls/<task-id>.md` under mode `reconciled` and the `Reconciliation evidence:` label, never under captain words.
-  `verify` and `complete` accept that record only for an id with no live row, so a call the captain still owns is never satisfied by it.
+  The record keeps the archived row's `Captain hold origin:`, and `verify` and `complete` refuse it for any other origin exactly as they refuse an archived row held for another origin.
+  They accept that record only for an id with no live row, so a call the captain still owns is never satisfied by it.
 
 `reconcile list` is the read-only enumeration of pending requests filed by board answers.
 A successful normal answer also retires any pending request, because an answered call has no remaining re-check obligation.

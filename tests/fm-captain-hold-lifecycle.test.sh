@@ -934,6 +934,19 @@ test_archived_moot_call_closes_on_evidence_only() {
     || fail "the gate refused a call closed on evidence: $(cat "$home/moot-after.err")"
   run_captain "$home" verify "$id" >/dev/null || fail "verify refused a call closed on evidence"
 
+  # A moot record is bound to the origin its archived hold was recorded for.
+  tasks_in "$home" add sample-moot-other "Other origin row" --kind ship --repo sample >/dev/null \
+    || fail "could not add the other-origin row"
+  run_captain "$home" hold sample-moot-other --reason "parked" --origin sample-other-origin >/dev/null \
+    || fail "could not hold the other-origin row"
+  tasks_in "$home" "done" sample-moot-other --keep 0 >/dev/null || fail "could not close the other-origin row"
+  run_captain "$home" reconcile archived sample-moot-other --evidence-file "$evidence" >/dev/null \
+    || fail "archived reconcile refused the other-origin row"
+  if run_captain "$home" complete "$id" sample-moot-other >/dev/null 2> "$home/moot-other.err"; then
+    fail "a moot record satisfied the gate for an origin it was not held for"
+  fi
+  assert_grep "was held for origin sample-other-origin, not $id" "$home/moot-other.err" "the origin refusal changed"
+
   # A forged or edited record does not satisfy the gate.
   printf 'x\n' >> "$home/data/moot-calls/sample-moot-ship.md"
   printf 'Moot call recorded by fm-captain-hold.\nTask: sample-forged\n' > "$home/data/moot-calls/sample-forged.md"

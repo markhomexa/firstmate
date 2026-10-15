@@ -124,8 +124,9 @@
 # attached and no recorded resolution, and it writes the supplied EVIDENCE to
 # data/moot-calls/<id>.md under mode `reconciled` and a `Reconciliation
 # evidence:` label. `verify` and `complete` accept that record only for an id with
-# no live row, so a call the captain still owns is never satisfied by it, and it
-# never contains captain words.
+# no live row and only for the origin the archived hold was recorded for, so a
+# call the captain still owns is never satisfied by it, and it never contains
+# captain words.
 # docs/captain-hold-lifecycle.md owns the semantics.
 #
 # A channel's ONLY job is to turn whatever it received into those keyed lines
@@ -980,6 +981,10 @@ moot_record_valid() {  # <task-id>; true when a well-formed evidence record exis
   [ "$(sed -n 3p "$path")" = "Decision digest: $(sha256_text "$text")" ]
 }
 
+moot_record_origin() {  # <task-id>; prints the origin the archived hold was recorded for
+  sed -n '1,/^$/s/^Captain hold origin: \(.*\)$/\1/p' "$(moot_record_path "$1")" | head -1
+}
+
 # Resolve one entry and verify the row it names is durably captain-held. A
 # resolution failure that is not the read bound keeps resolve_entry's own
 # status - its stderr already named the entry; 124 means the backend never
@@ -996,21 +1001,23 @@ verify_entry_durable() {  # <origin-or-empty> <entry>; prints "<id> <how> <origi
   # A moot-evidence record stands in only for an entry with no live row, so a
   # call the captain still owns can never be satisfied by it.
   if ! task_show "$entry" && moot_record_valid "$entry"; then
-    printf '%s moot-record unrecorded\n' "$entry"
-    return 0
+    id=$entry
+    how=moot-record
+    stored=$(moot_record_origin "$entry")
+  else
+    resolved=$(resolve_entry "$origin" "$entry" archive) || resolve_status=$?
+    if [ "$resolve_status" -ne 0 ]; then
+      [ "$resolve_status" -ne 124 ] \
+        || fail "the backlog backend exceeded its read bound resolving $entry"
+      exit "$resolve_status"
+    fi
+    id=${resolved%% *}
+    how=${resolved##* }
+    verify_hold_durable "$id"
+    id=$(show_field_value "$TASK_SHOW_OUTPUT" id)
+    validate_slug backend-task-id "$id"
+    stored=$(body_hold_origin "$(decode_shown_value "$(show_field "$TASK_SHOW_OUTPUT" body)")")
   fi
-  resolved=$(resolve_entry "$origin" "$entry" archive) || resolve_status=$?
-  if [ "$resolve_status" -ne 0 ]; then
-    [ "$resolve_status" -ne 124 ] \
-      || fail "the backlog backend exceeded its read bound resolving $entry"
-    exit "$resolve_status"
-  fi
-  id=${resolved%% *}
-  how=${resolved##* }
-  verify_hold_durable "$id"
-  id=$(show_field_value "$TASK_SHOW_OUTPUT" id)
-  validate_slug backend-task-id "$id"
-  stored=$(body_hold_origin "$(decode_shown_value "$(show_field "$TASK_SHOW_OUTPUT" body)")")
   origin_id=$origin
   if [ -n "$origin" ] && [ "$origin" != "$BINDING_ANY" ]; then
     origin_id=$(task_identity "$origin") || exit $?
@@ -1806,7 +1813,7 @@ reconcile_close() {
 # refuses a row that is live (the captain still owns that call), a row that never
 # carried a captain hold, and a row that already records a resolution.
 reconcile_archived() {
-  local id=${1:-} evidence_file='' path existing digest stamp tmp
+  local id=${1:-} evidence_file='' path existing digest stamp tmp held_origin
   [ "$#" -ge 1 ] || { usage >&2; exit 2; }
   shift
   while [ "$#" -gt 0 ]; do
@@ -1835,6 +1842,7 @@ reconcile_archived() {
   if body_has_resolution_record "$(show_field "$TASK_SHOW_OUTPUT" body)"; then
     fail "archived task $id already records a resolution; nothing needs reconciling"
   fi
+  held_origin=$(body_hold_origin "$(decode_shown_value "$(show_field "$TASK_SHOW_OUTPUT" body)")")
   path=$(moot_record_path "$id")
   if [ -e "$path" ]; then
     moot_record_valid "$id" || fail "$path exists but is not a valid moot-call record; inspect it rather than overwrite it"
@@ -1848,8 +1856,9 @@ reconcile_archived() {
   stamp=${FM_CAPTAIN_HOLD_NOW:-$(date -u +%Y-%m-%dT%H:%M:%SZ)}
   mkdir -p -- "${path%/*}" || fail "cannot create ${path%/*}"
   tmp=$(mktemp "${path%/*}/.moot.XXXXXX") || fail "cannot stage the moot-call record"
-  if ! printf 'Moot call recorded by fm-captain-hold.\nTask: %s\nDecision digest: %s\nResolution mode: reconciled\nRecorded: %s\n\nReconciliation evidence:\n%s\n' \
-      "$id" "$digest" "$stamp" "$DECISION_TEXT" > "$tmp" \
+  if ! printf 'Moot call recorded by fm-captain-hold.\nTask: %s\nDecision digest: %s\nResolution mode: reconciled\nRecorded: %s\n%s\nReconciliation evidence:\n%s\n' \
+      "$id" "$digest" "$stamp" "${held_origin:+Captain hold origin: $held_origin
+}" "$DECISION_TEXT" > "$tmp" \
     || ! mv -- "$tmp" "$path"; then
     rm -f -- "$tmp"
     fail "could not write the moot-call record for $id"
