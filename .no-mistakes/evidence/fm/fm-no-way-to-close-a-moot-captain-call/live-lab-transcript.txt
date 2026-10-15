@@ -1,0 +1,90 @@
+## setup: scout origin fm-held-already-shipped-sweep-1 with report, held call tx-stale-inflight-records-worktree-tangle held for it
+$ fm-captain-hold.sh hold tx-stale-inflight-records-worktree-tangle --title Stale inflight records tangle --reason captain to decide cleanup --repo sample --origin fm-held-already-shipped-sweep-1
+tx-stale-inflight-records-worktree-tangle
+[exit 0]
+$ fm-captain-hold.sh complete fm-held-already-shipped-sweep-1 tx-stale-inflight-records-worktree-tangle
+complete: fm-held-already-shipped-sweep-1 captain-call inventory reviewed (tx-stale-inflight-records-worktree-tangle)
+[exit 0]
+$ fm-captain-hold.sh verify fm-held-already-shipped-sweep-1
+verified: fm-held-already-shipped-sweep-1 captain-call inventory
+[exit 0]
+
+## the held row is closed OUTSIDE the hold owner and archived, hold still attached
+[tasks-axi done exit 0]
+- [x] tx-stale-inflight-records-worktree-tangle - Stale inflight records tangle (repo: sample) (kind: captain) (done 2026-10-15) (hold: fm-hold-v1:Y2FwdGFpbiB0byBkZWNpZGUgY2xlYW51cA==) (hold-kind: captain)
+
+## BEFORE: the completion gate is stuck
+$ fm-captain-hold.sh verify fm-held-already-shipped-sweep-1
+fm-captain-hold: captain-held task tx-stale-inflight-records-worktree-tangle is neither held for the captain nor closed with a recorded captain answer
+[exit 1]
+
+## adversarial: answer-free closes that must be refused
+$ fm-captain-hold.sh reconcile archived tx-stale-inflight-records-worktree-tangle
+fm-captain-hold: --evidence-file is required; a moot call closes on evidence, never on assertion
+[exit 1]
+$ fm-captain-hold.sh reconcile archived tx-not-archived-anywhere --evidence-file /dev/null
+fm-captain-hold: decision file does not exist: /dev/null
+[exit 1]
+$ fm-captain-hold.sh reconcile archived tx-live-call --evidence-file /tmp/fm-lab.ZjCWyq/ev-live.txt
+fm-captain-hold: task tx-live-call is still in the live backlog; a live captain call closes only through answer or reconcile close
+[exit 1]
+
+## FIX: record the evidence that made the call moot
+$ fm-captain-hold.sh reconcile archived tx-stale-inflight-records-worktree-tangle --evidence-file /tmp/fm-lab.ZjCWyq/evidence.txt
+reconciled: tx-stale-inflight-records-worktree-tangle
+[exit 0]
+$ fm-captain-hold.sh reconcile archived tx-stale-inflight-records-worktree-tangle --evidence-file /tmp/fm-lab.ZjCWyq/evidence.txt
+reconciled: tx-stale-inflight-records-worktree-tangle
+[exit 0]
+$ fm-captain-hold.sh reconcile archived tx-stale-inflight-records-worktree-tangle --evidence-file /tmp/fm-lab.ZjCWyq/ev2.txt
+fm-captain-hold: task tx-stale-inflight-records-worktree-tangle already records different moot evidence; it cannot be reconciled again
+[exit 1]
+--- data/moot-calls/tx-stale-inflight-records-worktree-tangle.md:
+Moot call recorded by fm-captain-hold.
+Task: tx-stale-inflight-records-worktree-tangle
+Decision digest: 6d77a0f0ae6c62781f0267c02e433a6d08c086227e315f12ba26d1cf412543b2
+Resolution mode: reconciled
+Recorded: 2026-10-15T20:39:05Z
+Captain hold origin: fm-held-already-shipped-sweep-1
+
+Reconciliation evidence:
+Closed done on 2026-10-14 by its own work and archived with its hold; the captain never ruled and the question is moot. Worktree holds 0 unpushed commits and nothing uncommitted.
+
+## AFTER: the gate passes
+$ fm-captain-hold.sh verify fm-held-already-shipped-sweep-1
+verified: fm-held-already-shipped-sweep-1 captain-call inventory
+[exit 0]
+
+## adversarial: another origin cannot borrow the moot record
+$ fm-captain-hold.sh complete fm-other-origin tx-stale-inflight-records-worktree-tangle
+fm-captain-hold: captain-held task tx-stale-inflight-records-worktree-tangle was held for origin fm-held-already-shipped-sweep-1, not fm-other-origin; hold a task for fm-other-origin or list the right one
+[exit 1]
+
+## adversarial: a tampered record no longer satisfies the gate
+$ fm-captain-hold.sh verify fm-held-already-shipped-sweep-1
+fm-captain-hold: captain-held task tx-stale-inflight-records-worktree-tangle is neither held for the captain nor closed with a recorded captain answer
+[exit 1]
+
+## teardown of the formerly stuck origin (real fm-teardown.sh)
+$ fm-teardown.sh fm-held-already-shipped-sweep-1
+fm-gate-refuse: gate agent lifecycle permitted only against lab home /tmp/fm-lab.ZjCWyq
+●━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+●  WATCHER DOWN - SUPERVISION IS OFF
+●  2 task(s) in flight, but no watcher has a fresh beacon (last beat: never, grace 300s).
+●  Trust the emitted supervision protocol for this harness; do not use shell & for watcher repair.
+●  This is a supervision warning only; the guarded operation WILL still run.
+●  watcher supervision needs Stop-owned automatic recovery; inspect the hook registration and startup status before ending the turn.
+●━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+teardown fm-held-already-shipped-sweep-1 complete (window firstmate:fm-fm-held-already-shipped-sweep-1, worktree /tmp/fm-lab.ZjCWyq/projects/gone-fm-held-already-shipped-sweep-1)
+Backlog: fm-held-already-shipped-sweep-1 is closed in /tmp/fm-lab.ZjCWyq/data/backlog.md. Run bin/fm-tasks-axi.sh ready for dependency-cleared candidates, check date gates, and dispatch only work whose blockers are gone and date is due.
+[exit 0]
+--- state after teardown:
+fm-other-origin.meta
+home-summary.json
+terminal-outcomes
+/tmp/fm-lab.ZjCWyq/data/backlog.md:6:  Captain hold origin: fm-held-already-shipped-sweep-1
+/tmp/fm-lab.ZjCWyq/data/backlog.md:8:  Origin: fm-held-already-shipped-sweep-1
+/tmp/fm-lab.ZjCWyq/data/backlog.md:10:- [x] fm-held-already-shipped-sweep-1 - Already-shipped sweep data/fm-held-already-shipped-sweep-1/report.md (repo: sample) (kind: scout) (reported 2026-10-15)
+/tmp/fm-lab.ZjCWyq/data/done-archive.md:5:  Captain hold origin: fm-held-already-shipped-sweep-1
+/tmp/fm-lab.ZjCWyq/data/done-archive.md:7:  Origin: fm-held-already-shipped-sweep-1
+lab removed: yes
