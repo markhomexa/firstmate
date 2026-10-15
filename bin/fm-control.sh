@@ -426,7 +426,7 @@ if [ -n "$(fm_meta_get "$META" remote_host)" ]; then
     fm-remote-secondmate-control.sh clear-composer "$ID" </dev/null 2>&1) || remote_rc=$?
   case "$remote_rc" in
     0) ;;
-    124|255) die "the transport to remote secondmate $ID on $REMOTE_HOST was lost or timed out (exit $remote_rc) before the clear was confirmed; its composer may or may not have been cleared and nothing was submitted by this plane. Re-run clear-composer once the host is reachable, or read the pane on that host" ;;
+    124|137|255) die "the transport to remote secondmate $ID on $REMOTE_HOST was lost or timed out (exit $remote_rc) before the clear was confirmed; its composer may or may not have been cleared and nothing was submitted by this plane. Re-run clear-composer once the host is reachable, or read the pane on that host" ;;
     *)
       case "$remote_out" in
         *"unknown command: clear-composer"*)
