@@ -63,9 +63,6 @@ g=$1
 case "$g" in "~"/*) g="$HOME/${g#\~/}" ;; esac
 for w in $g; do
   [ -e "$w/.git" ] || continue
-  if git -C "$w" rev-parse --git-dir >/dev/null 2>&1 && ! git -C "$w" rev-parse -q --verify HEAD >/dev/null 2>&1; then
-    continue
-  fi
   if ! b=$(git -C "$w" rev-parse --abbrev-ref HEAD 2>/dev/null) ||
      ! l=$(git -C "$w" log --oneline HEAD --not --glob='refs/remotes/*' 2>/dev/null); then
     printf '%s\t%s\t%s\n' "$w" "(unreadable)" "?"; continue

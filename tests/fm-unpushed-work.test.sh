@@ -180,14 +180,17 @@ test_detached_head_is_reported_once_as_it_moves() {
   pass "a detached worktree is reported once even as HEAD moves"
 }
 
-test_empty_new_worktree_is_silent() {
+test_truncated_branch_ref_is_reported() {
   reset_world
-  mkdir -p "$TMP_ROOT/wt/empty/x"
-  git init -q "$TMP_ROOT/wt/empty/x/y"
+  local w; w=$(mk_worktree truncated)
+  git -C "$w" checkout -q -b fm/crashed
+  commit "$w" one
+  : > "$w/.git/refs/heads/fm/crashed"
   run
-  assert_equals 0 "$RC" "empty worktree scan exit"
-  assert_equals "" "$OUT" "a worktree with no commits has nothing to lose"
-  pass "a worktree with no commits yet is silent"
+  assert_equals 0 "$RC" "truncated ref scan exit"
+  assert_contains "$OUT" "$w" "crash-damaged worktree named"
+  assert_contains "$OUT" "cannot read" "crash-damaged worktree says why"
+  pass "a crash-truncated branch ref is reported, never read as clean"
 }
 
 test_never_pushed_branch_is_detected
@@ -200,4 +203,4 @@ test_same_branch_is_reported_once_until_it_clears
 test_unknown_scan_keeps_the_snapshot
 test_unreadable_worktree_is_reported_not_skipped
 test_detached_head_is_reported_once_as_it_moves
-test_empty_new_worktree_is_silent
+test_truncated_branch_ref_is_reported
