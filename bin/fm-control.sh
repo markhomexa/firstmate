@@ -53,9 +53,10 @@
 #              reported `composer-already-empty` and receives no key. A pending
 #              composer gets Ctrl+U presses (a wrapped line needs one per
 #              rendered row) until it reads empty, and the clear then has to
-#              HOLD: the composer is re-read several times a short interval
-#              apart, because a single read can be a mid-redraw artifact that
-#              reappears seconds later. An artifact that returns resumes
+#              HOLD: every consecutive re-read, a short interval apart, must
+#              read empty for at least 5 seconds after the last press
+#              (FM_CONTROL_CLEAR_HOLD), because a single read can be a
+#              mid-redraw artifact that reappears seconds later. An artifact that returns resumes
 #              pressing within the same budget; a composer still not empty
 #              when the budget ends refuses, reporting the last read.
 #              Refused, sending nothing, when: the backend cannot deliver
@@ -167,8 +168,15 @@
 #   FM_CONTROL_LAUNCH_WAIT       dead->alive wait after a relaunch (90)
 #   FM_CONTROL_EXIT_RETRIES      Enter retries for the exit command (3)
 #   FM_CONTROL_CLEAR_PRESSES     Ctrl+U press budget for clear-composer (8)
-#   FM_CONTROL_CLEAR_CONFIRMS    consecutive empty re-reads that prove a clear
-#                                held (3), spaced FM_CONTROL_CLEAR_SETTLE apart
+#   FM_CONTROL_CLEAR_CONFIRMS    minimum consecutive empty reads that prove a
+#                                clear held (3), spaced FM_CONTROL_CLEAR_SETTLE
+#                                apart
+#   FM_CONTROL_CLEAR_HOLD        minimum span of those consecutive empty reads,
+#                                counted from the last Ctrl+U press (5); a line
+#                                measured reappearing seconds after an apparent
+#                                clear must be caught. Reads continue until both
+#                                minimums are met, so the span is bounded by
+#                                max(CONFIRMS, ceil(HOLD / SETTLE)) reads
 #   FM_CONTROL_CLEAR_SETTLE      pause before each clear-composer read (0.4)
 set -eu
 
@@ -228,7 +236,10 @@ LAUNCH_WAIT=${FM_CONTROL_LAUNCH_WAIT:-90}
 EXIT_RETRIES=${FM_CONTROL_EXIT_RETRIES:-3}
 CLEAR_PRESSES=${FM_CONTROL_CLEAR_PRESSES:-8}
 CLEAR_CONFIRMS=${FM_CONTROL_CLEAR_CONFIRMS:-3}
+CLEAR_HOLD=${FM_CONTROL_CLEAR_HOLD:-5}
 CLEAR_SETTLE=${FM_CONTROL_CLEAR_SETTLE:-0.4}
+CLEAR_READS=$(awk -v c="$CLEAR_CONFIRMS" -v h="$CLEAR_HOLD" -v s="$CLEAR_SETTLE" \
+  'BEGIN{n = 0; if (s > 0) { n = int(h / s); if (n * s < h) n++ } printf "%d", (n > c ? n : c)}')
 
 die() {  # <message>
   echo "error: $1" >&2
@@ -658,11 +669,12 @@ do_clear_composer() {
     composer_state=$(clear_composer_read)
     clear_composer_refuse_dialog
     [ "$composer_state" = empty ] || continue
-    # One empty read can be a redraw artifact. It has to hold across the
-    # re-reads, and a line that comes back resumes pressing.
+    # One empty read can be a redraw artifact, and one was measured coming back
+    # seconds later. It has to hold across the whole window, and a line that
+    # comes back resumes pressing.
     confirmed=1
     i=1
-    while [ "$i" -lt "$CLEAR_CONFIRMS" ]; do
+    while [ "$i" -lt "$CLEAR_READS" ]; do
       sleep "$CLEAR_SETTLE"
       composer_state=$(clear_composer_read)
       clear_composer_refuse_dialog
@@ -678,7 +690,7 @@ do_clear_composer() {
         alive|unverified) ;;
         *) die "task $ID's endpoint reads '$state' after its composer was cleared; a clear must leave the agent running" ;;
       esac
-      printf 'composer-cleared presses=%s verified=empty-x%s' "$presses" "$CLEAR_CONFIRMS"
+      printf 'composer-cleared presses=%s verified=empty-x%s' "$presses" "$CLEAR_READS"
       return 0
     fi
   done

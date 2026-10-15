@@ -147,8 +147,9 @@ case "${1:-}" in
       fi
       if [ "$payload" = C-u ] && [ -s "$D/composer" ] && [ ! -f "$D/ctrl-u-inert" ]; then
         if [ -f "$D/artifact" ]; then
+          n=$(cat "$D/artifact")
           cp "$D/composer" "$D/composer.held"; rm -f "$D/artifact"
-          : > "$D/composer"; printf 1 > "$D/redraw"
+          : > "$D/composer"; printf '%s' "${n:-1}" > "$D/redraw"
         else
           : > "$D/composer"
         fi
@@ -286,7 +287,7 @@ run_control() {
   env PATH="$dir/fakebin:$PATH" FM_HOME="$dir/home" FM_FAKE_DIR="$dir/fake" \
     FM_CONTROL_POLL=0.01 FM_CONTROL_SETTLE_WAIT=0.05 \
     FM_CONTROL_EXIT_WAIT=0.05 FM_CONTROL_LAUNCH_WAIT=0.05 \
-    FM_CONTROL_CLEAR_SETTLE=0.01 \
+    FM_CONTROL_CLEAR_SETTLE=0.01 FM_CONTROL_CLEAR_HOLD="${FM_CONTROL_CLEAR_HOLD:-0}" \
     FM_FAKE_MUSE_LOG="${FM_FAKE_MUSE_LOG:-}" \
     FM_FAKE_MUSE_DISAPPEAR_BEFORE_ACK="${FM_FAKE_MUSE_DISAPPEAR_BEFORE_ACK:-}" \
     FM_FAKE_INTERRUPT_STOPS_AGENT="${FM_FAKE_INTERRUPT_STOPS_AGENT:-}" \
@@ -834,6 +835,25 @@ test_clear_composer_does_not_trust_a_single_redraw_artifact() {
   pass "fm-control clear-composer: an empty read is re-checked, and a reappearing line is cleared again"
 }
 
+# The measured artifact came back seconds later, after more empty reads than the
+# confirm count alone requires. The hold window has to outlast it.
+test_clear_composer_holds_past_a_late_returning_line() {
+  local dir out rc
+  dir=$(new_case clear-late-artifact)
+  add_task "$dir" t1 claude
+  alive_as "$dir" claude
+  printf 'stuck doorbell' > "$dir/fake/composer"
+  printf 6 > "$dir/fake/artifact"
+  out=$(FM_CONTROL_CLEAR_HOLD=0.1 run_control "$dir" t1 clear-composer); rc=$?
+  expect_code 0 "$rc" "a line that returns inside the hold window must be cleared again"$'\n'"$out"
+  assert_contains "$out" "verified=empty-x10" "the hold window should set the empty-read count"
+  [ ! -s "$dir/fake/composer" ] || fail "the composer must end empty"
+  [ "$(grep -cx 'C-u' "$dir/fake/keys")" -ge 2 ] \
+    || fail "a line returning inside the hold window must be pressed again, got: $(cat "$dir/fake/keys")"
+  ! grep -qx 'Enter' "$dir/fake/keys" || fail "a clear must never send Enter"
+  pass "fm-control clear-composer: the hold window outlasts a line that returns after the confirm count"
+}
+
 test_clear_composer_that_does_not_clear_fails_without_submitting() {
   local dir out rc
   dir=$(new_case clear-inert)
@@ -1350,6 +1370,7 @@ test_verb_allowlist_is_closed
 test_clear_composer_discards_one_unsubmitted_line_without_submitting
 test_clear_composer_on_an_empty_composer_sends_nothing
 test_clear_composer_does_not_trust_a_single_redraw_artifact
+test_clear_composer_holds_past_a_late_returning_line
 test_clear_composer_that_does_not_clear_fails_without_submitting
 test_clear_composer_refuses_when_the_composer_cannot_be_read
 test_clear_composer_refuses_when_no_agent_runs
