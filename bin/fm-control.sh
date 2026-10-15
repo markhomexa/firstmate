@@ -142,8 +142,11 @@
 # are all refused - a lifecycle command delivered to the wrong endpoint is far
 # worse than a loud refusal.
 #
-# A remotely placed secondmate is refused by name: its agent runs on another
-# host, so no postcondition this plane verifies could be read for it here.
+# A remotely placed secondmate is refused by name for interrupt, exit, and
+# relaunch: its agent runs on another host, so no postcondition this plane
+# verifies could be read for it here. clear-composer alone is carried to that
+# host, which runs this same verb on its own local record (see the remote hop
+# below); a clear it cannot verify there refuses here.
 #
 # Fail-closed boundaries:
 #   - An unverified harness, or a harness whose control mechanics are unknown,
@@ -402,7 +405,41 @@ fi
 # operator about a correctly configured remote route. Name the placement
 # instead, using the same `remote_host` signal bin/fm-send.sh routes on.
 if [ -n "$(fm_meta_get "$META" remote_host)" ]; then
-  die "task $ID is a remotely placed secondmate on $(fm_meta_get "$META" remote_host); its agent runs outside this home, so no lifecycle action here could verify that it interrupted, stopped, or came back. Drive its lifecycle on that host, and reconcile it through the secondmate recovery path rather than this plane"
+  REMOTE_HOST=$(fm_meta_get "$META" remote_host)
+  if [ "$VERB" != clear-composer ]; then
+    die "task $ID is a remotely placed secondmate on $REMOTE_HOST; its agent runs outside this home, so no lifecycle action here could verify that it interrupted, stopped, or came back. Drive its lifecycle on that host, and reconcile it through the secondmate recovery path rather than this plane (only clear-composer reaches a remote mate from here)"
+  fi
+  # clear-composer is the one verb that reaches a remote mate: the host runs
+  # this same plane against its own local record (fm-remote-secondmate-control.sh
+  # clear-composer), so the contract, the hold proof, and every refusal are the
+  # host's own and the composer is read where it lives. The parent accepts only
+  # a result line that reports a verified outcome; anything else, including a
+  # lost or timed-out transport, refuses rather than claim a clear.
+  # shellcheck source=bin/fm-timeout-lib.sh
+  . "$SCRIPT_DIR/fm-timeout-lib.sh"
+  REMOTE_BUDGET=${FM_CONTROL_REMOTE_BUDGET:-180}
+  case "$REMOTE_BUDGET" in
+    ''|*[!0-9]*|0) die "FM_CONTROL_REMOTE_BUDGET must be a positive integer: $REMOTE_BUDGET" ;;
+  esac
+  remote_rc=0
+  remote_out=$(fm_run_timed "$REMOTE_BUDGET" "$SCRIPT_DIR/fm-on.sh" "$ID" \
+    fm-remote-secondmate-control.sh clear-composer "$ID" </dev/null 2>&1) || remote_rc=$?
+  case "$remote_rc" in
+    0) ;;
+    124|255) die "the transport to remote secondmate $ID on $REMOTE_HOST was lost or timed out (exit $remote_rc) before the clear was confirmed; its composer may or may not have been cleared and nothing was submitted by this plane. Re-run clear-composer once the host is reachable, or read the pane on that host" ;;
+    *)
+      case "$remote_out" in
+        *"unknown command: clear-composer"*)
+          die "the host of remote secondmate $ID ($REMOTE_HOST) runs a Firstmate copy that predates the clear-composer verb; update that host with /updatefirstmate, then retry" ;;
+      esac
+      die "remote secondmate $ID on $REMOTE_HOST refused clear-composer (exit $remote_rc): ${remote_out##*$'\n'}"
+      ;;
+  esac
+  result_line=$(printf '%s\n' "$remote_out" | grep -E '^(composer-cleared|composer-already-empty) ' | tail -1 || true)
+  [ -n "$result_line" ] \
+    || die "remote secondmate $ID on $REMOTE_HOST reported no verified clear-composer outcome; refusing to report a clear it did not confirm"
+  echo "$result_line remote=$REMOTE_HOST"
+  exit 0
 fi
 
 fm_backend_validate_task_endpoint "$META" "$ID" || exit 1
