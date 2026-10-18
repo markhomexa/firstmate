@@ -1,0 +1,30 @@
+# Live lab: FM_HOME=/tmp/fm-lab.gRx90I (fm-lab-home marked), real git origin at /tmp/fm-lab.gRx90I/projects/origin.git, real claude crew pane fm:fm-preval on private fm-lab tmux socket
+# lane meta:
+window=fm:fm-preval
+worktree=/tmp/fm-lab.gRx90I/projects/demo-wt
+project=/tmp/fm-lab.gRx90I/projects/demo
+kind=ship
+mode=no-mistakes
+harness=claude
+
+## S1 unpublished no-mistakes handoff (head on no remote ref)
+$ git -C demo-wt branch -r --contains HEAD  ->  []
+status: done: committed on fm/preval, local and unpublished until the pipeline pushes: implemented fix.txt
+base c4dba3c : state: done · source: status-log · committed on fm/preval, local and unpublished until the pipeline pushes: implemented fix.txt
+target de0d4e0: state: working · source: status-log · implemented but unpublished, awaiting /no-mistakes · committed on fm/preval, local and unpublished until the pipeline pushes: implemented fix.txt
+
+## S2 adversarial: gated CI-ready done line in no-mistakes mode, head unpublished (must stay the blocked gate, not be downgraded to working)
+status: done: PR https://github.com/o/r/pull/3 checks green
+target: state: blocked · source: status-log · named head 8b04697b931c942ce39d26b340eca2637f45bffe is unreachable outside the worker copy
+
+## S3 adversarial: same handoff text, mode=direct-PR, head unpublished (other modes untouched)
+base  : state: blocked · source: status-log · named head 8b04697b931c942ce39d26b340eca2637f45bffe is unreachable outside the worker copy
+target: state: blocked · source: status-log · named head 8b04697b931c942ce39d26b340eca2637f45bffe is unreachable outside the worker copy
+
+## S4 pipeline publishes: real git push of fm/preval to origin, then same handoff line
+$ git -C demo-wt branch -r --contains HEAD  ->  [origin/fm/preval]
+target: state: done · source: status-log · committed on fm/preval, local and unpublished until the pipeline pushes: implemented fix.txt
+
+## S5 adversarial: new local commit after publish (head moves past remote) -> back to working
+$ git -C demo-wt branch -r --contains HEAD  ->  []
+target: state: working · source: status-log · implemented but unpublished, awaiting /no-mistakes · committed on fm/preval, local and unpublished until the pipeline pushes: implemented fix.txt
