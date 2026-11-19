@@ -647,6 +647,15 @@ Letting the far side re-resolve it would silently move the mate onto another run
 SSH exit 255 leaves completion unknown and the route preserved, exactly as every other verb here.
 Move a live remote second mate onto a newly pinned harness, model, or effort with [`bin/fm-remote-secondmate-relaunch.sh`](../bin/fm-remote-secondmate-relaunch.sh) rather than calling `relaunch` through `fm-on.sh` directly: the host-local relaunch it drives can only rewrite the host's own endpoint record, so this wrapper reads the confirmed identity back from that record afterward and republishes the primary's own route metadata to match, the same way launch already records a fresh route.
 
+### Clear a stuck composer on a live remote second mate
+
+A remote steer that comes back unconfirmed has two causes that need different answers.
+A slow transport is cured by the correlation-preserving resend described above.
+A composer already holding one unsubmitted line is not, because the resend lands on the same occupied composer and the doorbell is skipped again.
+`bin/fm-control.sh <id> clear-composer` reaches the host for that second case, through `fm-remote-secondmate-control.sh clear-composer`, which runs the ordinary local `clear-composer` there ([`docs/agent-control.md`](agent-control.md) owns its contract and refusals).
+It never submits the line, and it reports a clear only when the host proved the composer stayed empty.
+Ring the steer again afterward.
+
 ### Firstmate code convergence
 
 Session start and every remote launch converge the persistent remote home on the primary's own default-branch commit rather than on the Firstmate copy that host keeps.

@@ -166,9 +166,13 @@ The worktree and the task's records are unaffected either way.
 - Targeting is exact.
   Only a bare task id with a `state/<id>.meta` record in this home is accepted, and that record must pass the shared endpoint-identity validation.
   A legacy `fm-<id>` window label, an explicit `session:window` endpoint, and a record whose `endpoint_task_id` names another task are all refused.
-- A remotely placed secondmate is refused by name.
+- A remotely placed secondmate is refused by name for `interrupt`, `exit`, and `relaunch`; `clear-composer` is the one verb carried to it (see below).
   Its agent runs on another host, so none of the postconditions this plane verifies could be read for it here; local endpoint validation would refuse the record regardless, because `window=remote:<id>` can never match a local backend's required shape.
   Drive that lifecycle on its own host and reconcile it through the secondmate recovery path.
+  `clear-composer` reaches a remote second mate because the refusal, not the transport, was the limit: the host already runs this same plane against a record that is ordinary and local there, and the composer is read and Ctrl+U delivered on that host exactly as for a local mate.
+  The primary hops through `bin/fm-on.sh <id> fm-remote-secondmate-control.sh clear-composer <id>`, so the contract, the hold proof, and every named refusal above are the host's own.
+  The primary reports a clear only when the host's result line says `composer-cleared` or `composer-already-empty`; a lost or timed-out transport (bounded by `FM_CONTROL_REMOTE_BUDGET`, default 180 seconds), a host refusal, a host copy that predates the verb, or a success with no such line all refuse and say which.
+  After a lost transport the outcome is unknown and nothing was submitted by this plane, so rerunning `clear-composer` is safe.
   For `relaunch`, drive the host through [`bin/fm-remote-secondmate-relaunch.sh`](../bin/fm-remote-secondmate-relaunch.sh), which runs `bin/fm-on.sh <id> fm-remote-secondmate-control.sh relaunch ...` and then republishes this home's route record from the identity the host confirmed; the host-local leg runs this same plane against a record that is ordinary and local there, so every checkpoint, journal, rollback, and postcondition below applies unchanged ([`docs/remote-secondmates.md`](remote-secondmates.md)); `interrupt` and `exit` have no such route.
 - An unverified harness is refused rather than guessed at.
 - An implicit relaunch from a prefixed raw-command basename is refused before the agent or durable state is touched because its original launch command cannot be reconstructed.
