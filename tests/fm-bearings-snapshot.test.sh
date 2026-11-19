@@ -56,6 +56,10 @@ SH
 echo "gh $*" >> "$NET_LOG"
 if [ "${FAKE_GH_FAIL:-0}" = 1 ]; then exit 1; fi
 if [ "${FAKE_GH_SLEEP:-0}" = 1 ]; then sleep 30; fi
+if [ -n "${FAKE_GH_BIG:-}" ]; then
+  jq -nc --argjson n "$FAKE_GH_BIG" '[range(1; $n + 1) | {number:., title:("Big " + tostring), url:("https://github.com/acme/repo/pull/" + tostring), headRefName:("fm/big-" + tostring), reviewDecision:"", mergeable:"MERGEABLE", statusCheckRollup:[]}]'
+  exit 0
+fi
 if [ "${FAKE_GH_MANY:-0}" = 1 ]; then
   cat <<'JSON'
 [{"number":1,"title":"One","url":"https://github.com/acme/repo/pull/1","headRefName":"fm/one","reviewDecision":"","mergeable":"MERGEABLE","statusCheckRollup":[]},{"number":2,"title":"Two","url":"https://github.com/acme/repo/pull/2","headRefName":"fm/two","reviewDecision":"","mergeable":"MERGEABLE","statusCheckRollup":[]},{"number":3,"title":"Three","url":"https://github.com/acme/repo/pull/3","headRefName":"fm/three","reviewDecision":"","mergeable":"MERGEABLE","statusCheckRollup":[]}]
@@ -1574,6 +1578,23 @@ test_per_repository_pr_cap_is_disclosed() {
   ' >/dev/null || fail "per-repository PR truncation was not disclosed: $json"
   assert_contains "$toon" 'candidate_prs showing 2 of at least 3' "TOON did not preserve PR truncation disclosure"
   pass "per-repository open-PR caps are disclosed with an expansion knob"
+}
+
+test_pr_rows_beyond_exec_argument_cap_are_reported() {
+  local home fakebin json bytes
+  home=$(make_home pr-argv-cap); write_large_fixture "$home" 5
+  fakebin=$(make_fakebin "$home")
+  # 5 repositories x 600 rows is well over the 128 KiB single-argument exec cap,
+  # so passing the accumulated rows to jq as an argument would fail with E2BIG.
+  json=$(FM_BEARINGS_PR_LIMIT=1000 FAKE_GH_BIG=600 run "$home" "$fakebin" \
+    --include-prs --all-pr-repos --json) || fail "large PR row set failed the report"
+  bytes=$(printf '%s' "$json" | jq -c '.candidate_prs' | wc -c)
+  [ "$bytes" -gt 262144 ] || fail "fixture too small to exceed the argument cap: $bytes bytes"
+  printf '%s' "$json" | jq -e '
+    (.candidate_prs | length) == 3000
+    and (.prs | startswith("checked (5 repos, 3000 open"))
+  ' >/dev/null || fail "large PR row set was dropped or miscounted"
+  pass "PR rows beyond the exec argument cap still reach the report"
 }
 
 install_failing_jq() {  # <fakebin> <model|toon>
@@ -3413,4 +3434,5 @@ test_blocked_deferred_hold_has_concrete_disclosure
 test_revealed_deferred_holds_show_their_deferral_reason
 test_pr_repository_cap_and_expansion
 test_per_repository_pr_cap_is_disclosed
+test_pr_rows_beyond_exec_argument_cap_are_reported
 test_projection_and_toon_fail_closed
